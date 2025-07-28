@@ -1,0 +1,36 @@
+[
+{
+  "model": "auth.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$870000$rKRkkFbQl8XLXiFiJazj47$9RM+iMm2DUPxvQLxvA0C+SaJKjlg6g3HTK4K/A/tobY=",
+    "last_login": "2025-07-22T09:08:27.599Z",
+    "is_superuser": true,
+    "username": "poornima",
+    "first_name": "",
+    "last_name": "",
+    "email": "npoornima2005@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2025-07-22T09:06:52.127Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "sites.site",
+  "pk": 1,
+  "fields": {
+    "domain": "example.com",
+    "name": "example.com"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "ytk4ox867azwegkrza2huvqf03qqbj4o",
+  "fields": {
+    "session_data": ".eJxVjMEOwiAQRP-Fs2lYoBS86Y-QZVlSYkMToSfjv9uaHvQ4b2beSwTc-hy2xs9QkrgKEJdfFpEeXI8Cl-XAAxKtW-3Dd3PWbbjtiWsvhL2s9X6-_lQztnn32CRRGU2MCaY8WgeUDZnR6QnQMrkoJ2ukRQ9KGg2JQWV2WnuOKXoQ7w-zSjwK:1ue8z5:1blJxACqXjzKKZ3G2xvOy3EIF1ZbKSHgvSoj5FGvqUg",
+    "expire_date": "2025-08-05T09:08:27.605Z"
+  }
+}
+]

@@ -1,0 +1,123 @@
+{% include 'base_sidebar.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Checkout</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .checkout-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+        .form-group label {
+            font-weight: 600;
+        }
+        .order-summary {
+            background-color: #f1f1f1;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+        .order-summary h5 {
+            margin-bottom: 20px;
+        }
+        .place-order-btn {
+            width: 100%;
+            margin-top: 20px;
+        }
+        .payment-option {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container checkout-container">
+        <h4>Checkout</h4>
+        <form id="checkoutForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Billing Address</h5>
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" class="form-control" id="fullName" placeholder="Enter full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Mobile Number</label>
+                        <input type="text" class="form-control" id="phone" placeholder="Enter mobile number">
+                    </div>
+                    <div class="form-group">
+                        <label for="address">Address Line</label>
+                        <textarea class="form-control" id="address" rows="2" placeholder="Enter address"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="city">City</label>
+                        <input type="text" class="form-control" id="city" placeholder="Enter city">
+                    </div>
+                    <div class="form-group">
+                        <label for="state">State</label>
+                        <input type="text" class="form-control" id="state" placeholder="Enter state">
+                    </div>
+                    <div class="form-group">
+                        <label for="zip">Pincode</label>
+                        <input type="text" class="form-control" id="zip" placeholder="Enter pincode">
+                    </div>
+
+                    <h5 class="mt-4">Payment Method</h5>
+                    <div class="form-check payment-option">
+                        <input class="form-check-input" type="radio" name="payment" id="cod" checked>
+                        <label class="form-check-label" for="cod">Cash on Delivery</label>
+                    </div>
+                    <div class="form-check payment-option">
+                        <input class="form-check-input" type="radio" name="payment" id="razorpay">
+                        <label class="form-check-label" for="razorpay">Razorpay</label>
+                    </div>
+                    <div class="form-check payment-option">
+                        <input class="form-check-input" type="radio" name="payment" id="paypal">
+                        <label class="form-check-label" for="paypal">PayPal</label>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="order-summary">
+                        <h5>Order Summary</h5>
+                        <p>1x Green Velvet Plant - ₹749</p>
+                        <p>2x Mini Succulents - ₹499</p>
+                        <hr>
+                        <p><strong>Total: ₹1747</strong></p>
+                    </div>
+                    <button type="button" class="btn btn-success place-order-btn" onclick="placeOrder()">Place Order</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function placeOrder() {
+            Swal.fire({
+                title: 'Confirm Order?',
+                text: 'Are you sure you want to place this order?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, place it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire('Success!', 'Your order has been placed.', 'success');
+                    document.getElementById('checkoutForm').reset();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

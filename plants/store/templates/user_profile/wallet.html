@@ -1,0 +1,122 @@
+{% extends 'user_profile/base_sidebar.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Wallet</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .wallet-container {
+      max-width: 1100px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.08);
+    }
+    .wallet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 2px dashed #ccc;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 40px;
+    }
+    .wallet-header h3 {
+      font-size: 28px;
+      color: #333;
+    }
+    .wallet-header span {
+      display: block;
+      font-size: 16px;
+      color: #888;
+    }
+    .wallet-icon {
+      font-size: 40px;
+      margin-right: 15px;
+      color: #28a745;
+    }
+    .add-money-btn {
+      background-color: #28a745;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      transition: 0.3s;
+    }
+    .add-money-btn:hover {
+      background-color: #218838;
+    }
+    table th, table td {
+      text-align: center;
+    }
+    .transaction-credit {
+      color: green;
+      font-weight: 600;
+    }
+    .transaction-debit {
+      color: red;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container wallet-container">
+    <h4 class="mb-4">Wallet</h4>
+
+    <!-- Wallet Balance Section -->
+    <div class="wallet-header">
+      <div class="d-flex align-items-center">
+        <div class="wallet-icon">💳</div>
+        <div>
+          <h3>₹{{ wallet.balance }}</h3>
+          <span>My Wallet Balance</span>
+        </div>
+      </div>
+      <button class="add-money-btn">+ Add Money</button>
+    </div>
+
+    <!-- Transaction History Table -->
+    <h5 class="mb-3">Transaction Details</h5>
+    <table class="table table-bordered">
+      <thead class="thead-light">
+        <tr>
+          <th>Transaction ID</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th>Withdrawal</th>
+          <th>Deposit</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tx in wallet.transactions %}
+        <tr>
+          <td>#{{ tx.id }}</td>
+          <td>{{ tx.description }}</td>
+          <td>{{ tx.date|date:"M d, Y" }}</td>
+          <td class="transaction-debit">
+            {% if tx.type == "DEBIT" %} ₹{{ tx.amount }} {% else %} - {% endif %}
+          </td>
+          <td class="transaction-credit">
+            {% if tx.type == "CREDIT" %} ₹{{ tx.amount }} {% else %} - {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-center text-muted">No transactions found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
+{% endblock %}

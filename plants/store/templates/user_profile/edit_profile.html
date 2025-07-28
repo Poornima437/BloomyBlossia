@@ -1,0 +1,53 @@
+{% extends 'base_sidebar.html' %}
+{% block content %}
+<div class="container py-5">
+  <div class="col-md-9 offset-md-3">
+    <div class="form-section">
+      <h4 class="mb-4">Edit Profile</h4>
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Full Name</label>
+            <input type="text" name="name" class="form-control" value="{{ user.get_full_name }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Phone Number</label>
+            <input type="text" name="phone" class="form-control" value="{{ user.profile.phone }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" value="{{ user.email }}" required>
+            <small class="text-muted">* You will need to verify if you change your email.</small>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Profile Image</label><br>
+            {% if user.profile.image %}
+              <img src="{{ user.profile.image.url }}" width="80" class="mb-2 rounded-circle">
+            {% endif %}
+            <input type="file" name="image" class="form-control">
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary">Update Profile</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+  .form-section {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  }
+  label.form-label {
+    font-weight: 500;
+  }
+  input.form-control {
+    padding: 0.6rem 1rem;
+  }
+</style>
+{% endblock %}

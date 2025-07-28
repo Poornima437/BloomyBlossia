@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block content %}
+
+
+<style>
+  .price {
+    color: green;
+    font-weight: bold;
+  }
+  .price-sale {
+    text-decoration: line-through;
+    color: #999;
+    margin-left: 5px;
+  }
+</style>
+
+<div class="container mt-5">
+  <h3>Search Results for: "{{ query }}"</h3>
+
+  {% if page_obj %}
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+      {% for product in page_obj %}
+        <div class="col">
+          <div class="card h-100">
+            <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+            <div class="card-body text-center">
+              <h3 class="card-title">{{ product.name }}</h3>
+              <h5 class="card-text">{{ product.category }}</h5>
+
+         
+              <p class="card-text">
+                <span class="price">₹{{ product.sale_price }}</span>
+                <span class="price-sale">₹{{ product.price }}</span>
+              </p>
+
+              <a href="{% url 'product' product.id %}" class="btn btn-dark">View</a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No products found.</p>
+  {% endif %}
+
+  <!-- Pagination -->
+  <div class="d-flex justify-content-center mt-4">
+    <nav>
+      <ul class="pagination">
+        {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?q={{ query }}&page={{ page_obj.previous_page_number }}">Previous</a>
+          </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+          <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+            <a class="page-link" href="?q={{ query }}&page={{ num }}">{{ num }}</a>
+          </li>
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?q={{ query }}&page={{ page_obj.next_page_number }}">Next</a>
+          </li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+</div>
+
+{% endblock %}

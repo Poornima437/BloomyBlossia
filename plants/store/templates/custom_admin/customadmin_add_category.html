@@ -1,0 +1,34 @@
+{% extends 'custom_admin/customadmin_base.html' %}
+{% block content %}
+<h2>Add Category</h2>
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3 w-50">
+        <label class="form-label">Category Name</label>
+        <input type="text" name="name" value="{{ category.name }}" class="form-control" required>
+    </div>
+    <div class="form-group mb-3">
+        <label>Description:</label>
+        <input type="Text" name="Description"  required class="form-control">
+    </div>  
+    <button type="submit" class="btn btn-primary">Create</button>
+    <a href="{% url 'customadmin_categories' %}" class="btn btn-secondary">Cancel</a>
+</form>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+{% if messages %}
+<script>
+    {% for message in messages %}
+    Swal.fire({
+        icon: '{% if message.tags == "success" %}success{% elif message.tags == "error" %}error{% else %}info{% endif %}',
+        title: '{{ message }}',
+        timer: 2000,
+        showConfirmButton: false
+    });
+    {% endfor %}
+</script>
+{% endif %}
+
+{% endblock %}

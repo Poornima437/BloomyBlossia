@@ -1,0 +1,170 @@
+{% extends 'custom_admin/customadmin_base.html' %}
+{% load static %}
+
+{% block title %}Add Product{% endblock %}
+
+{% block content %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+
+<h2 style="margin-bottom: 20px;">Add New Product</h2>
+
+<form method="POST" enctype="multipart/form-data" id="productForm" style="max-width: 600px;">
+    {% csrf_token %}
+
+    <!-- Basic Fields -->
+    <div class="form-group mb-3">
+        <label>Name:</label>
+        <input type="text" name="name" required class="form-control">
+    </div>
+    <div class="form-group mb-3">
+        <label>Description:</label>
+        <input type="Text" name="Description"  required class="form-control">
+    </div>  
+
+    <div class="form-group mb-3">
+        <label>Price:</label>
+        <input type="number" name="price" step="0.01" required class="form-control">
+    </div>
+
+    <div class="form-group mb-3">
+        <label>Sale Price:</label>
+        <input type="number" name="sale_price" step="0.01" required class="form-control">
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <label>Category:</label><br>
+        <select name="category" class="form-control" required style="width: 100%;">
+            <option value="indoor">Indoor Plants</option>
+            <option value="outdoor">Outdoor Plants</option>
+        </select>
+    </div>
+
+    <div class="form-group mb-3">
+        <label>Stock Quantity:</label>
+        <input type="number" name="quantity" min="0" required class="form-control">
+    </div>
+
+    <!-- Image Upload + Crop -->
+    <div class="form-group mb-3">
+        <label>Upload 3 Images:</label>
+        <input type="file" id="imageInput" accept="image/*" multiple class="form-control" required>
+        <small class="text-muted">Each image will open in crop mode individually.</small>
+    </div>
+
+    <div id="croppedImagesPreview" class="d-flex flex-wrap gap-2 mb-3"></div>
+
+    <!-- Hidden image inputs for submission -->
+    <div id="hiddenImagesContainer"></div>
+
+    <div class="form-group mb-3">
+        <label>Is on Sale?</label>
+        <input type="checkbox" name="is_sale">
+    </div>
+
+    <div class="form-group mb-3">
+        <label>Status:</label>
+        <select name="status" class="form-control" required>
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+            <option value="out_of_stock">Out of Stock</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary" id="submitBtn" disabled>Add Product</button>
+</form>
+
+<!-- Crop Modal -->
+<div id="cropModal" style="display: none;">
+    <img id="cropImage" style="max-width: 100%;">
+    <button id="cropCurrentBtn" class="btn btn-warning mt-2">Crop & Save</button>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <p style="color: green;">{{ message }}</p>
+    {% endfor %}
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script>
+let cropper;
+const MAX_IMAGES = 3;
+let croppedImages = [];
+
+const imageInput = document.getElementById('imageInput');
+const cropImage = document.getElementById('cropImage');
+const cropModal = document.getElementById('cropModal');
+const cropCurrentBtn = document.getElementById('cropCurrentBtn');
+const croppedPreview = document.getElementById('croppedImagesPreview');
+const hiddenImagesContainer = document.getElementById('hiddenImagesContainer');
+const submitBtn = document.getElementById('submitBtn');
+
+imageInput.addEventListener('change', function () {
+    croppedImages = [];
+    croppedPreview.innerHTML = '';
+    hiddenImagesContainer.innerHTML = '';
+    submitBtn.disabled = true;
+
+    const files = Array.from(imageInput.files);
+    if (files.length !== MAX_IMAGES) {
+        alert(`Please upload exactly ${MAX_IMAGES} images.`);
+        return;
+    }
+
+    handleNextCrop(files, 0);
+});
+
+function handleNextCrop(files, index) {
+    if (index >= files.length) {
+        alert("All images cropped!");
+        submitBtn.disabled = false;
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        cropImage.src = e.target.result;
+        cropModal.style.display = 'block';
+
+        if (cropper) cropper.destroy();
+        cropper = new Cropper(cropImage, {
+            aspectRatio: 1,
+            viewMode: 1
+        });
+
+        cropCurrentBtn.onclick = function () {
+            cropper.getCroppedCanvas({ width: 600, height: 600 }).toBlob(blob => {
+                const fileName = `cropped_${Date.now()}.jpeg`;
+                const file = new File([blob], fileName, { type: 'image/jpeg' });
+
+                // Preview
+                const previewImg = document.createElement('img');
+                previewImg.src = URL.createObjectURL(blob);
+                previewImg.style.height = '120px';
+                previewImg.style.marginRight = '10px';
+                croppedPreview.appendChild(previewImg);
+
+                // Append to form
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'file';
+                hiddenInput.name = 'images';
+                hiddenInput.style.display = 'none';
+
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                hiddenInput.files = dt.files;
+
+                hiddenImagesContainer.appendChild(hiddenInput);
+
+                cropModal.style.display = 'none';
+                cropper.destroy();
+                handleNextCrop(files, index + 1);
+            });
+        };
+    };
+    reader.readAsDataURL(files[index]);
+}
+</script>
+{% endblock %}

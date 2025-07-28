@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Shop - Products</title>
+  <style>
+    body { font-family: sans-serif; margin: 0; padding: 0; background: #f9f9f9; }
+    .container { max-width: 1200px; margin: auto; padding: 20px; }
+    .filter-form select, .filter-form input { margin: 0 10px 10px 0; padding: 6px; }
+    .btn-clear { margin-left: 10px; text-decoration: none; color: #d00; }
+    .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; margin-top: 20px; }
+    .product-card { background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 15px; text-align: center; }
+    .product-card img { max-width: 100%; height: 200px; object-fit: cover; border-radius: 6px; }
+    .price-sale { color: #e60023; font-weight: bold; }
+    .price-original { text-decoration: line-through; color: #999; }
+    .pagination { margin-top: 20px; text-align: center; }
+    .pagination a { margin: 0 5px; text-decoration: none; color: #007BFF; }
+  </style>
+</head>
+<body>
+
+  <form method="get" action="{% url 'shop' %}" class="flex gap-2 mb-4">
+    <input type="text" name="q" placeholder="Search Products..." value="{{ request.GET.q }}" class="border px-4 py-2 rounded w-full">
+    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Search</button>
+    {% if request.GET.q %}
+    <a href="{% url 'shop' %}" class="bg-gray-300 px-4 py-2 rounded text-black">Clear</a>
+    {% endif %}
+  </form>
+<div class="container">
+  <form method="get" class="filter-form">
+    <select name="category">
+      <option value="">All Categories</option>
+      {% for cat in categories %}
+        <option value="{{ cat.id }}" {% if category_id == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+      {% endfor %}
+      
+    </select>
+    <input type="number" name="min_price" placeholder="Min price" value="{{ min_price }}">
+    <input type="number" name="max_price" placeholder="Max price" value="{{ max_price }}">
+    <select name="sort">
+      <option value="">Sort by...</option>
+      <option value="price_low" {% if sort_option == 'price_low' %}selected{% endif %}>Low to High</option>
+      <option value="price_high" {% if sort_option == 'price_high' %}selected{% endif %}>High to Low</option>
+      <option value="a_z" {% if sort_option == 'a_z' %}selected{% endif %}>A → Z</option>
+      <option value="z_a" {% if sort_option == 'z_a' %}selected{% endif %}>Z → A</option>
+    </select>
+    <button type="submit">Apply</button>
+    <a href="{% url 'home' %}" class="btn-clear">Clear</a>
+  </form>
+
+  <div class="products-grid">
+    {% for product in page_obj %}
+      <div class="product-card">
+        <a href="{% url 'product_detail' product.id %}">
+          {% if product.images.first %}
+            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
+          {% endif %}
+          <h3>{{ product.name }}</h3>
+          <p>
+            {% if product.is_sale %}
+              <span class="price-original">${{ product.price }}</span>
+              <span class="price-sale">${{ product.sale_price }}</span>
+            {% else %}
+              <span class="price">${{ product.price }}</span>
+            {% endif %}
+          </p>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="pagination">
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}">Prev</a>
+    {% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}">Next</a>
+    {% endif %}
+  </div>
+</div>
+</body>
+</html>

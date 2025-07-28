@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<head>
+  <meta charset="UTF-8">
+  <title>Shop - BloomyBlossia</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+      body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
+      header { background: #103d2d; color: white; padding: 20px 20px; text-align: center; }
+      header h1 { margin: 0; font-size: 48px; }
+      header p { font-size: 18px; color: #d0d0d0; }
+
+      .container { max-width: 1440px; margin: auto; padding: 20px; display: flex; gap: 30px; }
+      .sidebar { width: 250px; background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+      .sidebar h3 { margin-top: 0; }
+      .sidebar label { display: block; margin: 8px 0; }
+      .products { flex: 1; }
+      .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+      .product-card img { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; }
+      .product-card h3 { margin: 10px 0 5px; font-size: 18px; }
+      .price { color: green; font-weight: bold; }
+      .price-sale { text-decoration: line-through; color: #999; margin-left: 5px; }
+      .rating { color: #ffa500; font-size: 14px; }
+      .btn { margin-top: 5px; padding: 8px 15px; background: #103d2d; color: white; text-decoration: none; border-radius: 5px; display: inline-block; }
+      .btnn { margin-top: 5px; padding: 5px 10px; background: #ec2334; color: white; text-decoration: none; border-radius: 5px; display: inline-block; }
+      .btnn:hover { background-color: white; color: black; border-radius: 5px;} 
+      .pagination { text-align: center; margin-top: 30px; }
+      .pagination a, .pagination button { margin: 0 5px; padding: 8px 12px; text-decoration: none; color: white; background-color: #103d2d; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+      .pagination .active a, .pagination .active button { background-color: #e63946; }
+      .search-box { margin-bottom: 15px; }
+      .search-box input { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ccc; }
+      .filter-buttons { display: flex; gap: 10px; margin-top: 15px;}
+      .filter-buttons .btn,.filter-buttons .btnn { flex: 1; text-align: center; font-size: 15px; padding: 5px;}
+      .product-card {
+        position: relative;
+        padding: 10px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+      }
+
+      .product-image {
+        width: 100%;
+        height: auto;
+        border-radius: 6px;
+      }
+
+      .wishlist-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: white;
+        border-radius: 50%;
+        padding: 6px;
+        width: 30px;
+        height: 30px;
+        cursor: pointer;
+        transition: 0.3s ease;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .wishlist-icon:hover {
+        transform: scale(1.1);
+      }
+
+    .wishlist-icon i {
+      font-size: 18px;
+      color: gray;
+      transition: 0.3s;
+    }
+
+    .wishlist-icon.added i {
+      color: red;
+    }
+  </style>
+</head>
+
+<header>
+  <h1>Shop</h1>
+  <p>Find your perfect plant</p>
+</header>
+
+<div class="container">
+  <aside class="sidebar">
+    <form method="GET" action="{% url 'search' %}" class="search-form">
+      <div class="search-box">
+        <input type="text" name="q" placeholder="Search your plants...">
+      </div>
+
+      <h3>Category</h3>
+      {% for cat in categories %}
+        <label><input type="radio" name="category" value="{{ cat.id }}" {% if category_id == cat.id|stringformat:"s" %}checked{% endif %}> {{ cat.name }}</label>
+      {% endfor %}
+      <br>
+
+
+      <h3>Price Range</h3>
+      <label><input type="radio" name="price_range" value="0-500" {% if price_range == '0-500' %}checked{% endif %}> Under ₹500</label>
+      <label><input type="radio" name="price_range" value="500-1000" {% if price_range == '500-1000' %}checked{% endif %}> ₹500 - ₹1000</label>
+      <label><input type="radio" name="price_range" value="1000-2000" {% if price_range == '1000-2000' %}checked{% endif %}> ₹1000 - ₹2000</label>
+      <label><input type="radio" name="price_range" value="2000+" {% if price_range == '2000+' %}checked{% endif %}> Above ₹2000</label><br>
+
+      <h3>Sort</h3>
+      <select name="sort">
+        <option value="">Sort By</option>
+        <option value="price_low" {% if sort_option == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+        <option value="price_high" {% if sort_option == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+        <option value="a_z" {% if sort_option == 'a_z' %}selected{% endif %}>Name: A-Z</option>
+        <option value="z_a" {% if sort_option == 'z_a' %}selected{% endif %}>Name: Z-A</option>
+      </select><br>
+
+      <div class="filter-buttons"><br>
+      <button type="submit" class="btn">Apply Filters</button>
+      <button type="button" class="btnn" onclick="window.location.href='{% url 'home' %}'">Clear Filters</button>
+      </div>
+  </aside>
+
+  <section class="products">
+    <div class="product-grid">
+      {% for product in page_obj %}
+        {% if product.is_sale %}
+        <div class="product-card">
+          <a href="javascript:void(0);" class="wishlist-icon" onclick="addToWishlist({{ product.id }}, this)">
+            <i class="fas fa-heart"></i>
+          </a>
+
+          <img src="{{ product.image.url }}" alt="{{ product.name }}">
+          <h3>{{ product.name }}</h3>
+          <h4>{{ product.category.name }}</h4>
+          <p class="price">₹{{ product.sale_price }} <span class="price-sale">₹{{ product.price }}</span></p>
+          <p class="rating">★★★★★</p>
+          <a class="btn" href="{% url 'product' product.id %}">View product</a>
+        </div>
+        {% endif %}
+      {% empty %}
+        <p>No products available.</p>
+      {% endfor %}
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+      <div class="pagination">
+        {% for num in page_obj.paginator.page_range %}
+          <span class="{% if page_obj.number == num %}active{% endif %}">
+            <a href="?page={{ num }}">{{ num }}</a>
+          </span>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </section>
+</div>
+
+<script>
+  function addToWishlist(productId, element) {
+    fetch(`/wishlist/add/${productId}/`, {
+      method: 'GET',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(response => {
+      if (response.ok) {
+        element.classList.add('added');
+
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'Added to wishlist!',
+          showConfirmButton: false,
+          timer: 1500
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'Could not add to wishlist. Please try again!'
+        });
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Something went wrong!'
+      });
+    });
+  }
+</script>
+{% endblock %}

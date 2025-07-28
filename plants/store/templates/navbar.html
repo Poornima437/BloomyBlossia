@@ -1,0 +1,106 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BloomyBlossia Navbar</title>
+  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    .navbar-custom {
+      background-color: #114232;
+    }
+    .navbar-custom .navbar-brand,
+    .navbar-custom .nav-link,
+    .navbar-custom .btn {
+      color: #f0fdf4 !important;
+    }
+    .navbar-custom .nav-link:hover,
+    .navbar-custom .navbar-brand:hover {
+      color: #a3e635 !important;
+    }
+    .icon-btn {
+      color: #f0fdf4;
+      font-size: 1.25rem;
+      transition: color 0.3s ease;
+    }
+    .icon-btn:hover {
+      color: #a3e635;
+    }
+    .profile-pic {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #fff;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-custom shadow-sm">
+  <div class="container">
+    <!-- Logo / Brand -->
+    <a class="navbar-brand fw-bold" href="{% url 'home' %}">
+      <i class="fas fa-leaf me-2 text-success"></i>BLOOMYBLOSSIA
+    </a>
+
+    <!-- Toggler -->
+    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Navbar Links -->
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+        <li class="nav-item"><a class="nav-link" href="{% url 'landing' %}">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Shop</a></li>
+        {% if user.is_authenticated %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
+        {% else %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+        {% endif %}
+      </ul>
+
+      <!-- Icon Group -->
+      <div class="d-flex align-items-center gap-3">
+
+        <!-- Wishlist -->
+        <a href="{% url 'wishlist'%}" class="icon-btn" title="Wishlist"><i class="fas fa-heart"></i></a>
+
+        <!-- Cart -->
+        <a href="{% url 'cart' %}" class="btn btn-outline-light position-relative" title="Cart">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="badge bg-light text-dark position-absolute top-0 start-100 translate-middle rounded-pill">0</span>
+        </a>
+
+        <!-- User Profile -->
+        {% if user.is_authenticated %}
+          <a href="{% url 'user_profile' %}" class="icon-btn" title="Profile">
+            <img src="{% static 'images/default_profile.png' %}" alt="Profile" class="profile-pic">
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- SweetAlert for Django Messages -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  {% if messages %}
+    {% for message in messages %}
+      Swal.fire({
+        title: "{{ message.tags|capfirst }}",
+        text: "{{ message }}",
+        icon: "{{ message.tags }}",
+        timer: 3000,
+        showConfirmButton: false
+      });
+    {% endfor %}
+  {% endif %}
+</script>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>

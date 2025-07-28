@@ -1,0 +1,17 @@
+<!-- templates/partials/breadcrumbs.html -->
+{% if breadcrumbs %}
+<nav class="text-sm text-gray-600 mb-4">
+  <ul class="flex items-center space-x-2">
+    {% for name, url in breadcrumbs %}
+      <li>
+        {% if url %}
+          <a href="{{ url }}" class="text-blue-600 hover:underline">{{ name }}</a>
+        {% else %}
+          <span class="text-gray-900">{{ name }}</span>
+        {% endif %}
+        {% if not forloop.last %} &raquo; {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</nav>
+{% endif %}

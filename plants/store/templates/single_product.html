@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ product.name }}</title>
+  <style>
+    body { font-family: sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
+    .container { max-width: 1100px; margin: auto; padding: 20px; }
+    .product-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; background: #fff; border-radius: 10px; padding: 30px; }
+    .gallery img { width: 100%; border-radius: 10px; margin-bottom: 10px; cursor: pointer; }
+    .thumb { width: 80px; margin-right: 10px; border: 2px solid #ccc; }
+    .thumb:hover { border-color: #333; }
+    .details h1 { margin-bottom: 10px; }
+    .price-original { text-decoration: line-through; color: #888; }
+    .price-sale { color: #d00; font-weight: bold; font-size: 20px; }
+    .btn-add { background: #28a745; color: #fff; padding: 10px 20px; border: none; cursor: pointer; }
+    .btn-add.disabled { background: #ccc; cursor: not-allowed; }
+    .description { margin-top: 20px; }
+    .reviews-section { margin-top: 40px; }
+    .review { background: #fff; padding: 15px; border-radius: 6px; margin-bottom: 10px; }
+    .rating { color: #f39c12; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <a href="{% url 'home' %}">← Back to Shop</a>
+
+  <div class="product-detail-grid">
+    <div class="gallery">
+      <img id="main-img" src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
+      <div>
+        {% for img in product.images.all %}
+          <img src="{{ img.image.url }}" class="thumb" onclick="document.getElementById('main-img').src=this.src">
+        {% endfor %}
+      </div>
+    </div>
+    <div class="details">
+      <h1>{{ product.name }}</h1>
+      <p>
+        {% if product.is_sale %}
+          <span class="price-original">${{ product.price }}</span>
+          <span class="price-sale">${{ product.sale_price }}</span>
+        {% else %}
+          <span class="price">${{ product.price }}</span>
+        {% endif %}
+      </p>
+      <p><strong>Stock:</strong>
+        {% if product.stock > 0 %}
+          In stock
+        {% else %}
+          <span class="btn-add disabled">Sold Out</span>
+        {% endif %}
+      </p>
+      <button class="btn-add" {% if product.stock == 0 %}disabled{% endif %}>Add to Cart</button>
+      <div class="description">
+        <h3>Description</h3>
+        <p>{{ product.description }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="reviews-section">
+    <h2>Reviews</h2>
+    {% for review in product.reviews.all %}
+      <div class="review">
+        <strong>{{ review.user.username }}</strong> – <span class="rating">{{ review.rating }}/5</span>
+        <p>{{ review.comment }}</p>
+      </div>
+    {% empty %}
+      <p>No reviews yet.</p>
+    {% endfor %}
+  </div>
+</div>
+</body>
+</html>

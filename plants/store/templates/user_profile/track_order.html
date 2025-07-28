@@ -1,0 +1,144 @@
+{% extends 'user_profile/base_sidebar.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Track Order</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .track-order-container {
+      max-width: 900px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    .progress-track {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 40px;
+      position: relative;
+    }
+    .progress-track::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background-color: #dee2e6;
+      z-index: 0;
+    }
+    .step {
+      text-align: center;
+      z-index: 1;
+      position: relative;
+      width: 25%;
+    }
+    .step .circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: #ccc;
+      margin: 0 auto 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: white;
+    }
+    .step.active .circle {
+      background-color: #ffc107;
+    }
+    .step.completed .circle {
+      background-color: #28a745;
+    }
+    .step-title {
+      font-size: 14px;
+    }
+    .order-summary {
+      margin-top: 30px;
+    }
+    .order-products, .order-address {
+      margin-top: 30px;
+    }
+    .btn-cancel {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container track-order-container">
+    <h4>Track Order</h4>
+
+    <div class="order-summary">
+      <p><strong>Order ID:</strong> #{{ order.id }}</p>
+      <p><strong>Product:</strong> {{ order.product_name }}</p>
+      <p><strong>Date:</strong> {{ order.created_at|date:"M d, Y H:i" }}</p>
+    </div>
+
+    <div class="progress-track">
+      <div class="step {% if order.status == 'PLACED' %}active{% elif order.status == 'PACKED' or order.status == 'SHIPPED' or order.status == 'DELIVERED' %}completed{% endif %}">
+        <div class="circle">1</div>
+        <div class="step-title">Order Placed</div>
+      </div>
+      <div class="step {% if order.status == 'PACKED' %}active{% elif order.status == 'SHIPPED' or order.status == 'DELIVERED' %}completed{% endif %}">
+        <div class="circle">2</div>
+        <div class="step-title">Packed</div>
+      </div>
+      <div class="step {% if order.status == 'SHIPPED' %}active{% elif order.status == 'DELIVERED' %}completed{% endif %}">
+        <div class="circle">3</div>
+        <div class="step-title">Shipped</div>
+      </div>
+      <div class="step {% if order.status == 'DELIVERED' %}active completed{% endif %}">
+        <div class="circle">4</div>
+        <div class="step-title">Delivered</div>
+      </div>
+    </div>
+
+
+    <div class="order-products">
+      <h5>Product Details</h5>
+      <ul>
+        {% for item in order.items.all %}
+          <li>{{ item.product.name }} - ₹{{ item.price }} × {{ item.quantity }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="order-address">
+      <h5>Delivery Address</h5>
+      <p>
+        {{ order.address.full_name }}<br>
+        {{ order.address.street }}, {{ order.address.city }}<br>
+        {{ order.address.state }}, {{ order.address.country }} - {{ order.address.pincode }}<br>
+        Phone: {{ order.address.phone }}
+      </p>
+    </div>
+
+    {% if is_cancelled or is_returned %}
+    <form method="post" action="{% url 'cancel_order' order.id %}" class="btn-cancel">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">Cancel Order</button>
+    </form>
+    {% endif %}
+  </div>
+
+  {% if messages %}
+  {% for message in messages %}
+    <script>
+      showToast("{{ message|escapejs }}");
+    </script>
+  {% endfor %}
+{% endif %}
+
+</body>
+</html>
+{% endblock %}

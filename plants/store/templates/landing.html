@@ -1,0 +1,202 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BloomyBlossia - Home</title>
+  <link rel="stylesheet" href="{% static 'css/landing.css' %}" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="logo">
+      <img src="{% static 'images/bloomy.png' %}" alt="logo" />
+    </div>
+    <nav class="nav-links">
+      <a href="{% url 'landing' %}">Home</a>
+      <a href="{% url 'category' 'All-Plants' %}">Shop</a>
+      <a href="{% url 'about' %}">About</a>
+      <a href="#">Contact</a>
+    </nav>
+
+    <div class="auth-buttons">
+      {% if user.is_authenticated %}
+        <span>Hello, {{ user.username }}</span>
+        <a href="{% url 'logout' %}">Logout</a>
+      {% else %}
+        <a href="{% url 'login' %}">Login</a>
+        <a href="{% url 'register' %}">Signup</a>
+      {% endif %}
+
+    </div>
+  </header>
+
+<section class="hero">
+  <style>
+    .search-form {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .search-form input[type="text"] {
+      padding: 10px 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      width: 250px;
+      outline: none;
+      transition: border 0.3s;
+    }
+
+    .search-form input[type="text"]:focus {
+      border-color: #4caf50;
+    }
+
+    .search-form button {
+      padding: 10px 20px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .search-form button:hover {
+      background-color: #388e3c;
+    }
+    .rating {
+      color: #ffa500;
+      font-size: 14px;
+    }
+  </style>
+
+  <div class="hero-text">
+    <h1>Buy your dream plants</h1>
+    <p>TOP PLANTS | HOME DECOR | GREEN JOY</p>
+    <form method="GET" action="{% url 'search' %}" class="search-form">
+      <input type="text" name="q" placeholder="Search your plants..." required>
+      <button type="submit">Search</button>
+    </form>
+  </div>
+    <div class="hero-image">
+      <img src="{% static 'images/hero_plant.png' %}" alt="Hero Plant" />
+    </div>
+  </section>
+  
+
+
+  <section class="best-sellers">
+    <style>
+    .rating {
+      color: #ffa500; 
+      font-size: 14px; 
+    }
+    </style>
+    <h2>Best Selling Plants</h2>
+    <div class="plants-grid">
+      <div class="plant-card">
+        <img src="{% static 'images/bromeliad vriesea.webp' %}" alt="Plant" />
+        <h4>Bromeliad Vriesea</h4>
+        <p style="color:#ffa500; font-size:14px;">★★★★★</p>
+        <strike>₹2599.00</strike>
+        <p>₹1500</p>
+      </div>
+      <div class="plant-card">
+        <img src="{% static 'images/chinese_Evergreen.jpeg' %}" alt="Plant" />
+        <h4>chinese_Evergreen</h4>
+        <p style="color:#ffa500; font-size:14px;">★★★★★</p>
+        <strike>₹1999.00</strike>
+        <p>₹799.00</p>
+      </div>
+      <div class="plant-card">
+        <img src="{% static 'images/orchid.webp' %}" alt="Plant" />
+        <h4>orchid</h4>
+        <p style="color:#ffa500; font-size:14px;">★★★★★</p>
+        <strike>₹2500.00</strike>
+        <p>₹1999</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Categories -->
+  <section class="categories">
+    <h2>Categories</h2>
+    <div class="category-grid">
+      <div class="cat-card"><img src="{% static 'images/cat1.jpg' %}" alt="Category" /><h4>Indoor Plants</h4></div>
+      <div class="cat-card"><img src="{% static 'images/cat2.jpg' %}" alt="Category" /><h4>Outdoor Plants</h4></div>
+
+    </div>
+    <br>
+
+    <a href="{% url 'home' %}" class="explore-btn">Explore All</a>
+
+  </section>
+  <br>
+
+
+  <!-- Banner -->
+  <section class="banner">
+    <img src="{% static 'images/banner.jpg' %}" alt="Banner" />
+    <h1>Grow Your World, One Pot at a Time!</h1>
+  </section>
+
+  <!-- About -->
+  <section class="about">
+    <h2>About us</h2>
+    <div class="about-cards">
+      <div class="about-card">
+        <h4>Top Quality Plants</h4>
+        <p>Only healthy, green, vibrant plants.</p>
+      </div>
+      <div class="about-card">
+        <h4>Eco Packaging</h4>
+        <p>100% recyclable material used for shipping.</p>
+      </div>
+      <div class="about-card">
+        <h4>Great Support</h4>
+        <p>We help with every step of your green journey.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-top">
+      <p>Bringing Blossoms to your Doorstep</p>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-links">
+        <div>
+          <h5>Information</h5>
+          <a href="#">About</a>
+          <a href="#">Product</a>
+          <a href="#">Blog</a>
+        </div>
+        <div>
+          <h5>Company</h5>
+          <a href="#">Community</a>
+          <a href="#">Career</a>
+          <a href="#">Our Story</a>
+        </div>
+        <div>
+          <h5>Contact</h5>
+          <a href="#">Getting Started</a>
+          <a href="#">Pricing</a>
+          <a href="#">Resources</a>
+        </div>
+      </div>
+      <p class="copyright">2023 © BloomyBlossia | All rights reserved</p>
+    </div>
+  </footer>
+
+</body>
+</html>

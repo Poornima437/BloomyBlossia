@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .otp-container {
+        display: flex;
+        min-height: 100vh;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background-color: #f8f9fa;
+        position: relative;
+    }
+
+    .otp-box {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        display: flex;
+        max-width: 900px;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .otp-image {
+        background: url("{% static 'images/shopping.jpg' %}") no-repeat center center;
+        background-size: contain;
+        flex: 1;
+    }
+
+    .otp-form {
+        flex: 1;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .otp-form h2 {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .form-control {
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+
+    .btn-submit {
+        background-color: #0d3b28;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px;
+        width: 100%;
+    }
+
+    .resend-section {
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    .resend-link {
+        text-decoration: none;
+        color: #0d3b28;
+        font-weight: 500;
+        pointer-events: none;
+        opacity: 0.5;
+    }
+
+    .resend-link.enabled {
+        pointer-events: auto;
+        opacity: 1;
+    }
+
+    /* Fixed alert message */
+    .alert-fixed {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        width: 90%;
+        max-width: 500px;
+        text-align: center;
+        padding: 12px;
+        border-radius: 5px;
+    }
+</style>
+
+<div class="otp-container">
+    <div class="otp-box">
+        <div class="otp-image d-none d-md-block"></div>
+
+        <div class="otp-form">
+            <h2 class="text-center">BLOOMYBLOSSIA</h2>
+            {% if error %}
+                <p style="color: red; font-weight: bold;">{{ error }}</p>
+            {% endif %}
+
+            {% if email %}
+                <p>OTP sent to <strong>{{ email }}</strong></p>
+            {% endif %}
+
+
+            <form method="POST" action="{% url 'verify_otp' %}">
+                {% csrf_token %}
+                <input type="text" name="otp" placeholder="Enter OTP" class="form-control" required>
+                <button type="submit" class="btn-submit">Submit</button>
+            </form>
+           
+
+            <div class="resend-section">
+                <p id="timer" style="margin-top: 8px; font-weight: 500; color: #555;"></p>
+                <p id="timer" style="color: #555; font-weight: 500;"></p>
+                <p><a id="resendLink" href="{% url 'resend_otp' %}" class="resend-link">Resend OTP</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const timerDisplay = document.getElementById("timer");
+    const resendLink = document.getElementById("resendLink");
+
+    const TIMER_KEY = 'otp_timer_end';
+    const OTP_DURATION = 60; // seconds
+
+    function startTimer(duration) {
+        const endTime = Date.now() + duration * 1000;
+        localStorage.setItem(TIMER_KEY, endTime);
+        updateTimerLoop();
+    }
+
+    function updateTimerLoop() {
+        const endTime = parseInt(localStorage.getItem(TIMER_KEY));
+        const now = Date.now();
+        let remaining = Math.floor((endTime - now) / 1000);
+
+        if (remaining > 0) {
+            let mins = Math.floor(remaining / 60);
+            let secs = remaining % 60;
+            timerDisplay.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            resendLink.classList.remove("enabled");
+            setTimeout(updateTimerLoop, 1000);
+        } else {
+            timerDisplay.innerText = "0:00";
+            resendLink.classList.add("enabled");
+            localStorage.removeItem(TIMER_KEY);
+        }
+    }
+
+    resendLink.addEventListener("click", function (e) {
+        if (!resendLink.classList.contains("enabled")) {
+            e.preventDefault();
+        } else {
+            // Start a new timer only after resend logic
+            startTimer(OTP_DURATION);
+        }
+    });
+
+    // ✅ FIX: Only start timer if it doesn't already exist
+    const existingEndTime = localStorage.getItem(TIMER_KEY);
+    if (existingEndTime && parseInt(existingEndTime) > Date.now()) {
+        updateTimerLoop();
+    } else {
+        startTimer(OTP_DURATION); // Start only on first load or resend
+    }
+</script>
+
+
+{% endblock %}
+

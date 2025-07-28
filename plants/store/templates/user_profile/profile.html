@@ -1,0 +1,296 @@
+
+{% extends 'user_profile/base_sidebar.html' %}
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account Settings - BloomyBlossia</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .sidebar {
+      background: #fff;
+      padding: 1rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 10px;
+    }
+    .profile-image {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      position: relative;
+      background: #eee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: visible;
+    }
+    .profile-image input[type="file"] {
+      display: none;
+    }
+    .edit-icon {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      background: rgba(0,0,0,0.5);
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    .form-section {
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+    }
+    .input-icon {
+      position: relative;
+    }
+    .input-icon img {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      cursor: pointer;
+    }
+    .cropper-circle {
+      border-radius: 50%;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-5">
+    <div class="row">
+      <div class="col-md-9">
+        <div class="form-section">
+          <h5>Account Setting</h5>
+          <div class="row align-items-center">
+            <div class="col-md-3 text-center">
+              <div class="profile-image mx-auto" id="profileImage">
+                 <img src="{% if user.userprofile.profile_pic %}{{ user.userprofile.profile_pic.url }}{% else %}{% static 'images/default_profile.png' %}{% endif %}"alt="profile"class="rounded-circle shadow-sm"
+      style="width: 100%; height: 100%; object-fit: cover;"
+    />
+                <label class="edit-icon">
+                  <input type="file" id="uploadImage" accept="image/*">
+                  <span>+</span>
+                </label>
+              </div>
+            </div>
+            <div class="col-md-9">
+              <form>
+                <div class="row g-3">
+                  <div class="col-md-6"><input class="form-control" placeholder="Name" value= "{{ user.username | capfirst }}"></div>
+                  <div class="col-md-6"><input class="form-control" placeholder="Email" value="{{ user.email }}"></div>
+                  <div class="col-md-6"><input class="form-control" placeholder="Phone Number" value="{{ user.userprofile.phone }}"></div>
+                  <div class="col-md-3">
+                    <select class="form-select">
+                      <option selected>India</option>
+                    </select>
+                  </div>
+                  <div class="col-md-3">
+                    <select class="form-select">
+                      <option selected>Kerala</option>
+                      <option>Tamilnadu</option>
+                      <option>Andhra Pradesh</option>
+                      <option>Arunachal Pradesh</option>
+                      <option>Assam</option>
+                      <option>Bihar</option>
+                      <option>Chhattisgarh</option>
+                      <option>Goa</option>
+                      <option>Gujarat</option>
+                      <option>Haryana</option>
+                      <option>Himachal Pradesh</option>
+                      <option>Jharkhand</option>
+                      <option>Karnataka</option>
+                      <option>Madhya Pradesh</option>
+                      <option>Maharashtra</option>
+                    </select>
+                  </div>
+                  <div class="col-md-3">
+                    <select class="form-select">
+                      <option>Kasaragod</option>
+                      <option>Kannur</option>
+                      <option>Wayanad</option>
+                      <option>Kozhikode</option>
+                      <option>Malappuram</option>
+                      <option>Palakkad</option>
+                      <option>Thrissur</option>
+                      <option>Ernakulam</option>
+                      <option>Idukki</option>
+                      <option>Kottayam</option>
+                      <option>Alappuzha</option>
+                      <option>Pathanamthitta</option>
+                      <option>Kollam</option>
+                      <option>Thiruvananthapuram</option>
+                    </select>
+                  </div>
+                  <div class="col-md-3"><input class="form-control" placeholder="Pin Code" value="673570"></div>
+                  <div class="col-12">
+                    <button type="button" class="btn btn-success" onclick="saveChanges()">Save Changes</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h6>Change Password</h6>
+          <div class="mb-3 input-icon">
+            <input type="password" class="form-control" placeholder="Current Password" id="currentPwd">
+            <img src="https://cdn-icons-png.flaticon.com/512/709/709612.png" onclick="togglePassword('currentPwd', this)" alt="Toggle">
+          </div>
+          <div class="mb-3 input-icon">
+            <input type="password" class="form-control" placeholder="New Password" id="newPwd">
+            <img src="https://cdn-icons-png.flaticon.com/512/709/709612.png" onclick="togglePassword('newPwd', this)" alt="Toggle">
+          </div>
+          <div class="mb-3 input-icon">
+            <input type="password" class="form-control" placeholder="Confirm Password" id="confirmPwd">
+            <img src="https://cdn-icons-png.flaticon.com/512/709/709612.png" onclick="togglePassword('confirmPwd', this)" alt="Toggle">
+          </div>
+          <button class="btn btn-success">Change Password</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Cropper -->
+  <div class="modal fade" id="cropModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Upload/edit avatar</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body text-center">
+          <div class="cropper-container">
+            <img id="cropperImage" class="img-fluid" />
+          </div>
+          <input type="range" id="zoomSlider" min="0.1" max="3" step="0.1" value="1" class="form-range mt-3">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" onclick="cropImage()">Submit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+  <script>
+    let cropper;
+    const uploadImage = document.getElementById('uploadImage');
+    const cropperImage = document.getElementById('cropperImage');
+    const cropModal = new bootstrap.Modal(document.getElementById('cropModal'));
+    const zoomSlider = document.getElementById('zoomSlider');
+
+    uploadImage.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          cropperImage.src = reader.result;
+          cropperImage.onload = () => {
+            cropper = new Cropper(cropperImage, {
+              aspectRatio: 1,
+              viewMode: 1,
+              dragMode: 'move',
+              guides: false,
+              center: true,
+              highlight: false,
+              cropBoxResizable: false,
+              cropBoxMovable: false,
+              background: false,
+              autoCropArea: 1
+            });
+          };
+          cropModal.show();
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    zoomSlider.addEventListener('input', () => {
+      if (cropper) {
+        cropper.zoomTo(parseFloat(zoomSlider.value));
+      }
+    });
+
+    function cropImage() {
+  if (!cropper) {
+    Swal.fire('Error', 'Cropper is not ready. Please try again.', 'error');
+    return;
+  }
+
+  const canvas = cropper.getCroppedCanvas({
+    width: 200,
+    height: 200,
+    imageSmoothingEnabled: true,
+    imageSmoothingQuality: 'high'
+  });
+
+  if (canvas) {
+    // Convert canvas to Blob
+    canvas.toBlob(function (blob) {
+      const formData = new FormData();
+      formData.append('cropped_image', blob);
+      formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');  // Django CSRF
+
+      // Upload via fetch to Django view
+      fetch("{% url 'upload_cropped_image' %}", {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => {
+        if (response.ok) {
+          Swal.fire('Success', 'Profile image updated!', 'success').then(() => {
+            window.location.reload();  // Reload to reflect changes
+          });
+        } else {
+          Swal.fire('Error', 'Upload failed. Try again.', 'error');
+        }
+      });
+    }, 'image/jpeg');
+  }
+
+  // Destroy cropper and close modal
+  cropper.destroy();
+  cropper = null;
+  cropModal.hide();
+}
+
+    function saveChanges() {
+      Swal.fire({
+        icon: 'success',
+        title: 'Changes Saved',
+        text: 'Your account settings have been updated.'
+      });
+    }
+
+    function togglePassword(id, el) {
+      const input = document.getElementById(id);
+      if (input.type === "password") {
+        input.type = "text";
+        el.src = "https://cdn-icons-png.flaticon.com/512/2099/2099058.png";
+      } else {
+        input.type = "password";
+        el.src = "https://cdn-icons-png.flaticon.com/512/709/709612.png";
+      }
+    }
+  </script>
+</body>
+</html>
+{% endblock %}

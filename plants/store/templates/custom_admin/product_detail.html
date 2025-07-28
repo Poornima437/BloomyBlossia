@@ -1,0 +1,47 @@
+{% extends 'custom_admin/customadmin_base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Product Detail</h2>
+
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <strong>{{ product.name }}</strong>
+        </div>
+        <div class="card-body row">
+            <!-- Product Images -->
+            <div class="col-md-5">
+                {% if images %}
+                    <img src="{{ images.0.image.url }}" alt="Main image" class="img-fluid rounded mb-3">
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for img in images %}
+                            <img src="{{ img.image.url }}" width="80" height="80" style="object-fit: cover; border-radius: 5px;" />
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>No images available.</p>
+                {% endif %}
+            </div>
+
+            <!-- Product Info -->
+            <div class="col-md-7">
+                <p><strong>Category:</strong> {{ product.category.name }}</p>
+                <p><strong>Original Price:</strong> ₹{{ product.original_price }}</p>
+                <p><strong>Sale Price:</strong> ₹{{ product.sale_price }}</p>
+                <p><strong>Quantity:</strong> {{ product.quantity }}</p>
+                <p><strong>Description:</strong><br>{{ product.description }}</p>
+                <p><strong>Status:</strong> 
+                    {% if product.quantity > 0 %}
+                        <span class="badge bg-success">In Stock</span>
+                    {% else %}
+                        <span class="badge bg-danger">Out of Stock</span>
+                    {% endif %}
+                </p>
+                <a href="{% url 'customadmin_edit_product' product.id %}" class="btn btn-warning">Edit</a>
+                <a href="{% url 'customadmin_products' %}" class="btn btn-secondary">Back to Products</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

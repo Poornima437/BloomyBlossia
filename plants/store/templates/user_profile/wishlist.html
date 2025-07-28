@@ -1,0 +1,119 @@
+{% extends 'user_profile/base_sidebar.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Wishlist</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .wishlist-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+        .wishlist-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+        .wishlist-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            margin-right: 20px;
+            border-radius: 8px;
+        }
+        .wishlist-item h6 {
+            margin: 0 0 5px;
+        }
+        .wishlist-item .price {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .wishlist-item .status {
+            font-size: 14px;
+            color: #888;
+            margin-top: 5px;
+        }
+        .wishlist-actions button {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container wishlist-container">
+        <h4>Your Wishlist</h4>
+
+        {% for item in wishlist_items %}
+            <div class="wishlist-item d-flex align-items-center border p-2 mb-2 rounded shadow-sm">
+                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" width="80" class="img-thumbnail me-3">
+                
+                <div class="flex-grow-1">
+                    <h6>{{ item.product.name }}</h6>
+                    <div class="price">
+                        {% if item.product.sale_price %}
+                            <span class="text-muted text-decoration-line-through">₹{{ item.product.price }}</span><br>
+                            ₹{{ item.product.sale_price }}
+                        {% else %}
+                            ₹{{ item.product.price }}
+                        {% endif %}
+                    </div>
+                    <div class="status {% if item.product.stock == 0 %}text-danger{% else %}text-success{% endif %}">
+                        {% if item.product.stock == 0 %}Out of Stock{% else %}In Stock{% endif %}
+                    </div>
+                </div>
+
+                <div class="wishlist-actions d-flex flex-column gap-2 ms-3">
+                    <form method="post" action="{% url 'add_to_cart' item.product.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-success">Add to Cart</button>
+                    </form>
+
+                    <form method="post" action="{% url 'remove_from_wishlist' item.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger">&times;</button>
+                    </form>
+                </div>
+            </div>
+        {% empty %}
+            <p class="text-muted">Your wishlist is empty.</p>
+        {% endfor %}
+    </div>
+
+    <script>
+        function removeFromWishlist(button) {
+            Swal.fire({
+                title: 'Remove Item?',
+                text: 'Do you want to remove this item from your wishlist?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, remove it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const item = button.closest('.wishlist-item');
+                    item.remove();
+                    Swal.fire('Removed!', 'Item removed from wishlist.', 'success');
+                }
+            });
+        }
+
+        function addToCart() {
+            Swal.fire('Added to Cart', 'Item has been moved to your cart.', 'success');
+        }
+    </script>
+</body>
+</html>
+{% endblock%}

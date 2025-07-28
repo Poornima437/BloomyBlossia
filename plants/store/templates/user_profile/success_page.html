@@ -1,0 +1,56 @@
+{% include 'base_sidebar.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Order Success</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .success-container {
+      max-width: 800px;
+      margin: 60px auto;
+      background-color: #d4edda;
+      padding: 50px 30px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .success-icon {
+      font-size: 70px;
+      color: #28a745;
+      margin-bottom: 20px;
+    }
+    .success-message {
+      font-size: 24px;
+      font-weight: 500;
+      color: #155724;
+    }
+    .success-actions {
+      margin-top: 30px;
+    }
+    .success-actions .btn {
+      margin: 0 10px;
+      padding: 10px 25px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container success-container">
+    <div class="success-icon">
+      &#10003;
+    </div>
+    <div class="success-message">
+      Order Placed Successfully
+    </div>
+    <div class="success-actions">
+      <a href="{% url 'view_order' order.id %}" class="btn btn-success">View Order</a>
+      <a href="{% url 'shop_home' %}" class="btn btn-outline-dark">Continue Shopping</a>
+    </div>
+  </div>
+</body>
+</html>

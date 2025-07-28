@@ -1,0 +1,63 @@
+{% extends 'base_sidebar.html' %}
+{% load static %}
+{% block content %}
+
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="verify-box p-4 shadow-sm rounded bg-white">
+        <h4 class="mb-3 text-center">Verify Your Email</h4>
+        <p class="text-muted text-center">Enter the 6-digit OTP sent to your new email address.</p>
+        <form method="POST">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="otp" class="form-label">OTP</label>
+            <input type="text" class="form-control text-center" id="otp" name="otp" maxlength="6" pattern="\d{6}" required>
+          </div>
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Verify Email</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+{% if messages %}
+<script>
+    {% for message in messages %}
+    Swal.fire({
+      icon: '{{ message.tags }}',
+      title: '{{ message }}',
+      timer: 2500,
+      showConfirmButton: false
+    });
+  {% endfor %}
+</script>
+{% endif %}
+
+<style>
+  .verify-box {
+    margin-top: 80px;
+    border: 1px solid #eaeaea;
+  }
+  .form-control {
+    font-size: 1.2rem;
+    padding: 0.75rem;
+    text-align: center;
+    letter-spacing: 4px;
+  }
+  .btn-primary {
+    background-color: #007b7f;
+    border: none;
+  }
+  .btn-primary:hover {
+    background-color: #005e60;
+  }
+</style>
+
+{% endblock %}

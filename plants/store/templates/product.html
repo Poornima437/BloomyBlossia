@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <!-- ✅ Breadcrumbs -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            {% if product.category %}
+                <li class="breadcrumb-item">
+                    <a href="{% url 'category' product.category.name|slugify %}">
+                        {{ product.category.name|title }}
+                    </a>
+                </li>
+            {% endif %}
+            <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- ✅ Left Side Images -->
+        <div class="col-md-6">
+            <div class="d-flex flex-column align-items-center">
+                <img id="mainImage" src="{{ product.image.url }}" alt="{{ product.name }}" 
+                     style="width: 100%; max-width: 400px; height: auto; object-fit: cover; border-radius: 8px; margin-bottom: 15px;" 
+                     class="img-fluid shadow-sm zoomable">
+
+                <div class="d-flex justify-content-center gap-2">
+                    {% for image in product.images.all|slice:":3" %}
+                        <img src="{{ image.image.url }}" class="img-thumbnail thumb-img" style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;">
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ✅ Product Details -->
+        <div class="col-md-6">
+            <h2>{{ product.name }}</h2>
+            <p class="text-muted">Product Code: #{{ product.id }}</p>
+
+            <!-- Static Rating -->
+            <div class="mb-2">
+                ⭐⭐⭐⭐☆ <small>(12 reviews)</small>
+            </div>
+
+            <!-- Pricing -->
+            {% if product.is_sale %}
+                <h4>
+                    <del>Rs. {{ product.price }}</del>
+                    <span class="text-success ms-2">Rs. {{ product.sale_price }}</span>
+                    <span class="badge bg-danger ms-2">On Sale</span>
+                </h4>
+            {% else %}
+                <h4>Rs. {{ product.price }}</h4>
+            {% endif %}
+
+
+            <!-- Stock Status and Add to Cart -->
+            {% if product.quantity > 0 %}
+                <p class="text-success">In Stock</p>
+                <form method="POST" action="{% url 'add_to_cart' product.id %}">
+                    {% csrf_token %}
+                    <input type="number" name="quantity" value="1" min="1" max="{{ product.quantity }}" class="form-control w-25 d-inline">
+                    <button class="btn btn-primary" type="submit">Add to Cart</button>
+                </form>
+            {% else %}
+                <p class="text-danger fw-bold">Sold Out</p>
+            {% endif %}
+
+            <!-- Highlights -->
+            <h5 class="mt-4">Highlights</h5>
+            <ul>
+                <li>{{ product.category.name }}</li>
+                <li>Air Purifying</li>
+                <li>Low Maintenance</li>
+            </ul>
+
+            <!-- Description -->
+            <p class="mt-3">{{ product.description|default:"No description available." }}</p>
+        </div>
+    </div>
+
+    <!-- ✅ Related Products -->
+    {% if related_products %}
+    <div class="mt-5">
+        <h4>Related Products</h4>
+        <div class="row">
+            {% for p in related_products %}
+            <div class="col-md-3 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <img src="{{ p.image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ p.name }}">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ p.name }}</h6>
+                        <p class="card-text">Rs. {{ p.sale_price }}</p>
+                        <a href="{% url 'product' p.id %}" class="btn btn-sm btn-outline-primary">View</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ✅ Zoom Script -->
+<script>
+    const mainImage = document.getElementById('mainImage');
+    const thumbs = document.querySelectorAll('.thumb-img');
+
+    thumbs.forEach(thumb => {
+        thumb.addEventListener('click', () => {
+            mainImage.src = thumb.src;
+        });
+    });
+</script>
+{% endblock %}

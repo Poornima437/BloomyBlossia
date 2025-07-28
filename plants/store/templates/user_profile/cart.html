@@ -1,0 +1,169 @@
+
+{% extends 'user_profile/base_sidebar.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+    body {
+        background-color: #f8f9fa;
+        font-family: 'Segoe UI', sans-serif;
+    }
+    table th, table td {
+        padding: 12px 20px; /* top/bottom 12px, left/right 20px */
+        text-align: center; /* optional, for neat alignment */
+    }
+    .cart-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        display: flex;
+        gap: 20px;
+    }
+    .cart-table {
+        flex: 2;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+    .summary-box, .coupon-box {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+    .summary-box {
+        margin-bottom: 20px;
+    }
+    .cart-actions button {
+        width: 30px;
+        height: 30px;
+        padding: 0;
+    }
+    .text-strike {
+        text-decoration: line-through;
+        color: #888;
+        font-size: 14px;
+    }
+    .cart-total {
+        font-size: 18px;
+        font-weight: 600;
+    }
+    .coupon-box input {
+        width: 100%;
+        margin-bottom: 10px;
+    
+    }
+    .card {
+    border-radius: 10px;
+    background-color: #fff;
+    }
+
+    .btn-block {
+    width: 100%;
+    padding: 12px 0;
+    border-radius: 6px;
+    }
+
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div class="container cart-container">
+    <div class="cart-table">
+        <h4>Shopping Cart</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Products</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Sub-Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <!-- Remove Button -->
+                    <td>
+                        <form method="POST" action="{% url 'remove_cart_item' item.id %}" class="remove-form">
+                            {% csrf_token %}
+                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmRemove(this)">&times;</button>
+                        </form>
+                    </td>
+                    <!-- Product Info -->
+                    <td>
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" width="60" class="img-thumbnail">
+                        {{ item.product.name }}
+                    </td>
+                    <!-- Price -->
+                    <td>
+                        {% if item.product.sale_price %}
+                            <span class="text-strike">₹{{ item.product.price }}</span><br>₹{{ item.product.sale_price }}
+                        {% else %}
+                            ₹{{ item.product.price }}
+                        {% endif %}
+                    </td>
+                    <!-- Quantity -->
+                    <td class="cart-actions">
+                        <form method="POST" action="{% url 'update_cart_quantity' item.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button class="btn btn-outline-secondary btn-sm" name="action" value="decrease">-</button>
+                            <span class="mx-2">{{ item.quantity }}</span>
+                            <button class="btn btn-outline-secondary btn-sm" name="action" value="increase">+</button>
+                        </form>
+                    </td>
+                    <!-- Sub Total -->
+                    <td>₹{{ item.subtotal }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center text-muted">Your cart is empty.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <!-- Summary Section -->
+    <div class="col-md-4">
+        <div class="summary-box">
+            <h5>Cart Totals</h5>
+            <p>Sub-total: ₹{{ subtotal }}</p>
+            <p>Shipping: ₹{{ shipping_cost }}</p>
+            <p>Discount: ₹{{ discount }}</p>
+            <p class="cart-total">Total: ₹{{ total }}</p>
+            <a href="{% url 'checkout' %}" class="btn w-100 fw-bold text-uppercase" style="background-color: #87a190;color: #080808;padding: 6px;border: 2px;border-radius: 5px;text-decoration: none;">
+            Proceed to Checkout</a>
+        </div>
+
+
+        <!-- Coupon Form -->
+        <div class="coupon-box">
+            <h6>Coupon Code</h6>
+            <form method="POST" action="{% url 'apply_coupon' %}">
+                {% csrf_token %}
+                <input type="text" name="coupon_code" class="form-control" placeholder="Enter Coupon Code">
+                <button class="btn btn-outline-success btn-block" type="submit">APPLY COUPON</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- SweetAlert Script -->
+<script>
+    function confirmRemove(button) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you want to remove this item from the cart?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, remove it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                button.closest("form").submit();
+            }
+        });
+    }
+</script>
+
+{% endblock %}

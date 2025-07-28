@@ -1,0 +1,130 @@
+{% extends 'custom_admin/customadmin_base.html' %}
+{% load static %}
+{% block title %}Edit Product{% endblock %}
+
+{% block content %}
+<h2 style="margin-bottom: 20px;">Edit Product - {{ product.name }}</h2>
+
+<form method="POST" enctype="multipart/form-data" style="max-width: 600px;">
+    {% csrf_token %}
+
+    <div style="margin-bottom: 15px;">
+        <label>Name:</label><br>
+        <input type="text" name="name" value="{{ product.name }}" required class="form-control" style="width: 100%;">
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <label>Price:</label><br>
+        <input type="number" name="price" step="0.01" value="{{ product.original_price }}" required class="form-control" style="width: 100%;">
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <label>Sale Price:</label><br>
+        <input type="number" name="sale_price" step="0.01" value="{{ product.sale_price }}" required class="form-control" style="width: 100%;">
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <label>Stock Quantity:</label><br>
+        <input type="number" name="quantity" min="0" value="{{ product.quantity }}" required class="form-control" style="width: 100%;">
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <label>Category:</label><br>
+        <select name="category" class="form-control" required style="width: 100%;">
+            {% for cat in categories %}
+                <option value="{{ cat.id }}" {% if product.category.id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <label>Upload New Images (you can crop each):</label><br>
+        <input type="file" name="images" id="imageInput" accept="image/*" multiple class="form-control">
+        <div id="previewArea" class="mt-3"></div>
+        <p class="mt-3">Current Images:</p>
+        <ul style="list-style: none; padding-left: 0;">
+            {% for image in product.images.all %}
+            <li style="margin-bottom: 10px;">
+                <img src="{{ image.image.url }}" width="100" class="img-thumbnail">
+                <a href="{% url 'customadmin_delete_image' image.id %}" class="btn btn-danger btn-sm ms-2">Delete</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <label>Status:</label><br>
+        <select name="status" class="form-control" required>
+            <option value="draft" {% if product.status == 'draft' %}selected{% endif %}>Draft</option>
+            <option value="published" {% if product.status == 'published' %}selected{% endif %}>Published</option>
+            <option value="out_of_stock" {% if product.status == 'out_of_stock' %}selected{% endif %}>Out of Stock</option>
+        </select>
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <label>Is on Sale?</label>
+        <input type="checkbox" name="is_sale" {% if product.is_sale %}checked{% endif %}>
+    </div>
+
+    <button type="submit" class="btn btn-success">Update Product</button>
+</form>
+
+{% if messages %}
+    {% for message in messages %}
+        <p style="color: green;">{{ message }}</p>
+    {% endfor %}
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+<script>
+    const imageInput = document.getElementById('imageInput');
+    const previewArea = document.getElementById('previewArea');
+
+    imageInput.addEventListener('change', function () {
+        previewArea.innerHTML = '';
+        const files = Array.from(imageInput.files);
+        const dt = new DataTransfer();
+
+        files.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const container = document.createElement('div');
+                container.style.marginBottom = '20px';
+
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.maxWidth = '100%';
+                img.style.marginBottom = '10px';
+
+                container.appendChild(img);
+
+                const cropBtn = document.createElement('button');
+                cropBtn.textContent = 'Crop Image';
+                cropBtn.className = 'btn btn-sm btn-warning';
+                container.appendChild(cropBtn);
+
+                previewArea.appendChild(container);
+
+                const cropper = new Cropper(img, {
+                    aspectRatio: 1,
+                    viewMode: 1
+                });
+
+                cropBtn.addEventListener('click', function () {
+                    cropper.getCroppedCanvas({ width: 500, height: 500 }).toBlob(blob => {
+                        const croppedFile = new File([blob], `cropped_${Date.now()}_${file.name}`, { type: 'image/jpeg' });
+                        dt.items.add(croppedFile);
+                        imageInput.files = dt.files;
+                        alert(`Image ${index + 1} cropped and replaced.`);
+                    });
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+</script>
+{% endblock %}

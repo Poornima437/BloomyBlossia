@@ -1,0 +1,170 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sidebar Menu</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 240px;
+      background: white;
+      border-radius: 0 8px 8px 0;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      overflow-y: auto;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      padding: 14px 20px;
+      text-decoration: none;
+      color: #333;
+      font-size: 15px;
+      transition: 0.3s;
+      border-left: 4px solid transparent;
+    }
+
+    .menu-item:hover {
+      background-color: #f0f8f8;
+      color: #000;
+    }
+
+    .menu-item i {
+      margin-right: 12px;
+      width: 20px;
+      text-align: center;
+    }
+
+    .menu-item.active {
+      background-color: #d0ecec;
+      font-weight: bold;
+      border-left: 4px solid #007b7f;
+      color: #000;
+    }
+
+    .content {
+      margin-left: 240px;
+      padding: 40px;
+      width: 100%;
+    }
+
+    .footer {
+      background: #0d3b24;
+      color: white;
+      padding: 40px 60px;
+      margin-top: 40px;
+    }
+
+    .footer-top {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .footer-links div a {
+      display: block;
+      margin-top: 5px;
+      color: white;
+      text-decoration: none;
+    }
+
+    .footer-links div a:hover {
+      text-decoration: underline;
+    }
+
+    .footer-links div h5 {
+      margin-bottom: 10px;
+    }
+
+    .copyright {
+      text-align: center;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    .alert-fixed {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1055;
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <a href="#" class="menu-item active"><i class="fas fa-th-large"></i> Dashboard</a>
+  <a href="{% url 'user_profile' %}" class="menu-item"><i class="fas fa-user"></i> Account Details</a>
+  <a href="{% url 'track_order' %}" class="menu-item"><i class="fas fa-map-marker-alt"></i> Track Order</a>
+  <a href="{% url 'cart' %}" class="menu-item"><i class="fas fa-shopping-cart"></i> Shopping Cart</a>
+  <a href="{% url 'wishlist' %}" class="menu-item"><i class="fas fa-heart"></i> Wishlist</a>
+  <a href="{% url 'user_address' %}" class="menu-item"><i class="fas fa-address-card"></i> Address</a>
+  <a href="{% url 'wallet' %}" class="menu-item"><i class="fas fa-wallet"></i> Wallet</a>
+  <a href="{% url 'logout' %}" class="menu-item"><i class="fas fa-sign-out-alt"></i> Log-out</a>
+</div>
+
+
+  <!-- Main Content -->
+  <div class="content">
+    {% block content %}
+    {% endblock %}
+    
+    <!-- Footer -->
+    <footer class="footer mt-auto">
+      <div class="footer-top">
+          <p>Bringing Blossoms to your Doorstep</p>
+      </div>
+
+      <div class="footer-bottom">
+          <div class="footer-links">
+              <div>
+                  <h5>Information</h5>
+                  <a href="#">About</a>
+                  <a href="#">Product</a>
+                  <a href="#">Blog</a>
+              </div>
+              <div>
+                  <h5>Company</h5>
+                  <a href="#">Community</a>
+                  <a href="#">Career</a>
+                  <a href="#">Our Story</a>
+              </div>
+              <div>
+                  <h5>Contact</h5>
+                  <a href="#">Getting Started</a>
+                  <a href="#">Pricing</a>
+                  <a href="#">Resources</a>
+              </div>
+          </div>
+          <p class="copyright">2025 © BloomyBlossia | All rights reserved</p>
+      </div>
+    </footer>
+  </div>
+
+</body>
+</html>

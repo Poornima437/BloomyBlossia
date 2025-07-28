@@ -1,0 +1,50 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign In Via Google</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .google-confirm {
+            max-width: 480px;
+            margin: 80px auto;
+            padding: 40px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        .google-confirm h2 {
+            font-weight: 600;
+            color: #103d2d;
+            margin-bottom: 20px;
+        }
+        .google-confirm p {
+            color: #555;
+            margin-bottom: 30px;
+        }
+        .google-confirm button {
+            padding: 10px 24px;
+            background-color: #103d2d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="google-confirm">
+        <h2>{% trans "Sign In Via Google" %}</h2>
+        <p>{% trans "You are about to sign in using your Google account." %}</p>
+        <form method="post" action="">
+            {% csrf_token %}
+            <button type="submit">{% trans "Continue" %}</button>
+        </form>
+    </div>
+</body>
+</html>

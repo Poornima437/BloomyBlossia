@@ -1,0 +1,57 @@
+{% extends 'custom_admin/customadmin_base.html' %}
+{% block content %}
+
+
+<h2>Edit Category</h2>
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3 w-50">
+        <label class="form-label">Category Name</label>
+        <input type="text" name="name" value="{{ category.name }}" class="form-control" required>
+    </div>
+    <div class="mb-3 w-50">
+        <label class="form-label">Description</label>
+        <textarea name="description" class="form-control" required>{{ category.description }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Update</button>
+    <a href="{% url 'customadmin_categories' %}" class="btn btn-secondary">Cancel</a>
+</form>
+
+
+<!-- SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+{% if messages %}
+<script>
+    {% for message in messages %}
+    Swal.fire({
+        icon: '{% if message.tags == "success" %}success{% elif message.tags == "error" %}error{% else %}info{% endif %}',
+        title: '{{ message }}',
+        timer: 2000,
+        showConfirmButton: false
+    });
+    {% endfor %}
+</script>
+{% endif %}
+
+<script>
+document.getElementById("edit-category-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "Do you want to update this category?",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, update it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            e.target.submit();
+        }
+    });
+});
+</script>
+
+{% endblock %}
+
+

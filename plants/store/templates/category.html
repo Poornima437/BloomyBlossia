@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- Header -->
+<header class="bg-dark py-5">
+    <div class="container px-4 px-lg-5 my-5">
+        <div class="text-center text-white">
+            <h1 class="display-4 fw-bolder">{{ category }}</h1>
+            <p class="lead fw-normal text-white-50 mb-0">Category Page</p>
+        </div>
+    </div>
+</header>
+
+<!-- Filter & Sort -->
+<div class="container mt-4">
+    <form method="get" class="row g-3">
+        <div class="col-md-3">
+            <input type="number" name="min_price" class="form-control" placeholder="Min Price" value="{{ min_price }}">
+        </div>
+        <div class="col-md-3">
+            <input type="number" name="max_price" class="form-control" placeholder="Max Price" value="{{ max_price }}">
+        </div>
+        <div class="col-md-3">
+            <select name="sort" class="form-control">
+                <option value="">Sort By</option>
+                <option value="price_low" {% if sort_option == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                <option value="price_high" {% if sort_option == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                <option value="a_z" {% if sort_option == 'a_z' %}selected{% endif %}>Name: A-Z</option>
+                <option value="z_a" {% if sort_option == 'z_a' %}selected{% endif %}>Name: Z-A</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-dark w-100">Apply</button>
+        </div>
+    </form>
+</div>
+
+<!-- Products Section -->
+<section class="py-5">
+    <div class="container px-4 px-lg-5 mt-5">
+        <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
+
+            {% for product in page_obj %}
+                {% if product.is_sale %}
+                <div class="col mb-5">
+                    <div class="card h-100">
+                        <img class="card-img-top" src="{{ product.image.url }}" alt="..." />
+                        <div class="card-body p-4 text-center">
+                            <h5 class="fw-bolder">{{ product.name }}</h5>
+                            <strike>${{ product.price }}</strike> &nbsp; ${{ product.sale_price }}
+                            <br/>in: {{ product.category }}
+                            <div class="d-flex justify-content-center small text-warning mb-2">
+                                <div class="bi-star-fill"></div><div class="bi-star-fill"></div>
+                                <div class="bi-star-fill"></div><div class="bi-star-fill"></div>
+                                <div class="bi-star-fill"></div>
+                            </div>
+                            <a class="btn btn-outline-dark mt-auto" href="{% url 'product' product.id %}">View product</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            {% empty %}
+                <p class="text-center">No products available in this category.</p>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        <div class="d-flex justify-content-center mt-4">
+            <nav>
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}&sort={{ sort_option }}&min_price={{ min_price }}&max_price={{ max_price }}">Previous</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}&sort={{ sort_option }}&min_price={{ min_price }}&max_price={{ max_price }}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}&sort={{ sort_option }}&min_price={{ min_price }}&max_price={{ max_price }}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</section>
+{% endblock %}
