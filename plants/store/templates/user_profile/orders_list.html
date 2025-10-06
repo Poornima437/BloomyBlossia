@@ -1,0 +1,108 @@
+{% extends "user_profile/base_sidebar.html" %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Orders</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .orders-container {
+      max-width: 1000px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    .orders-container h2 {
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    .table thead th {
+      background-color: #343a40;
+      color: #fff;
+    }
+    .table-hover tbody tr:hover {
+      background-color: #f1f1f1;
+    }
+    .search-box {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    .btn-view {
+      background-color: #28a745;
+      color: white;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+    .btn-view:hover {
+      background-color: #218838;
+    }
+    .no-orders {
+      text-align: center;
+      color: #888;
+      padding: 30px 0;
+    }
+  </style>
+</head>
+<body>
+<div class="orders-container">
+  <h2>My Orders</h2>
+
+  <form method="get" class="search-box">
+    <input type="text" name="q" class="form-control" placeholder="Search by Order ID" value="{{ query }}">
+    <button type="submit" class="btn btn-primary">Search</button>
+    {% if query %}
+      <a href="{% url 'orders:orders_list' %}" class="btn btn-secondary">Clear</a>
+    {% endif %}
+  </form>
+
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Order ID</th>
+        <th>Date</th>
+        <th>Status</th>
+        <th>Total</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+      <tr>
+        <td>{{ order.order_id }}</td>
+        <td>{{ order.created_at|date:"Y-m-d" }}</td>
+        <td>
+          <span class="badge 
+            {% if order.status == 'PLACED' %}badge-info
+            {% elif order.status == 'PACKED' %}badge-secondary
+            {% elif order.status == 'SHIPPED' %}badge-warning
+            {% elif order.status == 'DELIVERED' %}badge-success
+            {% elif order.status == 'CANCELED' %}badge-danger
+            {% endif %}">
+            {{ order.status }}
+          </span>
+        </td>
+        <td>₹{{ order.total_amount }}</td>
+        <td>
+          <a href="{% url 'orders:order_detail' order.id %}" class="btn-view">View</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" class="no-orders">No orders found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+</body>
+</html>
+{% endblock %}

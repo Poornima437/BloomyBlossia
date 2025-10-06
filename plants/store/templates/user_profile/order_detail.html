@@ -1,0 +1,143 @@
+{% extends "user_profile/base_sidebar.html" %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Order Details</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .order-detail-container {
+      max-width: 1000px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    .order-header h2 {
+      font-weight: 600;
+    }
+    .badge-status {
+      padding: 5px 10px;
+      font-size: 0.9rem;
+      border-radius: 6px;
+      color: white;
+    }
+    .badge-PLACED { background-color: #17a2b8; }
+    .badge-PACKED { background-color: #6c757d; }
+    .badge-SHIPPED { background-color: #ffc107; color: #212529; }
+    .badge-DELIVERED { background-color: #28a745; }
+    .badge-CANCELED { background-color: #dc3545; }
+
+    .order-info, .order-items, .order-totals {
+      margin-bottom: 30px;
+    }
+
+    .order-items table {
+      width: 100%;
+    }
+    .order-items th, .order-items td {
+      padding: 10px;
+      text-align: left;
+    }
+    .order-items th {
+      background-color: #343a40;
+      color: white;
+    }
+    .btn-action {
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      color: white;
+      text-decoration: none;
+    }
+    .btn-cancel { background-color: #dc3545; }
+    .btn-cancel:hover { background-color: #c82333; }
+    .btn-return { background-color: #007bff; }
+    .btn-return:hover { background-color: #0069d9; }
+    .btn-invoice { background-color: #28a745; }
+    .btn-invoice:hover { background-color: #218838; }
+
+    .order-totals p {
+      font-size: 1.1rem;
+      margin: 5px 0;
+    }
+
+  </style>
+</head>
+<body>
+<div class="order-detail-container">
+  <div class="order-header">
+    <h2>Order Details: {{ order.order_id }}</h2>
+    <span class="badge-status badge-{{ order.status }}">{{ order.status }}</span>
+  </div>
+
+  <!-- Shipping / User Info -->
+  <div class="order-info">
+    <h5>Shipping Details</h5>
+    <p><strong>Name:</strong> {{ order.user.username }}</p>
+    <p><strong>Email:</strong> {{ order.user.email }}</p>
+    {% if order.address %}
+      <p><strong>Address:</strong> {{ order.address.address_line }}, {{ order.address.city }}, {{ order.address.state }} - {{ order.address.zip_code }}</p>
+      <p><strong>Phone:</strong> {{ order.address.phone }}</p>
+    {% endif %}
+    <p><strong>Order Date:</strong> {{ order.created_at|date:"Y-m-d H:i" }}</p>
+  </div>
+
+  <!-- Order Items -->
+  <div class="order-items">
+    <h5>Order Items</h5>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Qty</th>
+          <th>Price (₹)</th>
+          <th>Subtotal (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td>{{ item.product.name }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>₹{{ item.price }}</td>
+          <td>₹{{ item.total_price|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Totals -->
+  <div class="order-totals">
+    <p><strong>Subtotal:</strong> ₹{{ subtotal }}</p>
+    <p><strong>Shipping:</strong> ₹{{ shipping_cost }}</p>
+    <p><strong>Total:</strong> ₹{{ total }}</p>
+  </div>
+
+  <!-- Actions -->
+  <div class="order-actions">
+    {% if order.status != "CANCELED" %}
+      <a href="{% url 'orders:cancel_order' order.id %}" class="btn-action btn-cancel">Cancel Order</a>
+    {% endif %}
+    {% if order.is_returnable %}
+      <a href="{% url 'orders:return_order' order.order_id %}" class="btn-action btn-return">Return Order</a>
+    {% endif %}
+    <a href="{% url 'orders:download_invoice' order.order_id %}" class="btn-action btn-invoice">Download Invoice</a>
+  </div>
+</div>
+</body>
+</html>
+{% endblock %}

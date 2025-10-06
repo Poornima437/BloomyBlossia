@@ -88,10 +88,16 @@
 
 <div class="container">
   <aside class="sidebar">
-    <form method="GET" action="{% url 'search' %}" class="search-form">
-      <div class="search-box">
+    <form method="GET" action="{% url 'home' %}" class="search-form">
+      <div class="search-box"style="display:flex; gap: 1px;">
         <input type="text" name="q" placeholder="Search your plants...">
+        <button type="submit" class="btn">Search</button>
+        <button type="button" class="btnn" onclick="document.getElementById('searchInput').value=''">✖</button>
       </div>
+
+      <hr>
+   
+
 
       <h3>Category</h3>
       {% for cat in categories %}

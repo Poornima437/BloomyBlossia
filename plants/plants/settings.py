@@ -39,12 +39,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'store',
+    'store.apps.StoreConfig',
     'widget_tweaks',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'customadmin',
+    'accounts',
+    'cart',
+    'orders',
+    'wishlist',
+    'octopusdash',
 ]
 
 SITE_ID = 1
@@ -61,6 +67,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     
 ]
+SESSION_COOKIE_AGE = 3600  # 1 hour in seconds
+SESSION_SAVE_EVERY_REQUEST = True
 
 ROOT_URLCONF = 'plants.urls'
 
@@ -74,6 +82,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'octopusdash.context.octopusdash_context',
             ],
         },
     },
@@ -154,7 +163,7 @@ SOCIALACCOUNT_PROVIDERS={
 }
 
 
-MEDIA_URL='media/'
+MEDIA_URL='/media/'
 MEDIA_ROOT=os.path.join(BASE_DIR,'media')
 
 LOGIN_URL = '/login/'
@@ -174,3 +183,8 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'npoornima2005@gmail.com'
 EMAIL_HOST_PASSWORD = 'rmdx sqsb jnua plqr'  
+
+OCTOPUSDASH = {
+    'SHOW_WIDGET_DOCS_LINK':False,
+    'SITE_TITLE':"My Site."
+}

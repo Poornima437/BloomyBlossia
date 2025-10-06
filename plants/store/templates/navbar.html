@@ -67,17 +67,17 @@
       <div class="d-flex align-items-center gap-3">
 
         <!-- Wishlist -->
-        <a href="{% url 'wishlist'%}" class="icon-btn" title="Wishlist"><i class="fas fa-heart"></i></a>
+        <a href="{% url 'wishlist:wishlist'%}" class="icon-btn" title="Wishlist"><i class="fas fa-heart"></i></a>
 
         <!-- Cart -->
-        <a href="{% url 'cart' %}" class="btn btn-outline-light position-relative" title="Cart">
+        <a href="{% url 'cart:cart' %}" class="btn btn-outline-light position-relative" title="Cart">
           <i class="fas fa-shopping-cart"></i>
-          <span class="badge bg-light text-dark position-absolute top-0 start-100 translate-middle rounded-pill">0</span>
+          <span class="badge bg-light text-dark position-absolute top-0 start-100 translate-middle rounded-pillcart-count">{{cart_count|default:0}}</span>
         </a>
 
         <!-- User Profile -->
         {% if user.is_authenticated %}
-          <a href="{% url 'user_profile' %}" class="icon-btn" title="Profile">
+          <a href="{% url 'accounts:profile' %}" class="icon-btn" title="Profile">
             <img src="{% static 'images/default_profile.png' %}" alt="Profile" class="profile-pic">
           </a>
         {% endif %}

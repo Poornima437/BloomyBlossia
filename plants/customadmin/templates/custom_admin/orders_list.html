@@ -1,0 +1,89 @@
+{% extends 'custom_admin/customadmin_base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Orders</h3>
+    <form method="get" class="form-inline d-flex flex-row align-items-center gap-2">
+      <input type="text" class="form-control" name="q" placeholder="Search Orders" value="{{ search_query }}" style="min-width: 250px;">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <a href="{% url 'customadmin_order_list' %}" class="btn btn-secondary">Clear</a>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Products</th>
+            <th>Date</th>
+            <th>Customer</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+            <tr>
+              <td>{{ order.id }}</td>
+              <td>
+                {% for item in order.items.all %}
+                  {{ item.product.name }} x {{ item.quantity }}<br>
+                {% endfor %}
+              </td>
+              <td>{{ order.created_at|date:"Y-m-d H:i" }}</td>
+              <td>{{ order.user.email }}</td>
+              <td>&#8377;{{ order.total }}</td>
+              <td>
+                <span class="badge badge-{{ order.status|lower }}">
+                  {{ order.status }}
+                </span>
+              </td>
+              <td>
+                <a href="{% url 'customadmin_order_detail' order.order_id %}" class="btn btn-sm btn-outline-info">View</a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="7" class="text-center">No orders found.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+          {% if orders.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ orders.previous_page_number }}&q={{ search_query }}">Previous</a>
+            </li>
+          {% endif %}
+          {% for num in orders.paginator.page_range %}
+            <li class="page-item {% if orders.number == num %}active{% endif %}">
+              <a class="page-link" href="?page={{ num }}&q={{ search_query }}">{{ num }}</a>
+            </li>
+          {% endfor %}
+          {% if orders.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ orders.next_page_number }}&q={{ search_query }}">Next</a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+<style>
+.badge-placed { background-color: #ff9800; color: white; }
+.badge-packed { background-color: #03a9f4; color: white; }
+.badge-shipped { background-color: #9c27b0; color: white; }
+.badge-delivered { background-color: #4caf50; color: white; }
+.badge-canceled { background-color: #f44336; color: white; }
+</style>

@@ -1,35 +1,55 @@
-{% extends 'base_sidebar.html' %}
+{% extends 'user_profile/base_sidebar.html' %}
+{% load static %}
 {% block content %}
+
 <div class="container py-5">
   <div class="col-md-9 offset-md-3">
     <div class="form-section">
       <h4 class="mb-4">Edit Profile</h4>
-      <form method="POST" enctype="multipart/form-data">
+      <form method="POST" enctype="multipart/form-data" id="profileForm">
         {% csrf_token %}
         <div class="row g-3">
+
+          <!-- First Name -->
           <div class="col-md-6">
-            <label class="form-label">Full Name</label>
-            <input type="text" name="name" class="form-control" value="{{ user.get_full_name }}" required>
+            <label class="form-label">First Name</label>
+            {{ user_form.first_name }}
           </div>
+
+          <!-- Last Name -->
+          <div class="col-md-6">
+            <label class="form-label">Last Name</label>
+            {{ user_form.last_name }}
+          </div>
+
+          <!-- Phone -->
           <div class="col-md-6">
             <label class="form-label">Phone Number</label>
-            <input type="text" name="phone" class="form-control" value="{{ user.profile.phone }}" required>
+            {{ profile_form.phone }}
           </div>
+
+          <!-- Email -->
           <div class="col-md-6">
             <label class="form-label">Email</label>
-            <input type="email" name="email" class="form-control" value="{{ user.email }}" required>
-            <small class="text-muted">* You will need to verify if you change your email.</small>
+            {{ user_form.email }}
+            <small class="text-muted d-block">* You will need to verify if you change your email.</small>
           </div>
+
+          <!-- Profile Image -->
           <div class="col-md-6">
             <label class="form-label">Profile Image</label><br>
-            {% if user.profile.image %}
-              <img src="{{ user.profile.image.url }}" width="80" class="mb-2 rounded-circle">
-            {% endif %}
-            <input type="file" name="image" class="form-control">
+            <img id="previewImage" 
+                 src="{% if profile_form.instance.profile_image %}{{ profile_form.instance.profile_image.url }}{% else %}{% static 'images/default_profile.png' %}{% endif %}" 
+                 class="mb-2 rounded-circle border">
+            <br>
+            {{ profile_form.profile_image }}
           </div>
+
+          <!-- Submit -->
           <div class="col-12">
             <button type="submit" class="btn btn-primary">Update Profile</button>
           </div>
+
         </div>
       </form>
     </div>
@@ -37,17 +57,122 @@
 </div>
 
 <style>
-  .form-section {
-    background: #fff;
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  }
-  label.form-label {
-    font-weight: 500;
-  }
-  input.form-control {
-    padding: 0.6rem 1rem;
-  }
+/* ======================
+   Form Section
+====================== */
+.form-section {
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  
+}
+
+/* ======================
+   Labels
+====================== */
+label.form-label {
+  font-weight: 500;
+  display: block;
+  margin-bottom: 0.5rem;
+  
+}
+
+/* ======================
+   Inputs
+====================== */
+input.form-control,
+select.form-control,
+textarea.form-control {
+  width: 99%;
+  padding: 0.6rem 1rem;
+  border: 2px solid #69856c;
+  border-radius: 5px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+input.form-control:focus,
+select.form-control:focus,
+textarea.form-control:focus {
+  border-color: #096a1f;
+  box-shadow: 0 0 5px rgba(16, 108, 38, 0.3);
+  outline: none;
+}
+
+/* ======================
+   Profile Image
+====================== */
+#previewImage {
+  display: block;
+  max-width: 120px;
+  max-height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #385c52;
+}
+
+/* ======================
+   Submit Button
+====================== */
+button.btn-primary {
+  padding: 0.6rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+button.btn-primary:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
 </style>
+
+<!-- ======================
+     SweetAlert Script
+====================== -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  {% if user_form.errors or profile_form.errors %}
+    Swal.fire({
+      icon: 'error',
+      title: 'Form Error',
+      html: `
+        {% for field, errors in user_form.errors.items %}
+          <b>{{ field|title }}</b>: {{ errors|striptags }}<br>
+        {% endfor %}
+        {% for field, errors in profile_form.errors.items %}
+          <b>{{ field|title }}</b>: {{ errors|striptags }}<br>
+        {% endfor %}
+      `
+    });
+  {% endif %}
+
+  {% if messages %}
+    {% for message in messages %}
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: '{{ message }}'
+      });
+    {% endfor %}
+  {% endif %}
+
+  // Real-time profile image preview
+  const fileInput = document.querySelector('input[name="profile_image"]');
+  const previewImage = document.getElementById('previewImage');
+
+  if (fileInput) {
+    fileInput.addEventListener('change', function () {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          previewImage.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+</script>
+
 {% endblock %}

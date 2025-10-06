@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Invoice - {{ order.order_id }}</title>
+  <style>
+    body {
+      font-family: "DejaVu Sans", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f6f6f6;
+      color: #333;
+      background:linear-gradient(135deg, #b9dabd 70%, #4dad58 80%);
+    }
+    .invoice-box {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 30px;
+      background: #fff;
+      border-radius: 12px;
+      border: 3px solid #02540d;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #084406;
+      padding-bottom: 15px;
+      margin-bottom: 25px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #0f4315 50%, #79af7e 70%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent; /* for WebKit browsers */
+      background-clip: text;
+      color: transparent; /* fallback */
+    }
+
+    .details {
+      margin-bottom: 25px;
+    }
+    .details td {
+      padding: 6px 0;
+      font-size: 14px;
+    }
+    .items {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 25px;
+    }
+    .items th {
+      background: #117d1d;
+      color: #fff;
+      text-align: left;
+      padding: 10px;
+      font-size: 14px;
+    }
+    .items td {
+      border-bottom: 1px solid #ddd;
+      padding: 10px;
+      font-size: 14px;
+    }
+    .items tr:last-child td {
+      border-bottom: none;
+    }
+    .totals {
+      width: 100%;
+      margin-top: 10px;
+    }
+    .totals td {
+      padding: 8px;
+      font-size: 14px;
+    }
+    .totals tr td:nth-child(1) {
+      text-align: right;
+      font-weight: bold;
+      color: #555;
+    }
+    .totals tr td:nth-child(2) {
+      text-align: right;
+      font-weight: bold;
+      color: #000;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 13px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <div class="invoice-box">
+    <div class="header">
+      <h1>🍃Invoice</h1>
+      <div>
+        <strong>Order ID:</strong> {{ order.order_id }}<br>
+        <strong>Date:</strong> {{ order.created_at|date:"Y-m-d H:i" }}
+      </div>
+    </div>
+
+    <table class="details" width="100%">
+      <tr>
+        <td><strong>Name:</strong> {{ order.user.username }}</td>
+        <td><strong>Email:</strong> {{ order.user.email }}</td>
+      </tr>
+      {% if order.address %}
+      <tr>
+        <td colspan="2"><strong>Address:</strong> 
+          {{ order.address.address_line }}, {{ order.address.city }}, 
+          {{ order.address.state }} - {{ order.address.zip_code }}
+        </td>
+      </tr>
+      {% endif %}
+    </table>
+
+    <table class="items">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Qty</th>
+          <th>Price (₹)</th>
+          <th>Subtotal (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in order.items.all %}
+        <tr>
+          <td>{{ item.product.name }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>₹{{ item.price|floatformat:2 }}</td>
+          <td>₹{{ item.total_price|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <table class="totals">
+      <tr>
+        <td>Subtotal:</td>
+        <td>₹{{ subtotal|floatformat:2 }}</td>
+      </tr>
+      <tr>
+        <td>Shipping:</td>
+        <td>₹{{ shipping_cost|floatformat:2 }}</td>
+      </tr>
+      <tr>
+        <td style="font-size:16px; color:#e9273a;">Total:</td>
+        <td style="font-size:16px; color:#e9273a;">₹{{ total|floatformat:2 }}</td>
+      </tr>
+    </table>
+
+    <div class="footer">
+      <p>Thank you for your purchase! 🍃❤️</p>
+      <p>If you have any questions, contact us at support@example.com</p>
+      <h4>🌿BloomyBlossia</h4>
+    </div>
+  </div>
+</body>
+</html>

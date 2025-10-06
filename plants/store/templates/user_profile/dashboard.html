@@ -1,9 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>BloomyBlossia Dashboard</title>
+
+{% extends 'user_profile/base_sidebar.html' %}
+{% load static %}
+{% block content %}
+
 
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -16,33 +15,13 @@
       font-family: 'Segoe UI', sans-serif;
     }
 
-    .sidebar {
-      background: white;
-      border-radius: 6px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      width: 200px;
-      margin-bottom: 20px;
-    }
-
-    .sidebar a {
-      display: block;
-      padding: 10px 15px;
-      color: #333;
-      text-decoration: none;
-    }
-
-    .sidebar a.active,
-    .sidebar a:hover {
-      background-color: #e6f0ff;
-      font-weight: bold;
-    }
-
     .card-box {
       border: 1px solid #ddd;
       border-radius: 8px;
       padding: 20px;
       background-color: #fff;
       margin-bottom: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
     }
 
     .card-box h6 {
@@ -63,33 +42,7 @@
 </head>
 <body>
 
-  <!-- Header -->
-  <nav class="navbar navbar-dark bg-success px-4">
-    <a class="navbar-brand text-light fw-bold" href="#">🌿 BLOOMYBLOSSIA</a>
-    <div>
-      <a href="#" class="text-light me-3">Shop</a>
-      <a href="#" class="text-light me-3">About</a>
-      <a href="#" class="text-light me-3">Contact</a>
-      <i class="bi bi-cart text-light"></i>
-    </div>
-  </nav>
 
-  <div class="container-fluid mt-4">
-    <div class="row">
-      <!-- Sidebar -->
-      <div class="col-md-2">
-        <div class="sidebar">
-          <a href="#" class="active">Dashboard</a>
-          <a href="#">Account Details</a>
-          <a href="#">Order History</a>
-          <a href="#">Track Order</a>
-          <a href="#">Shopping Cart</a>
-          <a href="#">Wishlist</a>
-          <a href="#">Address</a>
-          <a href="#">Wallet</a>
-          <a href="#">Log-out</a>
-        </div>
-      </div>
 
       <!-- Main content -->
       <div class="col-md-10">
@@ -121,6 +74,52 @@
                 </div>
             </div>
             {% endfor %}
+
+
+            <!-- Default Address -->
+            {% if default_address %}
+            <div class="row mb-4">
+              <div class="col-md-8">
+                <div class="card-box default-address">
+                  <h6>
+                    {{ default_address.full_name }}
+                    <span class="default-badge">Default</span>
+                  </h6>
+                  <p class="mb-1">
+                    {{ default_address.address_line }}<br>
+                    {{ default_address.city }}, {{ default_address.state }} - {{ default_address.zip_code }}
+                  </p>
+                  <p class="mb-2">Phone: {{ default_address.phone }}</p>
+                  <button class="btn btn-outline-success" onclick="showEditAlert('Default Address')">Edit Address</button>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
+            <!-- Other Addresses -->
+            <div class="row">
+              {% for addr in addresses %}
+                {% if not addr.is_default %}
+                <div class="col-md-6">
+                  <div class="card-box">
+                    <h6>{{ addr.full_name }}</h6>
+                    <p class="mb-1">
+                      {{ addr.address_line }}<br>
+                      {{ addr.city }}, {{ addr.state }} - {{ addr.zip_code }}
+                    </p>
+                    <p class="mb-2">Phone: {{ addr.phone }}</p>
+                    <button class="btn btn-outline-success" onclick="showEditAlert('{{ addr.full_name }}')">Edit Address</button>
+                  </div>
+                </div>
+                {% endif %}
+              {% empty %}
+                <div class="col-12">
+                  <div class="alert alert-warning">No addresses added yet.</div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+
 <!-- 
           <div class="col-md-6">
             <div class="card-box">
@@ -167,5 +166,5 @@
 
   <!-- Bootstrap Bundle with Popper -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+
+{% endblock %}

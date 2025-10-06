@@ -90,6 +90,7 @@
     }
 </style>
 
+
 <div class="otp-container">
     <div class="otp-box">
         <div class="otp-image d-none d-md-block"></div>
@@ -104,18 +105,17 @@
                 <p>OTP sent to <strong>{{ email }}</strong></p>
             {% endif %}
 
-
-            <form method="POST" action="{% url 'verify_otp' %}">
+            <!-- Form for verifying OTP -->
+            <form method="POST" action="{% url 'accounts:verify_otp' %}">
                 {% csrf_token %}
                 <input type="text" name="otp" placeholder="Enter OTP" class="form-control" required>
                 <button type="submit" class="btn-submit">Submit</button>
             </form>
-           
 
+            <!-- Resend OTP section -->
             <div class="resend-section">
                 <p id="timer" style="margin-top: 8px; font-weight: 500; color: #555;"></p>
-                <p id="timer" style="color: #555; font-weight: 500;"></p>
-                <p><a id="resendLink" href="{% url 'resend_otp' %}" class="resend-link">Resend OTP</a></p>
+                <p><a id="resendLink" href="{% url 'accounts:resend_reset_otp' %}" class="resend-link">Resend OTP</a></p>
             </div>
         </div>
     </div>
@@ -156,20 +156,16 @@
         if (!resendLink.classList.contains("enabled")) {
             e.preventDefault();
         } else {
-            // Start a new timer only after resend logic
             startTimer(OTP_DURATION);
         }
     });
 
-    // ✅ FIX: Only start timer if it doesn't already exist
     const existingEndTime = localStorage.getItem(TIMER_KEY);
     if (existingEndTime && parseInt(existingEndTime) > Date.now()) {
         updateTimerLoop();
     } else {
-        startTimer(OTP_DURATION); // Start only on first load or resend
+        startTimer(OTP_DURATION);
     }
 </script>
 
-
 {% endblock %}
-

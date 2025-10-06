@@ -9,24 +9,25 @@
         font-family: 'Segoe UI', sans-serif;
     }
     table th, table td {
-        padding: 12px 20px; /* top/bottom 12px, left/right 20px */
-        text-align: center; /* optional, for neat alignment */
+        padding: 12px 20px; 
+        text-align: center; 
     }
     .cart-container {
         max-width: 1200px;
         margin: 40px auto;
         display: flex;
         gap: 20px;
+       
     }
     .cart-table {
         flex: 2;
         background: #fff;
         padding: 20px;
         border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 8px 20px rgba(4, 11, 2, 0.3);
     }
     .summary-box, .coupon-box {
-        background: #fff;
+        background:linear-gradient(135deg, #79af7e 30%, #0f4315 100%);
         padding: 20px;
         border-radius: 8px;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
@@ -76,6 +77,7 @@
                 <tr>
                     <th></th>
                     <th>Products</th>
+                    <th>Size</th>
                     <th>Price</th>
                     <th>Quantity</th>
                     <th>Sub-Total</th>
@@ -86,7 +88,7 @@
                 <tr>
                     <!-- Remove Button -->
                     <td>
-                        <form method="POST" action="{% url 'remove_cart_item' item.id %}" class="remove-form">
+                        <form method="POST" action="{% url 'cart:remove_cart_item' item.id %}" class="remove-form">
                             {% csrf_token %}
                             <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmRemove(this)">&times;</button>
                         </form>
@@ -96,25 +98,45 @@
                         <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" width="60" class="img-thumbnail">
                         {{ item.product.name }}
                     </td>
-                    <!-- Price -->
+                    <!-- Size / Variant Column -->
                     <td>
-                        {% if item.product.sale_price %}
-                            <span class="text-strike">₹{{ item.product.price }}</span><br>₹{{ item.product.sale_price }}
+                        {% if item.variant %}
+                            {{ item.variant.get_size_display }}
                         {% else %}
-                            ₹{{ item.product.price }}
+                            -
                         {% endif %}
                     </td>
+                    <!-- Price -->
+                    <td>
+                        {% if item.variant %}
+                            {% if item.variant.sale_price < item.variant.price %}
+                                <span class="text-strike">₹{{ item.variant.price }}</span><br>₹{{ item.variant.sale_price }}
+                            {% else %}
+                                ₹{{ item.variant.price }}
+                            {% endif %}
+                        {% else %}
+                            {% if item.product.sale_price < item.product.price %}
+                                <span class="text-strike">₹{{ item.product.price }}</span><br>₹{{ item.product.sale_price }}
+                            {% else %}
+                                ₹{{ item.product.price }}
+                            {% endif %}
+                        {% endif %}
+                    </td>
+
                     <!-- Quantity -->
                     <td class="cart-actions">
-                        <form method="POST" action="{% url 'update_cart_quantity' item.id %}" class="d-inline">
-                            {% csrf_token %}
-                            <button class="btn btn-outline-secondary btn-sm" name="action" value="decrease">-</button>
-                            <span class="mx-2">{{ item.quantity }}</span>
-                            <button class="btn btn-outline-secondary btn-sm" name="action" value="increase">+</button>
-                        </form>
+                        <div class="d-inline">
+                            <button class="btn btn-outline-secondary btn-sm update-qty" 
+                                    data-id="{{ item.id }}" 
+                                    data-action="decrease">-</button>
+                            <span class="mx-2" id="qty-{{ item.id }}">{{ item.quantity }}</span>
+                            <button class="btn btn-outline-secondary btn-sm update-qty" 
+                                    data-id="{{ item.id }}" 
+                                    data-action="increase">+</button>
+                        </div>
                     </td>
-                    <!-- Sub Total -->
-                    <td>₹{{ item.subtotal }}</td>
+                    <td id="subtotal-{{ item.id }}">₹{{ item.subtotal }}</td>
+
                 </tr>
                 {% empty %}
                 <tr><td colspan="5" class="text-center text-muted">Your cart is empty.</td></tr>
@@ -130,7 +152,7 @@
             <p>Shipping: ₹{{ shipping_cost }}</p>
             <p>Discount: ₹{{ discount }}</p>
             <p class="cart-total">Total: ₹{{ total }}</p>
-            <a href="{% url 'checkout' %}" class="btn w-100 fw-bold text-uppercase" style="background-color: #87a190;color: #080808;padding: 6px;border: 2px;border-radius: 5px;text-decoration: none;">
+            <a href="{% url 'orders:checkout' %}" class="btn w-100 fw-bold text-uppercase" style="background-color: #87a190;color: #080808;padding: 6px;border: 2px;border-radius: 5px;text-decoration: none;">
             Proceed to Checkout</a>
         </div>
 
@@ -138,7 +160,7 @@
         <!-- Coupon Form -->
         <div class="coupon-box">
             <h6>Coupon Code</h6>
-            <form method="POST" action="{% url 'apply_coupon' %}">
+            <form method="POST" action="{% url 'cart:apply_coupon' %}">
                 {% csrf_token %}
                 <input type="text" name="coupon_code" class="form-control" placeholder="Enter Coupon Code">
                 <button class="btn btn-outline-success btn-block" type="submit">APPLY COUPON</button>
@@ -165,5 +187,47 @@
         });
     }
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const csrfToken = "{{ csrf_token }}";
+
+    document.querySelectorAll(".update-qty").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const itemId = this.dataset.id;
+            const action = this.dataset.action;
+
+            fetch("{% url 'cart:update_cart_quantity' 0 %}".replace("0", itemId), {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": csrfToken,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ action: action })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Update DOM dynamically
+                    document.getElementById("qty-" + itemId).textContent = data.quantity;
+                    document.getElementById("subtotal-" + itemId).textContent = "₹" + data.subtotal;
+                    document.querySelector(".cart-total").textContent = "Total: ₹" + data.total;
+
+                    Swal.fire({
+                        toast: true,
+                        position: "top-end",
+                        icon: "success",
+                        title: "Cart updated",
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                } else {
+                    Swal.fire("Oops!", data.message, "error");
+                }
+            });
+        });
+    });
+});
+</script>
+
 
 {% endblock %}

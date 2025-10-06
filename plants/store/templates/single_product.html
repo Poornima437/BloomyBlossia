@@ -19,6 +19,32 @@
     .reviews-section { margin-top: 40px; }
     .review { background: #fff; padding: 15px; border-radius: 6px; margin-bottom: 10px; }
     .rating { color: #f39c12; }
+    .size-variants {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.size-btn {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.size-btn.selected {
+  border-color: #28a745;
+  background: #e8f5e8;
+}
+
+.size-btn.out-of-stock {
+  background: #f8f9fa;
+  color: #adb5bd;
+  cursor: not-allowed;
+  border-color: #dee2e6;
+}
+
   </style>
 </head>
 <body>
@@ -51,13 +77,54 @@
           <span class="btn-add disabled">Sold Out</span>
         {% endif %}
       </p>
-      <button class="btn-add" {% if product.stock == 0 %}disabled{% endif %}>Add to Cart</button>
+      <form method="POST" action="{% url 'add_to_cart' %}">
+        {% csrf_token %}
+        <select name="variant_id" required>
+          {% for v in product.variants.all %}
+            <option value="{{ v.id }}" {% if v.quantity==0 %}disabled{% endif %}>
+              {{ v.get_size_display }} - ₹{{ v.price }} {% if v.quantity==0 %}(Out of stock){% endif %}
+            </option>
+          {% endfor %}
+        </select>
+        <input type="number" name="quantity" min="1" value="1"/>
+        <button class="btn-add" {% if product.stock == 0 %}disabled{% endif %}>Add to Cart</button>
+      </form>
       <div class="description">
         <h3>Description</h3>
         <p>{{ product.description }}</p>
       </div>
     </div>
   </div>
+  <div class="size-variants">
+    {% for variant in product.variants.all %}
+      <button type="button"
+              class="size-btn {% if variant.quantity == 0 %}out-of-stock{% endif %}"
+              data-variant-id="{{ variant.id }}"
+              data-price="{{ variant.price }}"
+              data-stock="{{ variant.quantity }}"
+              {% if variant.quantity == 0 %}disabled{% endif %}>
+        {{ variant.get_size_display }}
+      </button>
+    {% endfor %}
+  </div>
+
+<input type="hidden" name="variant_id" id="selected-variant-id" value="">
+<input type="number" name="quantity" id="quantity" min="1" value="1" max="10">
+
+<button type="submit" class="btn-add" id="addToCartBtn" {% if product.stock == 0 %}disabled{% endif %}>
+  Add to Cart
+</button>
+<p id="price-display">
+  Price: ₹<span id="variant-price">{% if product.is_sale %}{{ product.sale_price }}{% else %}{{ product.price }}{% endif %}</span>
+</p>
+<p id="stock-status">
+  {% if product.stock > 0 %}
+    In Stock
+  {% else %}
+    Sold Out
+  {% endif %}
+</p>
+
 
   <div class="reviews-section">
     <h2>Reviews</h2>
@@ -71,5 +138,35 @@
     {% endfor %}
   </div>
 </div>
+<script>
+  document.querySelectorAll('.size-btn').forEach(button => {
+  button.addEventListener('click', function() {
+    // Remove 'selected' class from all buttons
+    document.querySelectorAll('.size-btn').forEach(btn => {
+      btn.classList.remove('selected');
+    });
+    // Add 'selected' class to clicked button
+    this.classList.add('selected');
+    // Update hidden input with selected variant ID
+    document.getElementById('selected-variant-id').value = this.dataset.variantId;
+    // Update price display
+    document.getElementById('variant-price').textContent = this.dataset.price;
+    // Update stock status
+    const stockStatus = this.dataset.stock > 0 ? 'In Stock' : 'Sold Out';
+    document.getElementById('stock-status').textContent = stockStatus;
+    // Enable/disable Add to Cart button
+    const addToCartBtn = document.getElementById('addToCartBtn');
+    if (this.dataset.stock > 0) {
+      addToCartBtn.disabled = false;
+      addToCartBtn.classList.remove('disabled');
+      document.getElementById('quantity').max = this.dataset.stock;
+    } else {
+      addToCartBtn.disabled = true;
+      addToCartBtn.classList.add('disabled');
+    }
+  });
+});
+
+</script>
 </body>
 </html>
