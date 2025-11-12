@@ -221,11 +221,37 @@ def address(request):
 
         elif action == "delete":
             addr_id = request.POST.get("address_id")
-            if not addr_id or not addr_id.isdigit():
+            
+            if not addr_id:
                 messages.error(request, "Invalid address ID.")
                 return redirect("address")
-            Address.objects.filter(address_id=addr_id, user=user).delete()
-            messages.success(request, "Address deleted successfully!")
+            
+            try:
+                address_to_delete = Address.objects.get(address_id=addr_id, user=user)
+                
+                # Check if address is used in any orders
+                orders_with_address = Order.objects.filter(address=address_to_delete).exists()
+                
+                if orders_with_address:
+                    messages.error(request, "Cannot delete address. It is associated with existing orders.")
+                    return redirect("address")
+                
+                # If it's the default, reassign default to another address
+                was_default = address_to_delete.is_default
+                address_to_delete.delete()
+                
+                if was_default:
+                    first_address = Address.objects.filter(user=user).first()
+                    if first_address:
+                        first_address.is_default = True
+                        first_address.save()
+                
+                messages.success(request, "Address deleted successfully!")
+            except Address.DoesNotExist:
+                messages.error(request, "Address not found.")
+            except Exception as e:
+                messages.error(request, f"Error deleting address: {str(e)}")
+            
             return redirect("address")
 
         elif action == "edit":

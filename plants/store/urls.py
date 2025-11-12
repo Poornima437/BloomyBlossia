@@ -6,8 +6,8 @@ from accounts.views import (
     register_user,
     CustomPasswordChangeView,
     dashboard_view,
-    wallet_view
 )
+from wallet.views import wallet_view
 
 
 

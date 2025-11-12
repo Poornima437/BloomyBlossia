@@ -1,6 +1,7 @@
 from django.urls import path
 from django.shortcuts import render, redirect, get_object_or_404
 from . import views 
+from coupon import views as coupon_views
 
 urlpatterns = [
     path('', lambda request: redirect('customadmin_login')),
@@ -15,10 +16,28 @@ urlpatterns = [
     path('products/', views.customadmin_products, name='customadmin_products'),
     path('products/add/', views.customadmin_add_product, name='customadmin_add_product'),
     path('products/edit/<int:pk>/', views.customadmin_edit_product, name='customadmin_edit_product'),
+    path('products/<int:pk>/update-variants/', views.customadmin_update_variants, name='customadmin_update_variants'),
     path('products/delete/<int:pk>/', views.customadmin_delete_product, name='customadmin_delete_product'),
     path('products/undo/<int:pk>/', views.customadmin_undo_delete_product, name='customadmin_undo_delete_product'),
     path('products/delete-image/<int:image_id>/', views.customadmin_delete_image, name='customadmin_delete_image'),
+    path('products/update-variant/<int:variant_id>/', views.customadmin_update_single_variant, name='customadmin_update_single_variant'),
     path('products/<int:pk>/reorder-images/', views.reorder_product_images, name='reorder_product_images'),
+    #variants
+    path('variant/<int:variant_id>/add-images/', 
+         views.customadmin_add_variant_images, 
+         name='customadmin_add_variant_images'),
+    
+    path('variant/<int:variant_id>/images/', 
+         views.customadmin_get_variant_images, 
+         name='customadmin_get_variant_images'),
+    
+    path('variant-image/<int:image_id>/delete/', 
+         views.customadmin_delete_variant_image, 
+         name='customadmin_delete_variant_image'),
+    
+    path('variant/<int:variant_id>/reorder-images/', 
+         views.customadmin_reorder_variant_images, 
+         name='customadmin_reorder_variant_images'),
 
     # Categories
     path('categories/', views.customadmin_categories, name='customadmin_categories'),
@@ -40,5 +59,7 @@ urlpatterns = [
     path('orders/<str:order_id>/generate/', views.generate_invoice, name='generate_invoice'),
 
     # Coupons
-    path('coupons/', views.customadmin_coupons, name='customadmin_coupons'),
+    path('customadmin/coupons/', views.customadmin_coupons, name='customadmin_coupons'),
+#     path('coupons/toggle/<int:id>/', coupon_views.toggle_coupon_status, name='toggle_coupon'),
+    
 ]

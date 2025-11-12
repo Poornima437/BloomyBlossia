@@ -29,13 +29,20 @@ from wishlist.models import WishlistItem
 from orders.models import Order, OrderItem
 from cart.models import Cart, CartItem
 
-from accounts.models import UserProfile,Wallet
+from accounts.models import UserProfile
+from wallet.models import Wallet
 from store.forms import  ProductForm
 from accounts.forms import SignUpForm,UserForm,ProfileForm,AddressForm
 from store.models import Product, Category, ProductImage
 from django.http import JsonResponse
 import json
 from django.conf import settings
+from store.models import ProductVariant,VariantImage
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+
 # Create your views here.
 
 #custom admin
@@ -47,12 +54,7 @@ def customadmin_login(request):
 
         if user:
             if user.is_staff:
-                request.session.flush()  # clear old session
-                request.session.cycle_key()
                 login(request, user)
-
-                request.session.set_expiry(0) 
-                request.session._session_cookie_name = getattr(settings, "ADMIN_SESSION_COOKIE_NAME", "admin_sessionid")
                 return redirect('customadmin_dashboard')
             else:
                 messages.error(request, "Access denied. You are not an admin.")
@@ -62,14 +64,15 @@ def customadmin_login(request):
     return render(request, 'custom_admin/customadmin_login.html')
 
 
-@login_required
-def customadmin_dashboard(request):
-    breadcrumbs = [("Dashboard", "/customadmin/dashboard/")]
-    return render(request, 'custom_admin/customadmin_dashboard.html', {'breadcrumbs': breadcrumbs})
 
+@login_required
+@staff_member_required
+def customadmin_dashboard(request):
     if not request.user.is_staff:
         return redirect('customadmin_login')
-    return render(request, 'custom_admin/customadmin_dashboard.html')
+    
+    breadcrumbs = [("Dashboard", "/customadmin/dashboard/")]
+    return render(request, 'custom_admin/customadmin_dashboard.html', {'breadcrumbs': breadcrumbs})
 
 def customadmin_logout(request):
     logout(request)
@@ -78,12 +81,12 @@ def customadmin_logout(request):
 @staff_member_required
 def customadmin_products(request):
     search_query = request.GET.get('q', '')
-    products = Product.objects.filter(is_deleted=False)
+    products = Product.objects.filter(is_deleted=False).prefetch_related('variants')
 
     if search_query:
         products = products.filter(
             Q(name__icontains=search_query) |
-            Q(category__name__icontains=search_query) |
+            Q(category__name__istartswith=search_query) |
             Q(status__icontains=search_query)
         )
 
@@ -93,10 +96,70 @@ def customadmin_products(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    for product in page_obj:
+        product.variant_list = product.variants.all()
+
     return render(request, 'custom_admin/products.html', {
         'page_obj': page_obj,
         'search_query': search_query
     })
+
+@staff_member_required
+def customadmin_update_variants(request, pk):
+    if request.method == 'POST':
+        product = get_object_or_404(Product, id=pk)
+        variant_count = int(request.POST.get('variant_count', 0))
+        
+        for i in range(1, variant_count + 1):
+            variant_id = request.POST.get(f'variant_id_{i}')
+            variant_quantity = request.POST.get(f'variant_quantity_{i}')
+            variant_price = request.POST.get(f'variant_price_{i}')
+            variant_sale_price = request.POST.get(f'variant_sale_price_{i}')
+            
+            if variant_id:
+                try:
+                    from store.models import ProductVariant
+                    variant = ProductVariant.objects.get(id=variant_id, product=product)
+                    variant.quantity = int(variant_quantity)
+                    variant.price = float(variant_price)
+                    variant.sale_price = float(variant_sale_price)
+                    variant.save()
+                except ProductVariant.DoesNotExist:
+                    messages.error(request, f"Variant {i} not found.")
+                    continue
+        
+        messages.success(request, "All variants updated successfully!")
+        return redirect('customadmin_edit_product', pk=product.id)
+    
+    return redirect('customadmin_products')
+
+@staff_member_required
+def customadmin_update_single_variant(request, variant_id):
+    if request.method == 'POST':
+        try:
+            from store.models import ProductVariant
+            import json
+            
+            variant = get_object_or_404(ProductVariant, id=variant_id)
+            data = json.loads(request.body)
+            
+            variant.quantity = int(data.get('quantity', 0))
+            variant.price = float(data.get('price', 0))
+            variant.sale_price = float(data.get('sale_price', 0))
+            variant.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Variant updated successfully',
+                'data': {
+                    'quantity': variant.quantity,
+                    'price': variant.price,
+                    'sale_price': variant.sale_price
+                }
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
 
 @staff_member_required
 def toggle_category(request, category_id):
@@ -136,7 +199,6 @@ def customadmin_add_product(request):
         if form.is_valid():
             product = form.save(commit=False)
 
-            # 🔒 Case-insensitive check for duplicate product name
             if Product.objects.filter(name__iexact=product.name, is_deleted=False).exists():
                 messages.error(request, f"Product '{product.name}' already exists.")
                 return render(request, 'custom_admin/customadmin_add_product.html', {
@@ -183,6 +245,7 @@ def customadmin_add_product(request):
     })
 
 
+
 @staff_member_required
 def customadmin_edit_product(request, pk):
     product = get_object_or_404(Product, id=pk)
@@ -205,12 +268,12 @@ def customadmin_edit_product(request, pk):
             messages.error(request, 'Prices must be at most 4 digits before the decimal point.')
             return redirect('customadmin_edit_product', pk=product.id)
 
-        # Check for duplicate product name (excluding current product)
+       
         if Product.objects.exclude(id=product.id).filter(name__iexact=name).exists():
             messages.error(request, 'Product with this name already exists.')
             return redirect('customadmin_edit_product', pk=product.id)
 
-        # Update product fields
+    
         product.name = name
         product.original_price = original_price
         product.sale_price = sale_price
@@ -220,7 +283,7 @@ def customadmin_edit_product(request, pk):
         product.is_sale = 'is_sale' in request.POST
         product.save()
 
-        # Handle new image uploads
+    
         image_files = request.FILES.getlist('images')
         if image_files:
             ProductImage.objects.filter(product=product).delete()
@@ -252,14 +315,27 @@ def customadmin_edit_product(request, pk):
         'product': product,
         'categories': categories
     })
+
+
 @staff_member_required
 def customadmin_delete_image(request, image_id):
-    image = get_object_or_404(ProductImage, id=image_id)
-    product_id = image.product.id
-    image.delete()
-    messages.success(request, "Image deleted successfully.")
-    return redirect('customadmin_edit_product', pk=product_id)
-
+    if request.method == 'POST':
+        try:
+            image = get_object_or_404(ProductImage, id=image_id)
+            product = image.product
+            
+            current_image_count = product.images.count()
+            if current_image_count <= 3:
+                return JsonResponse({
+                    'success': False, 
+                    'message': 'Cannot delete! Product must have at least 3 images.'
+                })
+            
+            image.delete()
+            return JsonResponse({'success': True, 'message': 'Image deleted successfully'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
 
 @staff_member_required
 def customadmin_delete_product(request, pk):
@@ -387,11 +463,45 @@ def customadmin_delete_category(request, pk):
     return redirect('customadmin_categories')
 
 
-def customadmin_order_list(request):
-    # search_query = request.GET.get('q', '')
-    orders = Order.objects.all()
 
-    return render(request, 'custom_admin/orders_list.html', {'orders': orders})
+def customadmin_order_list(request):
+    # Get search query
+    search_query = request.GET.get('q', '')
+    
+    # Get all orders, ordered by most recent first
+    orders = Order.objects.all().order_by('-created_at')
+    
+    # Apply search filter if query exists
+    if search_query:
+        orders = orders.filter(
+            Q(id__icontains=search_query) |
+            Q(order_id__icontains=search_query) |
+            Q(user__username__icontains=search_query) |
+            Q(user__email__icontains=search_query) |
+            Q(user__first_name__icontains=search_query) |
+            Q(user__last_name__icontains=search_query) |
+            Q(items__product__name__icontains=search_query)
+        ).distinct()
+    
+    # Pagination - 10 orders per page
+    paginator = Paginator(orders, 10)
+    page = request.GET.get('page', 1)
+    
+    try:
+        orders = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page
+        orders = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range, deliver last page
+        orders = paginator.page(paginator.num_pages)
+    
+    context = {
+        'orders': orders,
+        'search_query': search_query,
+    }
+    
+    return render(request, 'custom_admin/orders_list.html', context)
 
 
 
@@ -429,9 +539,10 @@ def verify_return(request, order_id):
 
     return redirect('customadmin_order_detail', order_id=order_id)
 
+@staff_member_required
 def customadmin_coupons(request):
-    # Your code here
-    return render(request, 'customadmin/coupons.html')
+    return render(request, 'custom_admin/coupon_list.html')
+
 
 from reportlab.pdfgen import canvas
 
@@ -450,70 +561,164 @@ def reorder_product_images(request, pk):
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)})
     
+def generate_invoice(request, order_id):
+    order = get_object_or_404(Order, order_id=order_id)
+    items = order.items.all()
+    return render(request, 'custom_admin/customadmin_invoice.html', {'order': order, 'items': items})
+
+
 def export_invoice(request, order_id):
     order = get_object_or_404(Order, order_id=order_id)
+    items = order.items.all()
 
-    
+    template = get_template('custom_admin/customadmin_invoice.html')
+    html = template.render({'order': order, 'items': items})
+
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="Invoice_{order_id}.pdf"'
 
-    p = canvas.Canvas(response)
+    pisa_status = pisa.CreatePDF(html, dest=response)
 
-    # Title
-    p.setFont("Helvetica-Bold", 16)
-    p.drawString(200, 800, "Invoice")
-
-    # Order Info
-    p.setFont("Helvetica", 12)
-    p.drawString(50, 750, f"Order ID: {order.order_id}")
-    p.drawString(50, 730, f"Customer: {order.user.get_full_name() if order.user else 'Guest'}")
-    p.drawString(50, 710, f"Email: {order.user.email if order.user else 'N/A'}")
-    p.drawString(50, 690, f"Status: {order.status}")
-    p.drawString(50, 670, f"Payment: {order.payment_method}")
-    p.drawString(50, 650, f"Total: ₹{order.total}")
-
-    # Items
-    y = 620
-    p.drawString(50, y, "Products:")
-    y -= 20
-    for item in order.items.all():
-        p.drawString(60, y, f"{item.product.name} x {item.quantity} = ₹{item.total_price}")
-        y -= 20
-
-    # Shipping Address
-    p.drawString(50, y - 10, f"Shipping Address: {order.address if order.address else 'N/A'}")
-
-    p.showPage()
-    p.save()
+    if pisa_status.err:
+        return HttpResponse('Error generating PDF', status=500)
     return response
 
-def generate_invoice(request, order_id):
-    order = get_object_or_404(Order, order_id=order_id)
 
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'inline; filename="Invoice_{order_id}.pdf"'
+# def generate_invoice(request, order_id):
+#     order = get_object_or_404(Order, order_id=order_id)
 
-    p = canvas.Canvas(response)
-    p.setFont("Helvetica-Bold", 16)
-    p.drawString(200, 800, "Invoice")
+#     response = HttpResponse(content_type='application/pdf')
+#     response['Content-Disposition'] = f'inline; filename="Invoice_{order_id}.pdf"'
 
-    p.setFont("Helvetica", 12)
-    p.drawString(50, 750, f"Order ID: {order.order_id}")
-    p.drawString(50, 730, f"Customer: {order.user.get_full_name() if order.user else 'Guest'}")
-    p.drawString(50, 710, f"Email: {order.user.email if order.user else 'N/A'}")
-    p.drawString(50, 690, f"Status: {order.status}")
-    p.drawString(50, 670, f"Payment: {order.payment_method}")
-    p.drawString(50, 650, f"Total: ₹{order.total}")
+#     p = canvas.Canvas(response)
+#     p.setFont("Helvetica-Bold", 16)
+#     p.drawString(200, 800, "Invoice")
 
-    y = 620
-    p.drawString(50, y, "Products:")
-    y -= 20
-    for item in order.items.all():
-        p.drawString(60, y, f"{item.product.name} x {item.quantity} = ₹{item.total_price}")
-        y -= 20
+#     p.setFont("Helvetica", 12)
+#     p.drawString(50, 750, f"Order ID: {order.order_id}")
+#     p.drawString(50, 730, f"Customer: {order.user.get_full_name() if order.user else 'Guest'}")
+#     p.drawString(50, 710, f"Email: {order.user.email if order.user else 'N/A'}")
+#     p.drawString(50, 690, f"Status: {order.status}")
+#     p.drawString(50, 670, f"Payment: {order.payment_method}")
+#     p.drawString(50, 650, f"Total: ₹{order.total}")
 
-    p.drawString(50, y - 10, f"Shipping Address: {order.address if order.address else 'N/A'}")
+#     y = 620
+#     p.drawString(50, y, "Products:")
+#     y -= 20
+#     for item in order.items.all():
+#         p.drawString(60, y, f"{item.product.name} x {item.quantity} = ₹{item.total_price}")
+#         y -= 20
 
-    p.showPage()
-    p.save()
-    return response
+#     p.drawString(50, y - 10, f"Shipping Address: {order.address if order.address else 'N/A'}")
+
+#     p.showPage()
+#     p.save()
+#     return response
+
+
+@staff_member_required
+def customadmin_add_variant_images(request, variant_id):
+    if request.method == 'POST':
+        variant = get_object_or_404(ProductVariant, id=variant_id)
+        images = request.FILES.getlist('variant_images')
+        
+        if not images:
+            return JsonResponse({'success': False, 'message': 'No images provided'})
+        
+        try:
+            # Get the current highest display_order
+            last_image = variant.variant_images.order_by('-display_order').first()
+            start_order = (last_image.display_order + 1) if last_image else 0
+            
+            for index, image in enumerate(images):
+                img = Image.open(image)
+                if img.mode == 'RGBA':
+                    img = img.convert('RGB')
+                
+                # Crop to square and resize
+                width, height = img.size
+                min_dim = min(width, height)
+                left = (width - min_dim) / 2
+                top = (height - min_dim) / 2
+                right = (width + min_dim) / 2
+                bottom = (height + min_dim) / 2
+                img = img.crop((left, top, right, bottom))
+                img = img.resize((500, 500))
+                
+                thumb_io = BytesIO()
+                img.save(thumb_io, format='JPEG')
+                
+                filename = f"variant_{variant.id}_{uuid.uuid4().hex}.jpg"
+                new_image = ContentFile(thumb_io.getvalue(), name=filename)
+                
+                # Create variant image
+                VariantImage.objects.create(
+                    variant=variant,
+                    image=new_image,
+                    display_order=start_order + index
+                )
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'{len(images)} image(s) added successfully'
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
+
+@staff_member_required
+def customadmin_delete_variant_image(request, image_id):
+    """Delete a specific variant image"""
+    if request.method == 'POST':
+        try:
+            image = get_object_or_404(VariantImage, id=image_id)
+            image.delete()
+            return JsonResponse({'success': True, 'message': 'Image deleted successfully'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
+
+@staff_member_required
+def customadmin_get_variant_images(request, variant_id):
+    try:
+        variant = get_object_or_404(ProductVariant, id=variant_id)
+        images = variant.variant_images.all()
+        
+        image_data = [{
+            'id': img.id,
+            'url': img.image.url,
+            'display_order': img.display_order
+        } for img in images]
+        
+        return JsonResponse({
+            'success': True,
+            'images': image_data,
+            'variant_size': variant.get_size_display(),
+            'count': len(image_data)
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+
+@staff_member_required
+def customadmin_reorder_variant_images(request, variant_id):
+    """Reorder variant images"""
+    if request.method == 'POST':
+        try:
+            variant = get_object_or_404(ProductVariant, id=variant_id)
+            data = json.loads(request.body)
+            order = data.get('order', [])
+            
+            for index, image_id in enumerate(order):
+                image = VariantImage.objects.get(id=image_id, variant=variant)
+                image.display_order = index
+                image.save()
+            
+            return JsonResponse({'success': True, 'message': 'Images reordered successfully'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})

@@ -5,160 +5,385 @@
   <title>Invoice - {{ order.order_id }}</title>
   <style>
     body {
-      font-family: "DejaVu Sans", Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
       padding: 0;
-      background: #f6f6f6;
+      background: #f8f9fa;
       color: #333;
-      background:linear-gradient(135deg, #b9dabd 70%, #4dad58 80%);
+      background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+      min-height: 100vh;
     }
-    .invoice-box {
-      max-width: 900px;
+    
+    .invoice-container {
+      max-width: 850px;
       margin: 30px auto;
-      padding: 30px;
+      padding: 40px;
       background: #fff;
       border-radius: 12px;
-      border: 3px solid #02540d;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e0e0e0;
     }
-    .header {
+    
+    .header-section {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid #084406;
-      padding-bottom: 15px;
-      margin-bottom: 25px;
+      align-items: flex-start;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #e8f5e9;
     }
-    .header h1 {
-      margin: 0;
+    
+    .company-info {
+      flex: 1;
+    }
+    
+    .company-name {
       font-size: 28px;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      background: linear-gradient(135deg, #0f4315 50%, #79af7e 70%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent; /* for WebKit browsers */
-      background-clip: text;
-      color: transparent; /* fallback */
+      font-weight: 700;
+      color: #1b5e20;
+      margin: 0 0 5px 0;
+      display: flex;
+      align-items: center;
     }
-
-    .details {
-      margin-bottom: 25px;
+    
+    .company-name i {
+      margin-right: 10px;
+      font-size: 24px;
     }
-    .details td {
-      padding: 6px 0;
+    
+    .company-tagline {
       font-size: 14px;
+      color: #4caf50;
+      margin: 0;
+      font-style: italic;
     }
-    .items {
+    
+    .invoice-title {
+      text-align: right;
+    }
+    
+    .invoice-title h1 {
+      margin: 0;
+      font-size: 32px;
+      font-weight: 700;
+      color: #2e7d32;
+      letter-spacing: 1px;
+    }
+    
+    .invoice-title p {
+      margin: 5px 0 0 0;
+      font-size: 14px;
+      color: #666;
+    }
+    
+    .details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+    
+    .detail-box {
+      background: #f1f8e9;
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 4px solid #4caf50;
+    }
+    
+    .detail-box h3 {
+      margin: 0 0 15px 0;
+      font-size: 16px;
+      color: #2e7d32;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .detail-item {
+      margin-bottom: 8px;
+      display: flex;
+    }
+    
+    .detail-label {
+      font-weight: 600;
+      min-width: 100px;
+      color: #555;
+    }
+    
+    .detail-value {
+      color: #333;
+    }
+    
+    .items-table {
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 25px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      border-radius: 8px;
+      overflow: hidden;
     }
-    .items th {
-      background: #117d1d;
-      color: #fff;
+    
+    .items-table thead {
+      background: #2e7d32;
+      color: white;
+    }
+    
+    .items-table th {
+      padding: 15px 12px;
       text-align: left;
-      padding: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .items-table tbody tr {
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .items-table tbody tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+    
+    .items-table tbody tr:hover {
+      background: #f1f8e9;
+    }
+    
+    .items-table td {
+      padding: 15px 12px;
       font-size: 14px;
     }
-    .items td {
-      border-bottom: 1px solid #ddd;
-      padding: 10px;
-      font-size: 14px;
+    
+    .product-name {
+      font-weight: 500;
+      color: #1b5e20;
     }
-    .items tr:last-child td {
-      border-bottom: none;
-    }
-    .totals {
-      width: 100%;
-      margin-top: 10px;
-    }
-    .totals td {
-      padding: 8px;
-      font-size: 14px;
-    }
-    .totals tr td:nth-child(1) {
+    
+    .text-right {
       text-align: right;
-      font-weight: bold;
+    }
+    
+    .text-center {
+      text-align: center;
+    }
+    
+    .totals-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .payment-info {
+      background: #f1f8e9;
+      padding: 20px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    
+    .payment-info h3 {
+      margin: 0 0 15px 0;
+      font-size: 16px;
+      color: #2e7d32;
+    }
+    
+    .payment-info p {
+      margin: 8px 0;
+    }
+    
+    .amounts-table {
+      width: 100%;
+    }
+    
+    .amounts-table td {
+      padding: 10px 5px;
+      font-size: 14px;
+    }
+    
+    .amounts-table tr:last-child {
+      border-top: 1px solid #e0e0e0;
+    }
+    
+    .amount-label {
+      text-align: right;
+      font-weight: 500;
       color: #555;
     }
-    .totals tr td:nth-child(2) {
+    
+    .amount-value {
       text-align: right;
-      font-weight: bold;
-      color: #000;
+      font-weight: 500;
+      color: #333;
     }
+    
+    .total-row {
+      font-size: 18px !important;
+      font-weight: 700 !important;
+      color: #d32f2f !important;
+    }
+    
     .footer {
       text-align: center;
-      margin-top: 30px;
-      font-size: 13px;
-      color: #777;
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #e0e0e0;
+      color: #666;
+      font-size: 14px;
+    }
+    
+    .thank-you {
+      font-size: 16px;
+      color: #2e7d32;
+      margin-bottom: 15px;
+      font-weight: 500;
+    }
+    
+    .contact-info {
+      margin: 15px 0;
+    }
+    
+    .brand-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1b5e20;
+      margin-top: 10px;
+    }
+    
+    @media print {
+      body {
+        background: white;
+      }
+      
+      .invoice-container {
+        box-shadow: none;
+        border: 1px solid #ddd;
+        margin: 0;
+        padding: 20px;
+      }
     }
   </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-  <div class="invoice-box">
-    <div class="header">
-      <h1>🍃Invoice</h1>
-      <div>
-        <strong>Order ID:</strong> {{ order.order_id }}<br>
-        <strong>Date:</strong> {{ order.created_at|date:"Y-m-d H:i" }}
+  <div class="invoice-container">
+    <!-- Header Section -->
+    <div class="header-section">
+      <div class="company-info">
+        <h1 class="company-name"><i class="fas fa-leaf"></i>BloomyBlossia</h1>
+        <p class="company-tagline">Bringing nature's beauty to your home</p>
+        <p>123 Green Street, Garden City<br>
+        support@bloomyblossia.com<br>
+        (555) 123-4567</p>
+      </div>
+      
+      <div class="invoice-title">
+        <h1>INVOICE</h1>
+        <p>Order #{{ order.order_id }}</p>
+        <p>Date: {{ order.created_at|date:"F j, Y" }}</p>
       </div>
     </div>
-
-    <table class="details" width="100%">
-      <tr>
-        <td><strong>Name:</strong> {{ order.user.username }}</td>
-        <td><strong>Email:</strong> {{ order.user.email }}</td>
-      </tr>
-      {% if order.address %}
-      <tr>
-        <td colspan="2"><strong>Address:</strong> 
-          {{ order.address.address_line }}, {{ order.address.city }}, 
-          {{ order.address.state }} - {{ order.address.zip_code }}
-        </td>
-      </tr>
-      {% endif %}
-    </table>
-
-    <table class="items">
+    
+    <!-- Customer & Order Details -->
+    <div class="details-grid">
+      <div class="detail-box">
+        <h3>Bill To</h3>
+        <div class="detail-item">
+          <span class="detail-label">Name:</span>
+          <span class="detail-value">{{ order.user.username }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Email:</span>
+          <span class="detail-value">{{ order.user.email }}</span>
+        </div>
+        {% if order.address %}
+        <div class="detail-item">
+          <span class="detail-label">Address:</span>
+          <span class="detail-value">
+            {{ order.address.address_line }}, {{ order.address.city }}, 
+            {{ order.address.state }} - {{ order.address.zip_code }}
+          </span>
+        </div>
+        {% endif %}
+      </div>
+      
+      <div class="detail-box">
+        <h3>Order Details</h3>
+        <div class="detail-item">
+          <span class="detail-label">Order ID:</span>
+          <span class="detail-value">{{ order.order_id }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Order Date:</span>
+          <span class="detail-value">{{ order.created_at|date:"F j, Y" }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Status:</span>
+          <span class="detail-value" style="color: #2e7d32; font-weight: 500;">Completed</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Order Items -->
+    <table class="items-table">
       <thead>
         <tr>
           <th>Product</th>
-          <th>Qty</th>
-          <th>Price (₹)</th>
-          <th>Subtotal (₹)</th>
+          <th class="text-center">Quantity</th>
+          <th class="text-right">Unit Price</th>
+          <th class="text-right">Subtotal</th>
         </tr>
       </thead>
       <tbody>
         {% for item in order.items.all %}
         <tr>
-          <td>{{ item.product.name }}</td>
-          <td>{{ item.quantity }}</td>
-          <td>₹{{ item.price|floatformat:2 }}</td>
-          <td>₹{{ item.total_price|floatformat:2 }}</td>
+          <td class="product-name">{{ item.product.name }}</td>
+          <td class="text-center">{{ item.quantity }}</td>
+          <td class="text-right">₹{{ item.price|floatformat:2 }}</td>
+          <td class="text-right">₹{{ item.total_price|floatformat:2 }}</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
-
-    <table class="totals">
-      <tr>
-        <td>Subtotal:</td>
-        <td>₹{{ subtotal|floatformat:2 }}</td>
-      </tr>
-      <tr>
-        <td>Shipping:</td>
-        <td>₹{{ shipping_cost|floatformat:2 }}</td>
-      </tr>
-      <tr>
-        <td style="font-size:16px; color:#e9273a;">Total:</td>
-        <td style="font-size:16px; color:#e9273a;">₹{{ total|floatformat:2 }}</td>
-      </tr>
-    </table>
-
+    
+    <!-- Totals & Payment Info -->
+    <div class="totals-section">
+      <div class="payment-info">
+        <h3>Payment Information</h3>
+        <p><strong>Payment Method:</strong> Credit Card</p>
+        <p><strong>Transaction ID:</strong> TXN-{{ order.order_id }}</p>
+        <p><strong>Payment Status:</strong> <span style="color: #2e7d32;">Paid</span></p>
+        <p><strong>Payment Date:</strong> {{ order.created_at|date:"F j, Y" }}</p>
+      </div>
+      
+      <div>
+        <table class="amounts-table">
+          <tr>
+            <td class="amount-label">Subtotal:</td>
+            <td class="amount-value">₹{{ subtotal|floatformat:2 }}</td>
+          </tr>
+          <tr>
+            <td class="amount-label">Shipping:</td>
+            <td class="amount-value">₹{{ shipping_cost|floatformat:2 }}</td>
+          </tr>
+          <tr>
+            <td class="amount-label">Tax (5%):</td>
+            <td class="amount-value">₹{{ tax|floatformat:2 }}</td>
+          </tr>
+          <tr class="total-row">
+            <td class="amount-label">Total:</td>
+            <td class="amount-value">₹{{ total|floatformat:2 }}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Footer -->
     <div class="footer">
-      <p>Thank you for your purchase! 🍃❤️</p>
-      <p>If you have any questions, contact us at support@example.com</p>
-      <h4>🌿BloomyBlossia</h4>
+      <p class="thank-you">Thank you for your purchase! <i class="fas fa-heart" style="color: #e91e63;"></i></p>
+      <p>We hope you enjoy your new plants! If you have any questions about plant care, visit our care guides on our website.</p>
+      <div class="contact-info">
+        <p>Contact us: support@bloomyblossia.com | (555) 123-4567</p>
+      </div>
+      <p class="brand-name">🌿 BloomyBlossia - Nurturing joy, one leaf at a time</p>
     </div>
   </div>
 </body>

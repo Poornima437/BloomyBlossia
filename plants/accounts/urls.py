@@ -29,6 +29,5 @@ urlpatterns = [
     path('address/<int:pk>/edit/', views.edit_address, name='edit_address'),
     path('address/<int:pk>/delete/', views.delete_address, name='delete_address'),
 
-    # Wallet
-    path('wallet/', views.wallet_view, name='wallet'),
+   
 ]

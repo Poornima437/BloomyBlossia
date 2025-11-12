@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import F
-from .models import Cart, CartItem,Coupon
+from .models import Cart, CartItem
 from django.conf import settings
 from django.db import transaction
 from store.models import Product, Address
@@ -11,6 +11,7 @@ from django.utils import timezone
 from wishlist.models import WishlistItem 
 from django.http import JsonResponse
 import json
+from coupon.models import Coupon
 
 # ------------------ CART VIEWS ------------------
 
@@ -49,8 +50,6 @@ MAX_QTY = getattr(settings, "MAX_CART_QTY", 10)
 @login_required
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
-
-    # Product availability check
     if not product.is_active or product.is_deleted or product.status != "published":
         if request.headers.get("x-requested-with") == "XMLHttpRequest":
             return JsonResponse({"success": False, "message": "This product is not available."})
@@ -60,13 +59,10 @@ def add_to_cart(request, product_id):
     if request.method != "POST":
         return redirect(request.META.get('HTTP_REFERER', 'cart:cart'))
 
-    # Variant handling
     variant_id = request.POST.get('variant_id')
 
-    # If no variant is selected and the product has variants, default to "Medium"
     if product.variants.exists() and not variant_id:
         try:
-            # Try to get the "Medium" variant
             medium_variant = product.variants.get(size__iexact="Medium")
             variant_id = medium_variant.id
         except ProductVariant.DoesNotExist:
@@ -86,7 +82,6 @@ def add_to_cart(request, product_id):
         messages.error(request, "Invalid quantity.")
         return redirect(request.META.get('HTTP_REFERER', 'cart:cart'))
 
-    # Get the variant if variant_id is provided
     if variant_id:
         variant = get_object_or_404(ProductVariant, id=variant_id, product=product)
         if variant.quantity <= 0:
@@ -94,7 +89,6 @@ def add_to_cart(request, product_id):
     else:
         variant = None
 
-    # Add to cart
     cart, _ = Cart.objects.get_or_create(user=request.user)
     item, created = CartItem.objects.get_or_create(
         cart=cart,
@@ -106,10 +100,9 @@ def add_to_cart(request, product_id):
         item.quantity += quantity
     item.save()
 
-    # Remove from wishlist
     WishlistItem.objects.filter(user=request.user, product=product).delete()
 
-    # Return response
+
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
         return JsonResponse({"success": True, "message": "Item added to cart."})
     else:
@@ -153,10 +146,7 @@ def update_cart_quantity(request, item_id):
                 return JsonResponse({"success": False, "message": "Quantity cannot be less than 1."})
 
         item.save()
-    
-
-
-        # Recalculate totals
+        
         price = (
             item.variant.sale_price if item.variant and item.variant.sale_price < item.variant.price else
             item.product.sale_price if item.product.sale_price < item.product.price else
@@ -169,7 +159,7 @@ def update_cart_quantity(request, item_id):
                 i.product.sale_price if i.product.sale_price < i.product.price else
                 i.product.price
             ) * i.quantity for i in item.cart.items.all()
-        ) + 100 - 20  
+        )+100 - 20
 
 
         return JsonResponse({
@@ -182,38 +172,20 @@ def update_cart_quantity(request, item_id):
     return JsonResponse({"success": False, "message": "Invalid request"})
 
 
-
-
-
-# Apply Coupon
-@login_required
 def apply_coupon(request):
     if request.method == 'POST':
-        code = request.POST.get('coupon_code', '').strip()
-        cart, _ = Cart.objects.get_or_create(user=request.user)
-
-        if not code:
-            messages.error(request, "Please enter a coupon code.")
-            return redirect('cart:cart')
-
+        coupon_code = request.POST.get('coupon_code')
         try:
-            coupon = Coupon.objects.get(code__iexact=code, active=True)
-
-            # Expiry check
-            if coupon.expiry_date and coupon.expiry_date < timezone.now():
-                messages.error(request, "This coupon has expired.")
-                return redirect('cart:cart')
-
-            # Optional: Minimum subtotal check (say ₹500)
-            if cart.total() < 500:
-                messages.error(request, "This coupon is valid only on orders above ₹500.")
-                return redirect('cart:cart')
-
-            cart.coupon = coupon
-            cart.save()
-            messages.success(request, "Coupon applied successfully.")
+            coupon = Coupon.objects.get(code__iexact=coupon_code)
+            if coupon.is_valid():
+                request.session['applied_coupon'] = coupon.code
+                messages.success(request, f"Coupon '{coupon.code}' applied successfully!")
+            else:
+                messages.error(request, "Coupon expired or not active.")
         except Coupon.DoesNotExist:
             messages.error(request, "Invalid coupon code.")
-
     return redirect('cart:cart')
+
+
+
 

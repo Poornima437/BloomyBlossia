@@ -3,111 +3,369 @@
 {% block title %}Edit Product{% endblock %}
 
 {% block content %}
-<h2 style="margin-bottom: 20px;">Edit Product - {{ product.name }}</h2>
-
-<form method="POST" enctype="multipart/form-data" style="max-width: 600px;">
-    {% csrf_token %}
-
-    <div style="margin-bottom: 15px;">
-        <label>Name:</label><br>
-        <input type="text" name="name" value="{{ product.name }}" required class="form-control" style="width: 100%;">
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-0">Edit Product - {{ product.name }}</h4>
+            <small class="text-muted">Dashboard &gt; Products &gt; Edit</small>
+        </div>
+        <a href="{% url 'customadmin_products' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Products
+        </a>
     </div>
 
-    <div style="margin-bottom: 15px;">
-        <label>Price:</label><br>
-        <input type="number" name="price" step="0.01" value="{{ product.original_price }}" required class="form-control" style="width: 100%;">
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <!-- Left Column - Product Details -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-edit"></i> Product Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data" id="productForm">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Product Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" value="{{ product.name }}" required class="form-control" placeholder="Enter product name">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Description</label>
+                            <textarea name="description" class="form-control" rows="4" placeholder="Product description">{{ product.description }}</textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Price (₹) <span class="text-danger">*</span></label>
+                                <input type="number" name="price" step="0.01" value="{{ product.price }}" required class="form-control" placeholder="0.00">
+                                <small class="text-muted">Base price for Medium size</small>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Sale Price (₹) <span class="text-danger">*</span></label>
+                                <input type="number" name="sale_price" step="0.01" value="{{ product.sale_price }}" required class="form-control" placeholder="0.00">
+                                <small class="text-muted">Discounted price</small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Stock Quantity <span class="text-danger">*</span></label>
+                                <input type="number" name="quantity" min="0" value="{{ product.quantity }}" required class="form-control">
+                                <small class="text-muted">Total stock (distributed to variants)</small>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Category <span class="text-danger">*</span></label>
+                                <select name="category" class="form-control" required>
+                                    {% for cat in categories %}
+                                        <option value="{{ cat.id }}" {% if product.category.id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Status <span class="text-danger">*</span></label>
+                                <select name="status" class="form-control" required>
+                                    <option value="draft" {% if product.status == 'draft' %}selected{% endif %}>Draft</option>
+                                    <option value="published" {% if product.status == 'published' %}selected{% endif %}>Published</option>
+                                    <option value="out_of_stock" {% if product.status == 'out_of_stock' %}selected{% endif %}>Out of Stock</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Sale Status</label>
+                                <div class="form-check form-switch mt-2">
+                                    <input type="checkbox" name="is_sale" class="form-check-input" id="isSale" {% if product.is_sale %}checked{% endif %}>
+                                    <label class="form-check-label" for="isSale">Product is on sale</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Product Images</label>
+                            <input type="file" name="images" id="imageInput" accept="image/*" multiple class="form-control">
+                            <small class="text-muted">Upload 3-7 images to replace existing ones (Current: <span id="currentImageCount">{{ product.images.count }}</span>)</small>
+                            <div id="previewArea" class="mt-3"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Current Images</label>
+                            <div class="row" id="imageGallery">
+                                {% for image in product.images.all %}
+                                <div class="col-md-3 mb-3" id="image-{{ image.id }}">
+                                    <div class="card">
+                                        <img src="{{ image.image.url }}" class="card-img-top" alt="Product Image">
+                                        <div class="card-body p-2 text-center">
+                                            <button type="button" class="btn btn-danger btn-sm delete-image-btn" data-image-id="{{ image.id }}">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Update Product
+                            </button>
+                            <a href="{% url 'customadmin_products' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Variant Management -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-boxes"></i> Manage Variants</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">Edit stock and pricing for each size variant</p>
+                    
+                    {% for variant in product.variants.all %}
+                    <div class="card mb-3 border-primary variant-card" id="variant-{{ variant.id }}">
+                        <div class="card-header bg-light">
+                            <strong>Size: {{ variant.get_size_display }}</strong>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">Stock Quantity</label>
+                                <input type="number" class="form-control form-control-sm variant-quantity" data-variant-id="{{ variant.id }}" value="{{ variant.quantity }}" min="0" required>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">Price (₹)</label>
+                                <input type="number" class="form-control form-control-sm variant-price" data-variant-id="{{ variant.id }}" value="{{ variant.price }}" step="0.01" required>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">Sale Price (₹)</label>
+                                <input type="number" class="form-control form-control-sm variant-sale-price" data-variant-id="{{ variant.id }}" value="{{ variant.sale_price }}" step="0.01" required>
+                            </div>
+
+                            <div class="mb-3 small text-muted">
+                                {% if variant.quantity == 0 %}
+                                    <span class="badge bg-danger stock-badge">Out of Stock</span>
+                                {% elif variant.quantity < 10 %}
+                                    <span class="badge bg-warning stock-badge">Low Stock</span>
+                                {% else %}
+                                    <span class="badge bg-success stock-badge">In Stock</span>
+                                {% endif %}
+                            </div>
+
+                            <button type="button" class="btn btn-success btn-sm w-100 update-variant-btn" data-variant-id="{{ variant.id }}">
+                                <i class="fas fa-save"></i> Update This Variant
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
     </div>
-
-    <div style="margin-bottom: 15px;">
-        <label>Sale Price:</label><br>
-        <input type="number" name="sale_price" step="0.01" value="{{ product.sale_price }}" required class="form-control" style="width: 100%;">
-    </div>
-
-    <div style="margin-bottom: 15px;">
-        <label>Stock Quantity:</label><br>
-        <input type="number" name="quantity" min="0" value="{{ product.quantity }}" required class="form-control" style="width: 100%;">
-    </div>
-
-    <div style="margin-bottom: 15px;">
-        <label>Category:</label><br>
-        <select name="category" class="form-control" required style="width: 100%;">
-            {% for cat in categories %}
-                <option value="{{ cat.id }}" {% if product.category.id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
-            {% endfor %}
-        </select>
-    </div>
-
-    <div style="margin-bottom: 15px;">
-        <label>Upload New Images (you can crop each):</label><br>
-        <input type="file" name="images" id="imageInput" accept="image/*" multiple class="form-control">
-        <div id="previewArea" class="mt-3"></div>
-        <p class="mt-3">Current Images:</p>
-        <ul style="list-style: none; padding-left: 0;">
-            {% for image in product.images.all %}
-            <li style="margin-bottom: 10px;">
-                <img src="{{ image.image.url }}" width="100" class="img-thumbnail">
-                <a href="{% url 'customadmin_delete_image' image.id %}" class="btn btn-danger btn-sm ms-2">Delete</a>
-            </li>
-            {% endfor %}
-        </ul>
-    </div>
-
-    <div style="margin-bottom: 15px;">
-        <label>Status:</label><br>
-        <select name="status" class="form-control" required>
-            <option value="draft" {% if product.status == 'draft' %}selected{% endif %}>Draft</option>
-            <option value="published" {% if product.status == 'published' %}selected{% endif %}>Published</option>
-            <option value="out_of_stock" {% if product.status == 'out_of_stock' %}selected{% endif %}>Out of Stock</option>
-        </select>
-    </div>
-
-    <div style="margin-bottom: 15px;">
-        <label>Is on Sale?</label>
-        <input type="checkbox" name="is_sale" {% if product.is_sale %}checked{% endif %}>
-    </div>
-
-    <button type="submit" class="btn btn-success">Update Product</button>
-</form>
-
-{% if messages %}
-    {% for message in messages %}
-        <p style="color: green;">{{ message }}</p>
-    {% endfor %}
-{% endif %}
+</div>
 {% endblock %}
 
 {% block scripts %}
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
 <script>
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    // Delete Image with AJAX
+    document.querySelectorAll('.delete-image-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const imageId = this.dataset.imageId;
+            
+            Swal.fire({
+                title: 'Delete this image?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/customadmin/products/delete-image/${imageId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrftoken,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById(`image-${imageId}`).remove();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: 'Image deleted successfully.',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: data.message || 'Failed to delete image.'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Something went wrong.'
+                        });
+                    });
+                }
+            });
+        });
+    });
+
+    // Update Individual Variant with AJAX
+    document.querySelectorAll('.update-variant-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const variantId = this.dataset.variantId;
+            const card = document.getElementById(`variant-${variantId}`);
+            
+            const quantity = card.querySelector('.variant-quantity').value;
+            const price = card.querySelector('.variant-price').value;
+            const salePrice = card.querySelector('.variant-sale-price').value;
+
+            // Validation
+            if (quantity < 0 || price < 0 || salePrice < 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Input',
+                    text: 'Values cannot be negative!'
+                });
+                return;
+            }
+
+            // Show loading
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+
+            fetch(`/customadmin/products/update-variant/${variantId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    quantity: parseInt(quantity),
+                    price: parseFloat(price),
+                    sale_price: parseFloat(salePrice)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update stock badge
+                    const badge = card.querySelector('.stock-badge');
+                    if (quantity == 0) {
+                        badge.className = 'badge bg-danger stock-badge';
+                        badge.textContent = 'Out of Stock';
+                    } else if (quantity < 10) {
+                        badge.className = 'badge bg-warning stock-badge';
+                        badge.textContent = 'Low Stock';
+                    } else {
+                        badge.className = 'badge bg-success stock-badge';
+                        badge.textContent = 'In Stock';
+                    }
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Updated!',
+                        text: 'Variant updated successfully.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: data.message || 'Failed to update variant.'
+                    });
+                }
+                this.disabled = false;
+                this.innerHTML = '<i class="fas fa-save"></i> Update This Variant';
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Something went wrong.'
+                });
+                this.disabled = false;
+                this.innerHTML = '<i class="fas fa-save"></i> Update This Variant';
+            });
+        });
+    });
+
+    // Image Cropping
     const imageInput = document.getElementById('imageInput');
     const previewArea = document.getElementById('previewArea');
 
     imageInput.addEventListener('change', function () {
         previewArea.innerHTML = '';
         const files = Array.from(imageInput.files);
-        const dt = new DataTransfer();
 
         files.forEach((file, index) => {
             const reader = new FileReader();
             reader.onload = function (e) {
                 const container = document.createElement('div');
-                container.style.marginBottom = '20px';
-
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.style.maxWidth = '100%';
-                img.style.marginBottom = '10px';
-
-                container.appendChild(img);
-
-                const cropBtn = document.createElement('button');
-                cropBtn.textContent = 'Crop Image';
-                cropBtn.className = 'btn btn-sm btn-warning';
-                container.appendChild(cropBtn);
-
+                container.className = 'card mb-3';
+                container.innerHTML = `
+                    <div class="card-body">
+                        <img src="${e.target.result}" class="img-fluid mb-2" style="max-height: 300px;">
+                        <button type="button" class="btn btn-warning btn-sm crop-btn">
+                            <i class="fas fa-crop"></i> Crop Image ${index + 1}
+                        </button>
+                    </div>
+                `;
                 previewArea.appendChild(container);
+
+                const img = container.querySelector('img');
+                const cropBtn = container.querySelector('.crop-btn');
 
                 const cropper = new Cropper(img, {
                     aspectRatio: 1,
@@ -116,10 +374,16 @@
 
                 cropBtn.addEventListener('click', function () {
                     cropper.getCroppedCanvas({ width: 500, height: 500 }).toBlob(blob => {
-                        const croppedFile = new File([blob], `cropped_${Date.now()}_${file.name}`, { type: 'image/jpeg' });
-                        dt.items.add(croppedFile);
-                        imageInput.files = dt.files;
-                        alert(`Image ${index + 1} cropped and replaced.`);
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Cropped!',
+                            text: `Image ${index + 1} cropped successfully!`,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        cropBtn.classList.remove('btn-warning');
+                        cropBtn.classList.add('btn-success');
+                        cropBtn.innerHTML = '<i class="fas fa-check"></i> Cropped';
                     });
                 });
             };

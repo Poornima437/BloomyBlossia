@@ -1,17 +1,8 @@
 {% extends 'user_profile/base_sidebar.html' %}
 {% load static %}
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cancel Order</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<title>Cancel Order</title>
     <style>
-        body {
-            background-color: #f8f9fa;
-        }
         .cancel-card {
             max-width: 600px;
             margin: 80px auto;
@@ -29,20 +20,34 @@
             color: #fff;
         }
     </style>
-</head>
-<body>
 
 <div class="cancel-card text-center">
-    <h2>Cancel Order #{{ order.id }}</h2>
+    <h2>Cancel Order #{{ order.order_id }}</h2>
     <p>Are you sure you want to cancel this order?</p>
     <form method="POST" id="cancelForm">
         {% csrf_token %}
-        <button type="submit" class="btn btn-cancel">Yes, Cancel Order</button>
-        <a href="{% url 'orders:orders_list' %}" class="btn btn-secondary">No, Go Back</a>
+        
+        <div class="mb-3">
+            <label for="reason" class="form-label">Reason for Cancellation <span class="text-danger">*</span></label>
+            <textarea 
+                name="reason" 
+                id="reason" 
+                class="form-control reason-textarea" 
+                required
+                placeholder="Please tell us why you're canceling this order (minimum 10 characters)"
+                minlength="10"
+            ></textarea>
+            <small class="text-muted">This helps us improve our service</small>
+        </div>
+
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+            <button type="submit" class="btn btn-cancel px-4">Yes, Cancel Order</button>
+            <a href="{% url 'orders:order_detail' order.order_id %}" class="btn btn-secondary px-4">No, Go Back</a>
+        </div>
     </form>
 </div>
 
-<!-- Toast Notification -->
+
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
     <div id="cancelToast" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">
@@ -74,20 +79,18 @@
 const csrftoken = getCookie('csrftoken');
     document.getElementById('cancelForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        fetch("{% url 'orders:cancel_order' order.id %}", {
+        fetch("{% url 'orders:cancel_order' order.order_id %}", {
             method: 'POST',
             headers: {
-                'X-CSRFToken': csrf_token,
+                'X-CSRFToken': csrftoken,
             }
         })
         .then(response => {
             if(response.ok){
-                // Show toast
                 var toastEl = document.getElementById('cancelToast');
                 var toast = new bootstrap.Toast(toastEl);
                 toast.show();
 
-                // Redirect after 2.5 seconds
                 setTimeout(() => {
                     window.location.href = "{% url 'orders:orders_list' %}";
                 }, 2500);
@@ -101,7 +104,4 @@ const csrftoken = getCookie('csrftoken');
         });
     });
 </script>
-
-</body>
-</html>
 {% endblock %}

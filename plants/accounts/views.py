@@ -279,10 +279,12 @@ def resend_reset_otp(request):
 def user_profile(request):
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
     addresses = Address.objects.filter(user=request.user)
+    default_address = Address.objects.filter(user=request.user, is_default=True).first()
     return render(request, 'user_profile/profile.html', {
         'user': request.user,
         'profile': profile,
-        'addresses': addresses
+        'addresses': addresses,
+        'default_address': default_address,
     })
 
 @login_required
@@ -408,9 +410,7 @@ def delete_address(request, pk):
 def address_view(request):
     return render(request, 'user_profile/address.html')
 
-@login_required
-def wallet_view(request):
-    return render(request, 'user_profile/wallet.html')
+
 
 @login_required
 def user_logout(request):

@@ -4,144 +4,566 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Checkout</title>
+    <title>Checkout - BloomyBlossia</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', sans-serif;
+        :root {
+            --green-primary: #2C5F2D;
+            --green-light: #87A878;
+            --green-soft: #A8D5BA;
+            --rose-accent: #E8B4B8;
+            --coral-accent: #FF8B7C;
+            --cream: #FFF8F5;
+            --white: #FFFFFF;
+            --text-dark: #2D3436;
+            --text-gray: #636E72;
+            --border-light: #E8ECF1;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 20px rgba(0,0,0,0.1);
+            --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
         }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8f9fa 0%, var(--cream) 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
         .checkout-container {
             max-width: 1200px;
             margin: 40px auto;
-            background: #fdfdfd;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+            background: var(--white);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-light);
         }
-        .form-group label {
-            font-weight: 600;
-        }
-        .order-summary {
-            background-color: #f1f1f1;
-            padding: 20px;
-            border-radius: 6px;
-            margin-top: 20px;
-        }
-        .order-summary h5 {
-            margin-bottom: 20px;
-        }
-        .place-order-btn {
-            width: 100%;
-            margin-top: 20px;
-        }
-        .is-invalid {
-            border: 1px solid red !important;
-        }
-        .text-danger {
-            font-size: 0.85rem;
-        }
-        .address-card {
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .address-card:hover {
-            border-color: #17a2b8;
-            background-color: #f0f9ff;
-        }
-        .address-card.selected {
-            border-color: #17a2b8;
-            background-color: #e0f5f9;
-        }
-        .address-card input[type="radio"] {
-            width: 18px;
-            height: 18px;
-            margin-right: 12px;
-        }
-        .address-type-badge {
-            display: inline-block;
-            padding: 3px 10px;
-            background-color: #17a2b8;
-            color: white;
+
+        /* Header Section */
+        .checkout-header {
+            background: linear-gradient(135deg, var(--green-primary) 0%, var(--green-light) 100%);
+            padding: 25px 30px;
             border-radius: 12px;
-            font-size: 0.75rem;
-            margin-left: 8px;
+            color: white;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow-md);
         }
-        .add-address-btn {
-            border: 2px dashed #17a2b8;
-            background: transparent;
-            color: #17a2b8;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            margin-bottom: 20px;
+
+        .checkout-header h3 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        .add-address-btn:hover {
-            background-color: #e0f5f9;
+
+        .checkout-header h3 i {
+            font-size: 1.6rem;
         }
-        .address-form-container {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
+
+        /* Back to Cart Button */
         .back-to-cart {
-            color: #17a2b8;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
             text-decoration: none;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
-            margin-bottom: 20px;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
+
         .back-to-cart:hover {
-            color: #138496;
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
             text-decoration: none;
+            transform: translateX(-4px);
+            border-color: rgba(255, 255, 255, 0.5);
         }
-        .back-to-cart svg {
-            margin-right: 8px;
+
+        .back-to-cart i {
+            font-size: 16px;
+        }
+
+        /* Section Headers */
+        .section-header {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--green-primary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--green-soft);
+        }
+
+        .section-header i {
+            color: var(--green-light);
+        }
+
+        /* Form Styling */
+        .form-group label {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            padding: 12px 16px;
+            transition: all 0.3s ease;
+            background-color: var(--cream);
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--green-light);
+            background-color: var(--white);
+            box-shadow: 0 0 0 4px rgba(135, 168, 120, 0.1);
+            outline: none;
+        }
+
+        .is-invalid {
+            border-color: #E74C3C !important;
+            background-color: #FEF5F5 !important;
+        }
+
+        .text-danger {
+            font-size: 0.85rem;
+            color: #E74C3C;
+            margin-top: 4px;
+            display: block;
+        }
+
+        /* Address Cards */
+        .address-card {
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--white);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .address-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--green-light);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .address-card:hover {
+            border-color: var(--green-light);
+            background-color: #f0f9f5;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .address-card:hover::before {
+            transform: scaleY(1);
+        }
+
+        .address-card.selected {
+            border-color: var(--green-primary);
+            background: linear-gradient(135deg, #f0f9f5 0%, var(--cream) 100%);
+            box-shadow: var(--shadow-md);
+        }
+
+        .address-card.selected::before {
+            transform: scaleY(1);
+            background: var(--green-primary);
+        }
+
+        .address-card input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 15px;
+            cursor: pointer;
+            accent-color: var(--green-primary);
+        }
+
+        .address-type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: linear-gradient(135deg, var(--green-light), var(--green-primary));
+            color: white;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .address-card strong {
+            color: var(--green-primary);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .address-card strong i {
+            color: var(--green-light);
+        }
+
+        .address-card p {
+            margin-bottom: 6px;
+            color: var(--text-gray);
+            font-size: 0.95rem;
+        }
+
+        /* Add Address Button */
+        .add-address-btn {
+            border: 2px dashed var(--green-light);
+            background: transparent;
+            color: var(--green-primary);
+            padding: 16px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 1rem;
+        }
+
+        .add-address-btn:hover {
+            background: linear-gradient(135deg, #f0f9f5, var(--cream));
+            border-color: var(--green-primary);
+            border-style: solid;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .add-address-btn i {
+            font-size: 1.2rem;
+        }
+
+        /* Address Form Container */
+        .address-form-container {
+            background: linear-gradient(135deg, var(--cream), #f0f9f5);
+            border: 2px solid var(--green-soft);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .address-form-container h6 {
+            color: var(--green-primary);
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .address-form-container h6 i {
+            color: var(--green-light);
+        }
+
+        /* Payment Method */
+        .form-check {
+            padding: 15px 20px;
+            border: 2px solid var(--border-light);
+            border-radius: 10px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            background: var(--white);
+        }
+
+        .form-check:hover {
+            border-color: var(--green-light);
+            background-color: #f0f9f5;
+            transform: translateX(4px);
+        }
+
+        .form-check-input:checked ~ .form-check-label {
+            color: var(--green-primary);
+            font-weight: 600;
+        }
+
+        .form-check-input {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            cursor: pointer;
+            accent-color: var(--green-primary);
+        }
+
+        .form-check-label {
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Order Summary */
+        .order-summary {
+            background: linear-gradient(135deg, var(--cream), #f0f9f5);
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid var(--green-soft);
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 20px;
+        }
+
+        .order-summary h5 {
+            color: var(--green-primary);
+            font-weight: 600;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .order-summary h5 i {
+            color: var(--green-light);
+        }
+
+        .order-summary hr {
+            border-top: 2px solid var(--green-soft);
+            opacity: 0.3;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+        }
+
+        .summary-row span:first-child {
+            color: var(--text-gray);
+        }
+
+        .summary-row span:last-child {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--green-primary);
+            padding: 15px 0;
+            border-top: 2px solid var(--green-soft);
+            margin-top: 10px;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--green-light), var(--green-primary));
+            border: none;
+            border-radius: 8px;
+            padding: 12px 28px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--green-primary), #1F4A21);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #95A5A6, #7F8C8D);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 28px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #7F8C8D, #6C7A7B);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--green-primary), #1F4A21);
+            border: none;
+            border-radius: 10px;
+            padding: 16px 32px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #1F4A21, #153015);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-success i {
+            font-size: 1.2rem;
+        }
+
+        /* Alert Messages */
+        .alert {
+            border-radius: 10px;
+            border: none;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+            color: #1565C0;
+            border-left: 4px solid #2196F3;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .checkout-container {
+                padding: 25px 20px;
+                margin: 20px 15px;
+            }
+
+            .checkout-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .checkout-header h3 {
+                font-size: 1.5rem;
+            }
+
+            .back-to-cart {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .section-header {
+                font-size: 1.1rem;
+            }
+
+            .order-summary {
+                position: static;
+                margin-top: 30px;
+            }
+
+            .address-card {
+                padding: 15px;
+            }
+        }
+
+        /* Custom Checkbox Styling */
+        .form-check-input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--green-primary);
+            cursor: pointer;
+        }
+
+        /* SweetAlert2 Custom Styling */
+        .swal2-popup {
+            border-radius: 16px !important;
+        }
+
+        .swal2-confirm {
+            background: linear-gradient(135deg, var(--green-light), var(--green-primary)) !important;
+            border-radius: 8px !important;
+        }
+
+        .swal2-cancel {
+            background: linear-gradient(135deg, #E74C3C, #C0392B) !important;
+            border-radius: 8px !important;
         }
     </style>
 </head>
 <body>
 <div class="container mt-5 mb-5">
-    <div class="checkout-container p-4 bg-white rounded shadow">
-        <!-- Back to Cart Button -->
-        <a href="{% url 'cart:cart' %}" class="back-to-cart">
-            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-            </svg>
-            Back to Cart
-        </a>
-
-        <h3 class="mb-4">Checkout</h3>
+    <div class="checkout-container">
+        <!-- Header -->
+        <div class="checkout-header">
+            <h3>
+                <i class="fas fa-shopping-cart"></i>
+                Checkout
+            </h3>
+            <a href="{% url 'cart:cart' %}" class="back-to-cart">
+                <i class="fas fa-arrow-left"></i>
+                Back to Cart
+            </a>
+        </div>
 
         {% if messages %}
         {% for message in messages %}
             <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+                <i class="fas fa-info-circle"></i>
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
         {% endfor %}
         {% endif %}
         
-        <form id="checkoutForm" method="post" action="{% url 'orders:checkout' %}">
+        <form id="checkoutForm" method="post" action="{% url 'orders:place_order' %}">
             {% csrf_token %}
             <input type="hidden" name="action" id="formAction" value="place_order">
             
             <div class="row">
                 <!-- Left Column: Address & Payment -->
                 <div class="col-md-7">
-                    <h5 class="mb-3">Shipping Address</h5>
+                    <h5 class="section-header">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Shipping Address
+                    </h5>
                     
                     <!-- Display Saved Addresses -->
                     {% if addresses %}
@@ -152,15 +574,16 @@
                                     <input type="radio" name="selected_address" value="{{ address.address_id }}" {% if address.is_default %}checked{% endif %}>
                                     <div class="flex-grow-1">
                                         <strong>
+                                            <i class="fas {% if address.is_default %}fa-home{% else %}fa-building{% endif %}"></i>
                                             {% if address.is_default %}Home{% else %}Office{% endif %}
                                         </strong>
                                         {% if address.is_default %}
                                         <span class="address-type-badge">Default</span>
                                         {% endif %}
-                                        <p class="mb-1 mt-2">{{ address.full_name }}</p>
-                                        <p class="mb-1 text-muted">{{ address.address_line }}</p>
-                                        <p class="mb-1 text-muted">{{ address.city }}, {{ address.state }} - {{ address.zip_code }}</p>
-                                        <p class="mb-0 text-muted">Phone: {{ address.phone }}</p>
+                                        <p class="mb-1 mt-2"><strong>{{ address.full_name }}</strong></p>
+                                        <p class="mb-1">{{ address.address_line }}</p>
+                                        <p class="mb-1">{{ address.city }}, {{ address.state }} - {{ address.zip_code }}</p>
+                                        <p class="mb-0"><i class="fas fa-phone"></i> {{ address.phone }}</p>
                                     </div>
                                 </label>
                             </div>
@@ -168,18 +591,23 @@
                         </div>
                     {% else %}
                         <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
                             No saved addresses. Please add a new address below.
                         </div>
                     {% endif %}
 
                     <!-- Add New Address Button -->
                     <button type="button" class="add-address-btn" onclick="toggleAddressForm()">
-                        + Add New Address
+                        <i class="fas fa-plus-circle"></i>
+                        Add New Address
                     </button>
 
-                    <!-- New Address Form (Hidden by default) -->
+                    <!-- New Address Form -->
                     <div id="newAddressForm" class="address-form-container" style="display: none;">
-                        <h6 class="mb-3">Add New Shipping Address</h6>
+                        <h6>
+                            <i class="fas fa-edit"></i>
+                            Add New Shipping Address
+                        </h6>
                         
                         <div class="row">
                             <div class="col-md-6">
@@ -231,59 +659,77 @@
                         <div class="form-check mb-3">
                             <input class="form-check-input" type="checkbox" name="set_as_default" id="setAsDefault">
                             <label class="form-check-label" for="setAsDefault">
+                                <i class="fas fa-star"></i>
                                 Set as default address
                             </label>
                         </div>
 
                         <div class="d-flex gap-2">
                             <button type="button" class="btn btn-primary" onclick="submitNewAddress()">
+                                <i class="fas fa-save"></i>
                                 Save Address
                             </button>
                             <button type="button" class="btn btn-secondary ml-2" onclick="toggleAddressForm()">
+                                <i class="fas fa-times"></i>
                                 Cancel
                             </button>
                         </div>
                     </div>
 
                     <!-- Payment Method -->
-                    <h5 class="mt-4 mb-3">Payment Method</h5>
-                    <div class="form-check mb-2">
+                    <h5 class="section-header mt-4">
+                        <i class="fas fa-credit-card"></i>
+                        Payment Method
+                    </h5>
+                    <div class="form-check">
                         <input class="form-check-input" type="radio" name="payment_method" id="cod" value="COD" checked>
-                        <label class="form-check-label" for="cod">Cash on Delivery</label>
+                        <label class="form-check-label" for="cod">
+                            <i class="fas fa-money-bill-wave"></i>
+                            Cash on Delivery
+                        </label>
                     </div>
-                    <div class="form-check mb-2">
+                    <div class="form-check">
                         <input class="form-check-input" type="radio" name="payment_method" id="razorpay" value="RAZORPAY">
-                        <label class="form-check-label" for="razorpay">Razorpay</label>
+                        <label class="form-check-label" for="razorpay">
+                            <i class="fas fa-wallet"></i>
+                            Razorpay
+                        </label>
                     </div>
-                    <div class="form-check mb-2">
+                    <div class="form-check">
                         <input class="form-check-input" type="radio" name="payment_method" id="paypal" value="PAYPAL">
-                        <label class="form-check-label" for="paypal">PayPal</label>
+                        <label class="form-check-label" for="paypal">
+                            <i class="fab fa-paypal"></i>
+                            PayPal
+                        </label>
                     </div>
                 </div>
                 
-                <!-- Right Column: Order Summary -->
+                <!-- Order Summary -->
                 <div class="col-md-5">
-                    <div class="order-summary p-3 bg-light rounded sticky-top" style="top: 20px;">
-                        <h5>Order Summary</h5>
+                    <div class="order-summary">
+                        <h5>
+                            <i class="fas fa-receipt"></i>
+                            Order Summary
+                        </h5>
                         <hr>
-                        <div class="d-flex justify-content-between mb-2">
+                        <div class="summary-row">
                             <span>Subtotal:</span>
                             <span>₹{{ subtotal }}</span>
                         </div>
-                        <div class="d-flex justify-content-between mb-2">
+                        <div class="summary-row">
                             <span>Shipping:</span>
                             <span>₹{{ shipping_cost }}</span>
                         </div>
-                        <div class="d-flex justify-content-between mb-3">
+                        <div class="summary-row">
                             <span>Discount:</span>
-                            <span>₹{{ discount }}</span>
+                            <span class="text-success">- ₹{{ discount }}</span>
                         </div>
-                        <hr>
-                        <div class="d-flex justify-content-between mb-3">
+                        <div class="summary-total">
                             <strong>Total:</strong>
-                            <strong class="text-success">₹{{ total }}</strong>
+                            <strong>₹{{ total }}</strong>
                         </div>
-                        <button type="button" class="btn btn-success btn-block btn-lg" onclick="placeOrder()">
+                        <button type="button" class="btn btn-success btn-block" onclick="placeOrder()">
+                            <i class="fas fa-check-circle"></i>
                             Place Order
                         </button>
                     </div>
@@ -310,26 +756,24 @@ function toggleAddressForm() {
     form.style.display = isHidden ? 'block' : 'none';
     
     if (!isHidden) {
-        // Clear form when hiding
         fields.forEach(id => {
             const input = document.getElementById(id);
             input.value = '';
             input.classList.remove('is-invalid');
             document.getElementById(id + 'Error').textContent = '';
         });
+    } else {
+        // Smooth scroll to form
+        form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 }
 
 function selectAddress(element, addressId) {
-    // Remove selected class from all cards
     document.querySelectorAll('.address-card').forEach(card => {
         card.classList.remove('selected');
     });
     
-    // Add selected class to clicked card
     element.classList.add('selected');
-    
-    // Check the radio button
     element.querySelector('input[type="radio"]').checked = true;
 }
 
@@ -351,6 +795,16 @@ function validateField(input) {
     return true;
 }
 
+// Real-time validation
+fields.forEach(id => {
+    const input = document.getElementById(id);
+    if (input) {
+        input.addEventListener('blur', function() {
+            validateField(this);
+        });
+    }
+});
+
 function submitNewAddress() {
     let isValid = true;
     fields.forEach(id => {
@@ -362,25 +816,25 @@ function submitNewAddress() {
         Swal.fire({
             icon: 'error',
             title: 'Validation Error',
-            text: 'Please correct the highlighted fields.'
+            text: 'Please correct the highlighted fields.',
+            confirmButtonColor: '#2C5F2D'
         });
         return;
     }
 
-    // Set action to add_address and submit
     document.getElementById('formAction').value = 'add_address';
     document.getElementById('checkoutForm').submit();
 }
 
 function placeOrder() {
-    // Check if an address is selected
     const selectedAddress = document.querySelector('input[name="selected_address"]:checked');
     
     if (!selectedAddress) {
         Swal.fire({
             icon: 'warning',
             title: 'No Address Selected',
-            text: 'Please select a shipping address or add a new one.'
+            text: 'Please select a shipping address or add a new one.',
+            confirmButtonColor: '#2C5F2D'
         });
         return;
     }
@@ -390,9 +844,10 @@ function placeOrder() {
         text: 'Are you sure you want to place this order?',
         icon: 'question',
         showCancelButton: true,
-        confirmButtonColor: '#28a745',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, place it!'
+        confirmButtonColor: '#2C5F2D',
+        cancelButtonColor: '#E74C3C',
+        confirmButtonText: '<i class="fas fa-check"></i> Yes, place it!',
+        cancelButtonText: '<i class="fas fa-times"></i> Cancel'
     }).then((result) => {
         if (result.isConfirmed) {
             document.getElementById('formAction').value = 'place_order';
@@ -400,7 +855,20 @@ function placeOrder() {
         }
     });
 }
+
+// Smooth scroll on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Add animation to elements on load
+    const elements = document.querySelectorAll('.address-card, .order-summary, .section-header');
+    elements.forEach((el, index) => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            el.style.transition = 'all 0.5s ease';
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
 </script>
-</body>
-</html>
 {% endblock %}

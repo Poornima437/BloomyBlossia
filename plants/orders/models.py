@@ -19,7 +19,7 @@ class Order(models.Model):
 
     RETURN_REQUEST_CHOICES = [
         ("None", "None"),
-        ("Pending", "Pending"),
+        ("PENDING", "Pending"),
         ("Verified", "Verified"),
         ("Rejected", "Rejected"),
     ]
@@ -34,6 +34,7 @@ class Order(models.Model):
     payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES, default='cod')
     return_request = models.CharField(max_length=10, choices=RETURN_REQUEST_CHOICES, default="None")
     cancel_reason = models.TextField(blank=True, null=True)
+    canceled_at = models.DateTimeField(blank=True, null=True)
     return_reason = models.TextField(blank=True, null=True)
 
     order_notes = models.TextField(blank=True, null=True)
@@ -50,14 +51,12 @@ class Order(models.Model):
     address = models.ForeignKey(Address,on_delete=models.SET_NULL,null=True,blank=True,related_name="orders")
 
     def save(self, *args, **kwargs):
-        # Generate order_id if not set
         if not self.order_id:
             today_str = timezone.now().strftime("%Y%m%d")
             prefix = f"ORD{today_str}"
             count = Order.objects.filter(order_id__startswith=prefix).count() + 1
             self.order_id = f"{prefix}{count:03d}"
 
-        # Calculate total_amount automatically
         self.total = self.subtotal + self.shipping_cost - self.discount
         super().save(*args, **kwargs)
 
@@ -73,7 +72,7 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
-    price = models.DecimalField(max_digits=10, decimal_places=2)  # Price per item at purchase time
+    price = models.DecimalField(max_digits=10, decimal_places=2)  
 
     def __str__(self):
         return f"{self.quantity} x {self.product.name}"

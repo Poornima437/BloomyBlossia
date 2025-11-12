@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load cloudinary %}
 {% block content %}
 <div class="container mt-4">
     <nav aria-label="breadcrumb">
@@ -18,12 +19,18 @@
     <div class="row">
         <div class="col-md-6">
             <div class="d-flex flex-column align-items-center">
-                <img id="mainImage" src="{{ product.image.url }}" alt="{{ product.name }}"
-                     style="width: 100%; max-width: 400px; height: auto; object-fit: cover; border-radius: 8px; margin-bottom: 15px;"
-                     class="img-fluid shadow-sm zoomable">
-                <div class="d-flex justify-content-center gap-2">
-                    {% for image in product.images.all|slice:":3" %}
-                        <img src="{{ image.image.url }}" class="img-thumbnail thumb-img" style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;">
+                <div class="main-image-container">
+                    {% if product.image %}
+                        {% cloudinary product.image width=500 height=500 crop="fill" gravity="center" quality="auto" fetch_format="auto" id="mainImage" class="main-image" alt=product.name %}
+                    {% else %}
+                        <img src="{% static 'images/no-image.png' %}" id="mainImage" class="main-image" alt="No image">
+                    {% endif %}
+                </div>
+                <div class="d-flex justify-content-center gap-2 flex-wrap mt-3">
+                    {% for image in product.images.all|slice:":7" %}
+                        <div class="thumb-container" data-image-url="{% cloudinary_url image.image width=500 height=500 crop='fill' gravity='center' quality='auto' fetch_format='auto' %}">
+                            {% cloudinary image.image width=80 height=80 crop="fill" gravity="center" quality="auto" fetch_format="auto" class="thumb-img" alt=product.name %}
+                        </div>
                     {% endfor %}
                 </div>
             </div>
@@ -43,7 +50,9 @@
                         {% if first_variant.sale_price and first_variant.sale_price < first_variant.price %}
                             <del>Rs. {{ first_variant.price }}</del>
                             <span class="text-success ms-2">Rs. {{ first_variant.sale_price }}</span>
-                            <span class="badge bg-danger ms-2">On Sale</span>
+                            {% widthratio first_variant.price|add:"0" first_variant.sale_price|add:"0" 1 as ratio %}
+                            {% widthratio 100 1 ratio as discount_percent %}
+                            <span class="badge bg-danger ms-2">{{ discount_percent|floatformat:0 }}% OFF</span>
                         {% else %}
                             <span class="text-dark">Rs. {{ first_variant.price }}</span>
                         {% endif %}
@@ -99,16 +108,24 @@
             {% for p in related_products %}
             <div class="col-md-3 mb-4">
                 <div class="card h-100 shadow-sm">
-                    <img src="{{ p.image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ p.name }}">
+                    <div class="related-image-container">
+                        {% if p.image %}
+                            {% cloudinary p.image width=300 height=300 crop="fill" gravity="center" quality="auto" fetch_format="auto" class="related-image" alt=p.name %}
+                        {% else %}
+                            <img src="{% static 'images/no-image.png' %}" class="related-image" alt="No image">
+                        {% endif %}
+                    </div>
                     <div class="card-body">
                         <h6 class="card-title">{{ p.name }}</h6>
                 
                         {% if p.is_sale %}
                             <p class="card-text mb-1">
                                 <del class="text-muted">Rs. {{ p.price }}</del>
-                                <span class="text-success ms-1">Rs. {{ p.sale_price }}</span>
+                                <span class="text-success ms-1">Rs. {{ p.sale_price }}</span> 
                             </p>
-                            <span class="badge bg-danger">On Sale</span>
+                            {% widthratio p.price|floatformat:2|add:"0" p.sale_price|floatformat:2|add:"0" 1 as ratio %}
+                            {% widthratio 100 1 ratio as discount %}
+                            <span class="badge bg-danger">{{ discount|floatformat:0 }}% OFF</span>
                         {% else %}
                             <p class="card-text">Rs. {{ p.price }}</p>
                         {% endif %}
@@ -124,36 +141,102 @@
 
 </div>
 <style>
+    /* Main Product Image - Fixed 1:1 Ratio */
+    .main-image-container {
+        width: 100%;
+        max-width: 500px;
+        aspect-ratio: 1 / 1;
+        overflow: hidden;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        background-color: #f8f9fa;
+    }
+    
+    .main-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+    }
+    
+    /* Thumbnail Images - Fixed 1:1 Ratio */
+    .thumb-container {
+        width: 80px;
+        height: 80px;
+        overflow: hidden;
+        border-radius: 4px;
+        border: 2px solid #dee2e6;
+        cursor: pointer;
+        transition: all 0.2s;
+        background-color: #f8f9fa;
+    }
+    
+    .thumb-container:hover {
+        transform: scale(1.05);
+        border-color: #28a745;
+    }
+    
+    .thumb-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+    }
+    
+    /* Related Product Images - Fixed 1:1 Ratio */
+    .related-image-container {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        overflow: hidden;
+        background-color: #f8f9fa;
+    }
+    
+    .related-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+    }
+    
+    /* Size Variants */
     .size-variants {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
     }
+    
     .size-btn {
         padding: 6px 12px;
         border-radius: 4px;
         cursor: pointer;
     }
+    
     .size-btn.selected {
         background-color: #28a745;
         color: white;
         border-color: #28a745;
     }
+    
     .size-btn:not(.selected):hover {
         background-color: #0c7732;
     }
+    
     .size-btn.disabled {
         opacity: 0.65;
         cursor: not-allowed;
     }
 </style>
-<!-- ✅ Zoom Script -->
+<!-- ✅ Image Gallery Script -->
 <script>
     const mainImage = document.getElementById('mainImage');
-    const thumbs = document.querySelectorAll('.thumb-img');
-    thumbs.forEach(thumb => {
-        thumb.addEventListener('click', () => {
-            mainImage.src = thumb.src;
+    const thumbContainers = document.querySelectorAll('.thumb-container');
+    
+    thumbContainers.forEach(container => {
+        container.addEventListener('click', () => {
+            const imageUrl = container.getAttribute('data-image-url');
+            if (imageUrl) {
+                mainImage.src = imageUrl;
+            }
         });
     });
 </script>
@@ -170,16 +253,17 @@ document.querySelectorAll('.size-btn').forEach(button => {
         document.getElementById('selected-variant-id').value = this.dataset.variantId;
 
         // Get prices
-        const price = this.dataset.price;
-        const salePrice = this.dataset.salePrice;
+        const price = parseFloat(this.dataset.price);
+        const salePrice = parseFloat(this.dataset.salePrice);
 
         // Update price section
         const priceSection = document.getElementById('price-section');
-        if (salePrice && parseFloat(salePrice) < parseFloat(price)) {
+        if (salePrice && salePrice < price) {
+            const discountPercent = Math.round(((price - salePrice) / price) * 100);
             priceSection.innerHTML = `
                 <del class="text-muted">Rs. ${price}</del>
                 <span class="text-success ms-2">Rs. ${salePrice}</span>
-                <span class="badge bg-danger ms-2">On Sale</span>
+                <span class="badge bg-danger ms-2">${discountPercent}% OFF</span>
             `;
         } else {
             priceSection.innerHTML = `<span class="text-dark">Rs. ${price}</span>`;

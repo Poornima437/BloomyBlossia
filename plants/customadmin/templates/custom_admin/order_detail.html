@@ -2,81 +2,517 @@
 {% load static %}
 
 {% block content %}
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4>Order #{{ order.order_id }}</h4>
-    <div>
-      <a href="{% url 'export_invoice' order.order_id %}" class="btn btn-outline-secondary btn-sm">Export</a>
-      <a href="{% url 'generate_invoice' order.order_id %}" class="btn btn-outline-primary btn-sm">Invoice</a>
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-green: #0d290d;
+      --secondary-green: #103d2d;
+      --accent-green: #03380a;
+      --light-green: #e8f5e9;
+      --white: #ffffff;
+      --light-gray: #f8f9fa;
+      --medium-gray: #e0e0e0;
+      --dark-gray: #616161;
+      --sale-red: #e63946;
+      --gold: #ffa500;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+      --transition: all 0.3s ease;
+    }
+
+    body {
+      background: #fafafa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .container {
+      max-width: 1200px;
+    }
+
+    /* Header Styling */
+    .page-header {
+      background: linear-gradient(135deg, #87A878 0%, #6d8b6d 100%);
+      color: white;
+      padding: 25px 0;
+      margin: -20px -20px 30px -20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      opacity: 0.1;
+    }
+
+    .page-header-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .page-header h4 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 300;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .page-header p {
+      font-size: 1rem;
+      color: var(--light-green);
+      margin: 5px 0 0;
+      opacity: 0.9;
+    }
+
+    /* Card Styling */
+    .card {
+      border: none;
+      border-radius: 15px;
+      box-shadow: var(--shadow);
+      margin-bottom: 25px;
+      border: 1px solid var(--medium-gray);
+      transition: var(--transition);
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, var(--secondary-green) 0%, var(--primary-green) 100%);
+      color: white;
+      border-radius: 15px 15px 0 0 !important;
+      padding: 20px 25px;
+      border-bottom: 1px solid var(--medium-gray);
+    }
+
+    .card-header h5 {
+      margin: 0;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-header h5 i {
+      opacity: 0.9;
+    }
+
+    .card-body {
+      padding: 25px;
+    }
+
+    /* Button Styling */
+    .btn {
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: 500;
+      transition: var(--transition);
+      border: none;
+    }
+
+    .btn-outline-secondary {
+      border: 2px solid var(--medium-gray);
+      color: var(--dark-gray);
+    }
+
+    .btn-outline-secondary:hover {
+      border-color: var(--secondary-green);
+      color: var(--secondary-green);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .btn-outline-primary {
+      border: 2px solid var(--secondary-green);
+      color: var(--secondary-green);
+    }
+
+    .btn-outline-primary:hover {
+      background: var(--secondary-green);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(16, 61, 45, 0.3);
+    }
+
+    .btn-success {
+      background: var(--secondary-green);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: var(--primary-green);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(16, 61, 45, 0.3);
+    }
+
+    .btn-danger {
+      background: var(--sale-red);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c1121f;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(230, 57, 70, 0.3);
+    }
+
+    /* Status Badges */
+    .badge {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-placed { background: #17a2b8; color: white; }
+    .badge-packed { background: #6f42c1; color: white; }
+    .badge-shipped { background: #fd7e14; color: white; }
+    .badge-delivered { background: #28a745; color: white; }
+    .badge-canceled { background: var(--sale-red); color: white; }
+    .badge-pending { background: #ffc107; color: #212529; }
+
+    /* Info Cards */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+      margin-bottom: 25px;
+    }
+
+    .info-card {
+      background: var(--white);
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--medium-gray);
+      transition: var(--transition);
+    }
+
+    .info-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .info-card h6 {
+      color: var(--primary-green);
+      font-weight: 600;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .info-card p {
+      margin-bottom: 8px;
+      color: var(--dark-gray);
+    }
+
+    .info-card strong {
+      color: var(--primary-green);
+    }
+
+    /* Table Styling */
+    .table {
+      margin: 0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .table thead {
+      background: var(--light-green);
+    }
+
+    .table thead th {
+      border: none;
+      color: var(--primary-green);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.85rem;
+      padding: 15px;
+    }
+
+    .table tbody tr {
+      transition: var(--transition);
+      border-bottom: 1px solid var(--light-gray);
+    }
+
+    .table tbody tr:hover {
+      background: var(--light-green);
+    }
+
+    .table td {
+      padding: 15px;
+      vertical-align: middle;
+      border-color: var(--light-gray);
+    }
+
+    .table tbody tr:last-child {
+      background: var(--light-green);
+      font-weight: 600;
+      color: var(--primary-green);
+    }
+
+    /* Form Styling */
+    .status-form {
+      background: var(--white);
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--medium-gray);
+      margin-top: 25px;
+    }
+
+    .form-control {
+      border: 2px solid var(--medium-gray);
+      border-radius: 8px;
+      padding: 10px 15px;
+      transition: var(--transition);
+    }
+
+    .form-control:focus {
+      border-color: var(--secondary-green);
+      box-shadow: 0 0 0 3px rgba(16, 61, 45, 0.1);
+    }
+
+    .form-label {
+      color: var(--primary-green);
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    /* Action Section */
+    .action-section {
+      background: var(--light-green);
+      border-radius: 15px;
+      padding: 20px;
+      margin-top: 25px;
+      border: 2px dashed var(--secondary-green);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .page-header h4 {
+        font-size: 1.5rem;
+      }
+      
+      .btn-group {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .btn-group .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<div class="page-header">
+  <div class="container">
+    <div class="page-header-content">
+      <h4>Order #{{ order.order_id }}</h4>
+      <p>Order Details & Management</p>
     </div>
   </div>
+</div>
 
-  <div class="card mb-4">
-    <div class="card-body row">
-      <div class="col-md-6">
-        <h6>Status: <span class="badge badge-{{ order.status|lower }}">{{ order.status }}</span></h6>
-        <p><strong>Date:</strong> {{ order.created_at|date:"Y-m-d H:i" }}</p>
-        <p><strong>Payment Method:</strong> {{ order.payment_method }}</p>
-      </div>
-      <div class="col-md-6">
-        <h6>Customer Info</h6>
-        <p><strong>Name:</strong> {{ order.user.get_full_name }}</p>
-        <p><strong>Email:</strong> {{ order.user.email }}</p>
-      </div>
-    </div>
-  </div>
-
+<div class="container">
+  <!-- Header Actions -->
   <div class="card mb-4">
     <div class="card-body">
-      <h6>Order List</h6>
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Qty</th>
-            <th>Price</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for item in order.items.all %}
-          <tr>
-            <td>{{ item.product.name }}</td>
-            <td>{{ item.quantity }}</td>
-            <td>&#8377;{{ item.price }}</td>
-            <td>&#8377;{{ item.total_price }}</td>
-
-          </tr>
-          {% endfor %}
-          <tr><td colspan="3" class="text-right">Total Amount</td><td>&#8377;{{ order.total }}</td></tr>
-        </tbody>
-      </table>
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Order Details</h5>
+        </div>
+        <div class="btn-group">
+          <a href="{% url 'export_invoice' order.order_id %}" class="btn btn-outline-secondary">
+            <i class="fas fa-download me-2"></i>Export
+          </a>
+          <a href="{% url 'generate_invoice' order.order_id %}" class="btn btn-outline-primary">
+            <i class="fas fa-file-invoice me-2"></i>Invoice
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 
+  <!-- Order Information Cards -->
+  <div class="info-grid">
+    <div class="info-card">
+      <h6><i class="fas fa-info-circle"></i> Order Information</h6>
+      <p><strong>Status:</strong> <span class="badge badge-{{ order.status|lower }}">{{ order.status }}</span></p>
+      <p><strong>Date:</strong> {{ order.created_at|date:"F j, Y" }} at {{ order.created_at|date:"g:i A" }}</p>
+      <p><strong>Payment Method:</strong> {{ order.payment_method }}</p>
+      <p><strong>Order ID:</strong> #{{ order.order_id }}</p>
+    </div>
+
+    <div class="info-card">
+      <h6><i class="fas fa-user"></i> Customer Information</h6>
+      <p><strong>Name:</strong> {{ order.user.get_full_name|default:order.user.username }}</p>
+      <p><strong>Email:</strong> {{ order.user.email }}</p>
+      <p><strong>Phone:</strong> {{ order.user.phone_number|default:"Not provided" }}</p>
+    </div>
+  </div>
+
+  <!-- Order Items -->
   <div class="card">
+    <div class="card-header">
+      <h5><i class="fas fa-shopping-basket"></i> Order Items</h5>
+    </div>
     <div class="card-body">
-      <h6>Shipping Address</h6>
-      <p>{{ order.address }}</p>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Quantity</th>
+              <th>Unit Price</th>
+              <th>Total Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in order.items.all %}
+            <tr>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="me-3">
+                    {% if item.product.image %}
+                      <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px;">
+                    {% else %}
+                      <div style="width: 40px; height: 40px; background: var(--light-gray); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-image text-muted"></i>
+                      </div>
+                    {% endif %}
+                  </div>
+                  <div>
+                    <strong>{{ item.product.name }}</strong>
+                    {% if item.product.sku %}
+                      <br><small class="text-muted">SKU: {{ item.product.sku }}</small>
+                    {% endif %}
+                  </div>
+                </div>
+              </td>
+              <td>{{ item.quantity }}</td>
+              <td>&#8377;{{ item.price }}</td>
+              <td><strong>&#8377;{{ item.total_price }}</strong></td>
+            </tr>
+            {% endfor %}
+            <tr>
+              <td colspan="3" class="text-end"><strong>Total Amount:</strong></td>
+              <td><strong class="text-success">&#8377;{{ order.total }}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
-  <form method="post" action="{% url 'update_order_status' order.order_id %}" class="mt-4">
-    {% csrf_token %}
-    <label for="status">Update Status:</label>
-    <select name="status" class="form-control w-25 d-inline">
-      {% for value, display in order.STATUS_CHOICES %}
-        <option value="{{ value }}" {% if order.status == value %}selected{% endif %}>{{ display }}</option>
-      {% endfor %}
-    </select>
-    <button type="submit" class="btn btn-success ml-2">Update</button>
-  </form>
+  <!-- Shipping Address -->
+  <div class="card">
+    <div class="card-header">
+      <h5><i class="fas fa-truck"></i> Shipping Information</h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-8">
+          <h6 class="text-green">Shipping Address</h6>
+          <p class="mb-0" style="line-height: 1.6;">{{ order.address|linebreaksbr }}</p>
+        </div>
+        <div class="col-md-4">
+          <h6 class="text-green">Delivery Status</h6>
+          <p class="mb-0">
+            <span class="badge badge-{{ order.status|lower }}">
+              <i class="fas 
+                {% if order.status == 'DELIVERED' %}fa-check-circle 
+                {% elif order.status == 'PENDING' %}fa-clock 
+                {% elif order.status == 'SHIPPED' %}fa-shipping-fast 
+                {% elif order.status == 'CANCELED' %}fa-times-circle 
+                {% else %}fa-box{% endif %} me-1"></i>
+              {{ order.status }}
+            </span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <!-- Status Update Form -->
+  <div class="status-form">
+    <form method="post" action="{% url 'update_order_status' order.order_id %}">
+      {% csrf_token %}
+      <div class="row align-items-end">
+        <div class="col-md-4">
+          <label for="status" class="form-label">Update Order Status</label>
+          <select name="status" class="form-control">
+            {% for value, display in order.STATUS_CHOICES %}
+              <option value="{{ value }}" {% if order.status == value %}selected{% endif %}>{{ display }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <button type="submit" class="btn btn-success w-100">
+            <i class="fas fa-sync-alt me-2"></i>Update Status
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Return Request Section -->
   {% if order.return_request == 'Pending' %}
-    <a href="{% url 'verify_return' order.order_id %}" class="btn btn-danger mt-3">Verify Return</a>
+  <div class="action-section text-center">
+    <h6 class="text-danger mb-3"><i class="fas fa-exchange-alt me-2"></i>Return Request Pending</h6>
+    <p class="text-muted mb-3">This order has a pending return request that needs verification.</p>
+    <a href="{% url 'verify_return' order.order_id %}" class="btn btn-danger">
+      <i class="fas fa-clipboard-check me-2"></i>Verify Return Request
+    </a>
+  </div>
   {% endif %}
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Add smooth animations to cards
+  const cards = document.querySelectorAll('.card, .info-card');
+  cards.forEach((card, index) => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(20px)';
+    
+    setTimeout(() => {
+      card.style.transition = 'all 0.5s ease';
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0)';
+    }, index * 100);
+  });
+
+  // Add hover effects to buttons
+  const buttons = document.querySelectorAll('.btn');
+  buttons.forEach(button => {
+    button.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-2px)';
+    });
+    
+    button.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0)';
+    });
+  });
+});
+</script>
 {% endblock %}
-
-

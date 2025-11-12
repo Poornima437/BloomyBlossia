@@ -1,84 +1,612 @@
 {% extends 'custom_admin/customadmin_base.html' %}
+{% load static %}
 {% block content %}
-<!-- SweetAlert2 CDN -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    :root {
+      --primary-green: #0d290d;
+      --secondary-green: #103d2d;
+      --accent-green: #03380a;
+      --light-green: #e8f5e9;
+      --white: #ffffff;
+      --light-gray: #f8f9fa;
+      --medium-gray: #e0e0e0;
+      --dark-gray: #616161;
+      --sale-red: #e63946;
+      --gold: #ffa500;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+      --transition: all 0.3s ease;
+    }
 
+    body {
+      background: #fafafa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
 
-<div>
-    <h2>Category Management</h2>
-    <small class="text-muted">Dashboard &gt; Categories</small>
+    /* Header Styling */
+    .page-header {
+      background: linear-gradient(135deg, #87A878 0%, #6d8b6d 100%);
+      color: white;
+      padding: 25px 0;
+      margin: -20px -20px 30px -20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      opacity: 0.1;
+    }
+
+    .page-header-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .page-header h2 {
+      margin: 0;
+      font-size: 2.2rem;
+      font-weight: 300;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .breadcrumb-text {
+      color: var(--light-green);
+      font-size: 0.95rem;
+      opacity: 0.9;
+    }
+
+    /* Search Section */
+    .search-section {
+      background: var(--white);
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 25px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--medium-gray);
+    }
+
+    .search-container {
+      position: relative;
+      flex: 1;
+    }
+
+    .search-input {
+      border: 2px solid var(--medium-gray);
+      border-radius: 10px;
+      padding: 12px 45px 12px 15px;
+      font-size: 1rem;
+      transition: var(--transition);
+      background: var(--light-gray);
+    }
+
+    .search-input:focus {
+      border-color: var(--secondary-green);
+      box-shadow: 0 0 0 3px rgba(16, 61, 45, 0.1);
+      background: var(--white);
+    }
+
+    .clear-search {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--dark-gray);
+      cursor: pointer;
+      opacity: 0.7;
+      transition: var(--transition);
+      display: none;
+    }
+
+    .clear-search:hover {
+      opacity: 1;
+      color: var(--sale-red);
+    }
+
+    /* Button Styling */
+    .btn {
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: 500;
+      transition: var(--transition);
+      border: none;
+    }
+
+    .btn-dark {
+      background: var(--primary-green);
+      color: white;
+    }
+
+    .btn-dark:hover {
+      background: var(--secondary-green);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(13, 41, 13, 0.3);
+    }
+
+    .btn-secondary {
+      background: var(--dark-gray);
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #495057;
+      transform: translateY(-2px);
+    }
+
+    .btn-success {
+      background: var(--secondary-green);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: var(--primary-green);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(16, 61, 45, 0.3);
+    }
+
+    /* Action Buttons */
+    .btn-warning {
+      background: #ffc107;
+      color: #212529;
+      border: none;
+    }
+
+    .btn-warning:hover {
+      background: #e0a800;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+    }
+
+    .btn-danger {
+      background: var(--sale-red);
+      color: white;
+      border: none;
+    }
+
+    .btn-danger:hover {
+      background: #c1121f;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(230, 57, 70, 0.3);
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.875rem;
+    }
+
+    /* Table Styling */
+    .table-card {
+      background: var(--white);
+      border-radius: 15px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--medium-gray);
+      overflow: hidden;
+    }
+
+    .table {
+      margin: 0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .table thead {
+      background: linear-gradient(135deg, var(--secondary-green) 0%, var(--primary-green) 100%);
+    }
+
+    .table thead th {
+      border: none;
+      color: white;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.85rem;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .table tbody tr {
+      transition: var(--transition);
+      border-bottom: 1px solid var(--light-gray);
+    }
+
+    .table tbody tr:hover {
+      background: var(--light-green);
+      transform: translateX(5px);
+    }
+
+    .table td {
+      padding: 15px;
+      vertical-align: middle;
+      border-color: var(--light-gray);
+      text-align: center;
+    }
+
+    /* Status Badges */
+    .status-badge {
+      padding: 6px 12px;
+      border-radius: 15px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-active {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status-blocked {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    /* Action Buttons Container */
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* Empty State */
+    .empty-state {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--dark-gray);
+    }
+
+    .empty-icon {
+      font-size: 4rem;
+      color: var(--medium-gray);
+      margin-bottom: 20px;
+    }
+
+    .empty-title {
+      font-size: 1.5rem;
+      color: var(--dark-gray);
+      margin-bottom: 10px;
+    }
+
+    /* Pagination */
+    .pagination-container {
+      background: var(--white);
+      padding: 20px;
+      border-top: 1px solid var(--medium-gray);
+    }
+
+    .pagination {
+      margin: 0;
+    }
+
+    .page-link {
+      border: 1px solid var(--medium-gray);
+      color: var(--secondary-green);
+      padding: 8px 15px;
+      margin: 0 2px;
+      border-radius: 6px;
+      transition: var(--transition);
+    }
+
+    .page-link:hover {
+      background: var(--light-green);
+      border-color: var(--secondary-green);
+      color: var(--primary-green);
+    }
+
+    .page-item.active .page-link {
+      background: var(--secondary-green);
+      border-color: var(--secondary-green);
+      color: white;
+    }
+
+    /* Stats Card */
+    .stats-card {
+      background: var(--white);
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--medium-gray);
+      text-align: center;
+      margin-bottom: 25px;
+      transition: var(--transition);
+    }
+
+    .stats-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .stats-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--primary-green);
+      margin-bottom: 5px;
+    }
+
+    .stats-label {
+      color: var(--dark-gray);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .search-section .d-flex {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .search-container {
+        width: 100%;
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .action-buttons .btn {
+        width: 100%;
+        margin-bottom: 5px;
+      }
+      
+      .table-responsive {
+        border-radius: 10px;
+      }
+    }
+  </style>
+</head>
+
+<div class="page-header">
+  <div class="container">
+    <div class="page-header-content">
+      <h2><i class="fas fa-tags me-3"></i>Category Management</h2>
+      <div class="breadcrumb-text">
+        <i class="fas fa-tachometer-alt me-1"></i>Dashboard &gt; Categories
+      </div>
+    </div>
+  </div>
 </div>
-<br>
 
-<!-- Search Bar -->
-<form method="get" class="mb-3 d-flex gap-2">
-    <input type="text" name="q" value="{{ search_query }}" placeholder="Search category..." class="form-control w-25">
-    <button type="submit" class="btn btn-dark">Search</button>
-    {% if search_query %}
-        <a href="{% url 'customadmin_categories' %}" class="btn btn-secondary">Clear</a>
-    {% endif %}
-</form>
+<div class="container">
+  
 
-<a href="{% url 'customadmin_add_category' %}" class="btn btn-success mb-3">+ Add Category</a>
+  <!-- Search Section -->
+  <div class="search-section">
+    <form method="get" class="d-flex flex-column flex-md-row gap-3 align-items-start align-items-md-center">
+      <div class="input-group search-container">
+        <input type="text" class="form-control search-input" name="q" value="{{ search_query }}" placeholder="🔍 Search categories...">
+        <button type="button" class="clear-search">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-dark">
+          <i class="fas fa-search me-2"></i>Search
+        </button>
+        {% if search_query %}
+          <a href="{% url 'customadmin_categories' %}" class="btn btn-secondary">
+            <i class="fas fa-times me-2"></i>Clear
+          </a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
 
-<!-- Category Table -->
-<table class="table table-bordered">
-    <thead class="table-dark">
-        <tr>
+  <!-- Add Category Button -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0 text-green">Categories List</h5>
+    <a href="{% url 'customadmin_add_category' %}" class="btn btn-success">
+      <i class="fas fa-plus me-2"></i>Add New Category
+    </a>
+  </div>
+
+  <!-- Category Table -->
+  <div class="table-card">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
             <th>#</th>
             <th>Name</th>
             <th>Created At</th>
             <th>Status</th>
             <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for cat in page_obj %}
-        <tr>
-            <td>{{ forloop.counter }}</td>
-            <td>{{ cat.name }}</td>
-            <td>{{ cat.created_at|date:"d M Y H:i" }}</td>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cat in page_obj %}
+          <tr>
+            <td class="fw-bold">{{ forloop.counter }}</td>
+            <td class="fw-medium">{{ cat.name }}</td>
             <td>
-                {% if cat.is_blocked %}
-                    <span class="text-danger">Blocked</span>
-                {% else %}
-                    <span class="text-success">Active</span>
-                {% endif %}
+              <div>
+                <div class="fw-medium">{{ cat.created_at|date:"d M Y" }}</div>
+                <small class="text-muted">{{ cat.created_at|date:"H:i" }}</small>
+              </div>
             </td>
-            <td class="d-flex gap-2">
-                <a href="{% url 'customadmin_edit_category' cat.id %}" class="btn btn-warning btn-sm">Edit</a>
-                <a href="{% url 'customadmin_delete_category' cat.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure to delete this category?');">Delete</a>
+            <td>
+              {% if cat.is_blocked %}
+                <span class="status-badge status-blocked">
+                  <i class="fas fa-ban me-1"></i>Blocked
+                </span>
+              {% else %}
+                <span class="status-badge status-active">
+                  <i class="fas fa-check-circle me-1"></i>Active
+                </span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="action-buttons">
+                <a href="{% url 'customadmin_edit_category' cat.id %}" class="btn btn-warning btn-sm">
+                  <i class="fas fa-edit me-1"></i>Edit
+                </a>
+                <a href="{% url 'customadmin_delete_category' cat.id %}" class="btn btn-danger btn-sm" onclick="return confirmDelete('{{ cat.name }}')">
+                  <i class="fas fa-trash me-1"></i>Delete
+                </a>
+                {% if cat.is_blocked %}
+                  <a href="?unblock={{ cat.id }}" class="btn btn-success btn-sm">
+                    <i class="fas fa-lock-open me-1"></i>Unblock
+                  </a>
+                {% else %}
+                  <a href="?block={{ cat.id }}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-lock me-1"></i>Block
+                  </a>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <i class="fas fa-tags empty-icon"></i>
+                <h5 class="empty-title">No categories found</h5>
+                <p class="text-muted">{% if search_query %}Try adjusting your search terms{% else %}Get started by adding your first category{% endif %}</p>
+                {% if not search_query %}
+                  <a href="{% url 'customadmin_add_category' %}" class="btn btn-success mt-3">
+                    <i class="fas fa-plus me-2"></i>Add First Category
+                  </a>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-                {% if cat.is_blocked %}
-                    <a href="?unblock={{ cat.id }}" class="btn btn-success btn-sm">Unblock</a>
-                {% else %}
-                    <a href="?block={{ cat.id }}" class="btn btn-secondary btn-sm">Block</a>
-                {% endif %}
-            </td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="5" class="text-center">No categories found.</td></tr>
+  <!-- Pagination -->
+  {% if page_obj.paginator.num_pages > 1 %}
+  <div class="pagination-container d-flex justify-content-between align-items-center">
+    <div class="text-muted">
+      Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }} categories
+    </div>
+    <nav aria-label="Categories pagination">
+      <ul class="pagination mb-0">
+        {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?q={{ search_query }}&page=1" aria-label="First">
+              <i class="fas fa-angle-double-left"></i>
+            </a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" href="?q={{ search_query }}&page={{ page_obj.previous_page_number }}" aria-label="Previous">
+              <i class="fas fa-angle-left"></i>
+            </a>
+          </li>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+          {% if page_obj.number == num %}
+            <li class="page-item active">
+              <span class="page-link">{{ num }}</span>
+            </li>
+          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item">
+              <a class="page-link" href="?q={{ search_query }}&page={{ num }}">{{ num }}</a>
+            </li>
+          {% endif %}
         {% endfor %}
-    </tbody>
-</table>
-
-<!-- Pagination -->
-<div class="d-flex justify-content-center">
-    <nav>
-        <ul class="pagination">
-            {% if page_obj.has_previous %}
-                <li class="page-item"><a class="page-link" href="?q={{ search_query }}&page={{ page_obj.previous_page_number }}">Previous</a></li>
-            {% endif %}
-            {% for num in page_obj.paginator.page_range %}
-                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-                    <a class="page-link" href="?q={{ search_query }}&page={{ num }}">{{ num }}</a>
-                </li>
-            {% endfor %}
-            {% if page_obj.has_next %}
-                <li class="page-item"><a class="page-link" href="?q={{ search_query }}&page={{ page_obj.next_page_number }}">Next</a></li>
-            {% endif %}
-        </ul>
+        
+        {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?q={{ search_query }}&page={{ page_obj.next_page_number }}" aria-label="Next">
+              <i class="fas fa-angle-right"></i>
+            </a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" href="?q={{ search_query }}&page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+              <i class="fas fa-angle-double-right"></i>
+            </a>
+          </li>
+        {% endif %}
+      </ul>
     </nav>
+  </div>
+  {% endif %}
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Search functionality
+  const searchInput = document.querySelector('.search-input');
+  const clearSearchBtn = document.querySelector('.clear-search');
+  
+  // Show/hide clear button
+  searchInput.addEventListener('input', function() {
+    clearSearchBtn.style.display = this.value ? 'block' : 'none';
+  });
+  
+  // Clear search
+  clearSearchBtn.addEventListener('click', function() {
+    searchInput.value = '';
+    clearSearchBtn.style.display = 'none';
+    searchInput.focus();
+  });
+  
+  // Initialize clear button visibility
+  if (searchInput.value) {
+    clearSearchBtn.style.display = 'block';
+  }
+  
+  // Add animations to table rows
+  const tableRows = document.querySelectorAll('tbody tr');
+  tableRows.forEach((row, index) => {
+    row.style.opacity = '0';
+    row.style.transform = 'translateX(-20px)';
+    
+    setTimeout(() => {
+      row.style.transition = 'all 0.4s ease';
+      row.style.opacity = '1';
+      row.style.transform = 'translateX(0)';
+    }, index * 100);
+  });
+});
+
+// SweetAlert confirmation for delete
+function confirmDelete(categoryName) {
+  return Swal.fire({
+    title: 'Are you sure?',
+    text: `You are about to delete the category "${categoryName}". This action cannot be undone.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel',
+    background: '#fff',
+    iconColor: '#e63946'
+  }).then((result) => {
+    return result.isConfirmed;
+  });
+}
+
+// Add hover effects to buttons
+document.querySelectorAll('.btn').forEach(button => {
+  button.addEventListener('mouseenter', function() {
+    this.style.transform = 'translateY(-2px)';
+  });
+  
+  button.addEventListener('mouseleave', function() {
+    this.style.transform = 'translateY(0)';
+  });
+});
+</script>
 {% endblock %}

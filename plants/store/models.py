@@ -5,6 +5,8 @@ from decimal import Decimal
 from django.contrib.auth.models import User
 from django.db import models
 from django.contrib.auth.models import User
+from django.db import IntegrityError, transaction
+from cloudinary.models import CloudinaryField
 # CATEGORY
 
 class Category(models.Model):
@@ -28,7 +30,7 @@ class Category(models.Model):
 class Product(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, null=True)
-    image = models.ImageField(upload_to="uploads/products/")
+    image = CloudinaryField('image', folder='products')
     quantity = models.PositiveIntegerField(default=0)
     price = models.DecimalField(
         max_digits=8,
@@ -52,6 +54,8 @@ class Product(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft")
 
     def save(self, *args, **kwargs):
+        creating = self.pk is None  
+
         if self.quantity == 0:
             self.status = "out_of_stock"
         elif self.status == "out_of_stock" and self.quantity > 0:
@@ -64,26 +68,29 @@ class Product(models.Model):
 
         super().save(*args, **kwargs)
 
-        # Create or update variants for S, M, L
-        for size, price_offset in [("S", -100), ("M", 0), ("L", 100)]:
-            price = max(0.01, float(self.price) + price_offset)
-            sale_price = max(0.01, float(self.sale_price) + price_offset) 
-            
-            variant, created = self.variants.get_or_create(
-                size=size,
-                defaults={
-                    "price": price,
-                    "sale_price": sale_price,
-                    "quantity": self.quantity,
-                },
-            )
-            if not created:
-                variant.price = price
-                variant.sale_price = sale_price
-                variant.quantity = self.quantity
-                variant.save()
+        if not creating:
+            for size, price_offset in [("S", -100), ("M", 0), ("L", 100)]:
+                price = max(0.01, float(self.price) + price_offset)
+                sale_price = max(0.01, float(self.sale_price) + price_offset)
 
-                
+                try:
+                    with transaction.atomic():
+                        variant, created = self.variants.get_or_create(
+                            size=size,
+                            defaults={
+                                "price": price,
+                                "sale_price": sale_price,
+                                "quantity": self.quantity,
+                            },
+                        )
+                        if not created:
+                            variant.price = price
+                            variant.sale_price = sale_price
+                            variant.quantity = self.quantity
+                            variant.save()
+                except IntegrityError:
+                    pass
+                    
 
     def __str__(self):
         return self.name
@@ -93,7 +100,7 @@ class ProductImage(models.Model):
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, related_name="images"
     )
-    image = models.ImageField(upload_to="uploads/products/")
+    image = CloudinaryField('image', folder='products')
 
     def __str__(self):
         return f"{self.product.name} Image"
@@ -118,7 +125,7 @@ class ProductVariant(models.Model):
         default=0,
     )
     quantity = models.PositiveIntegerField(default=0)
-    image = models.ImageField(upload_to="uploads/variants/", blank=True, null=True)
+    image = CloudinaryField('image',folder="variants", blank=True, null=True)
 
     class Meta:
         constraints = [
@@ -134,7 +141,17 @@ class ProductVariant(models.Model):
         if self.price > 0 and self.sale_price > 0 and self.sale_price < self.price:
             return round(((self.price - self.sale_price) / self.price) * 100, 2)
         return 0
+class VariantImage(models.Model):
+        variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, related_name="variant_images")
+        image = CloudinaryField('image',folder = 'variants')
+        display_order = models.IntegerField(default=0)
+        created_at = models.DateTimeField(auto_now_add=True)
 
+        class Meta:
+            ordering = ['display_order']
+
+        def __str__(self):
+            return f"{self.variant.product.name} - {self.variant.get_size_display()} - Image {self.display_order}"
 
 
 

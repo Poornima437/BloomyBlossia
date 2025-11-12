@@ -83,9 +83,9 @@
                 <td>{{ order.created_at|date:"M d, Y H:i" }}</td>
                 <td>₹{{ order.total }} ({{ order.total_items }} Item{% if order.total_items > 1 %}s{% endif %})</td>
                 <td>
-                    <a href="{% url 'order_detail' order.id %}" class="view-link">View Details →</a>
+                    <a href="{% url 'order_detail' order.order_id %}" class="view-link">View Details →</a>
                     {% if order.status == 'PENDING' %}
-                        <a href="#" class="cancel-btn" onclick="cancelOrder(this, {{ order.id }})">Cancel</a>
+                        <a href="#" class="cancel-btn" onclick="cancelOrder(this, {{ order.order_id }})">Cancel</a>
                     {% endif %}
                 </td>
             </tr>

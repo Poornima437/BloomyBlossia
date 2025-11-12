@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Apply Coupon</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+
+        .coupon-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+
+        .coupon-title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #343a40;
+        }
+
+        .form-control:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 5px rgba(40,167,69,0.5);
+        }
+
+        .btn-apply {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .btn-apply:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+<div class="coupon-container">
+    <h3 class="coupon-title">Apply Your Coupon</h3>
+    <form method="POST" id="couponForm">
+        {% csrf_token %}
+        <div class="form-group">
+            <input type="text" class="form-control" name="coupon_code" placeholder="Enter coupon code" required>
+        </div>
+        <button type="submit" class="btn btn-apply btn-block">Apply Coupon</button>
+    </form>
+</div>
+
+<script>
+    {% if messages %}
+        {% for message in messages %}
+            Swal.fire({
+                icon: '{{ message.tags }}',  
+                title: '{{ message }}',
+                timer: 2500,
+                showConfirmButton: false
+            });
+        {% endfor %}
+    {% endif %}
+</script>
+</body>
+</html>
+{% endblock %}

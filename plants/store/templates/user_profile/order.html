@@ -59,7 +59,7 @@
         <div class="order-details">
           <img src="{{ order.product.image.url }}" alt="{{ order.product.name }}" class="order-image">
           <div class="order-info">
-            <div class="order-header">Order ID: #{{ order.id }}</div>
+            <div class="order-header">Order ID: #{{ order.order_id }}</div>
             <p class="mb-1">Product: {{ order.product.name }}</p>
             <p class="mb-1">Amount: ₹{{ order.total_amount }}</p>
             <p class="mb-1">Status: {{ order.status }}</p>
@@ -71,8 +71,8 @@
             {% endif %}
           </div>
           <div class="text-right">
-            <a href="{% url 'track_order' order.id %}" class="btn btn-outline-primary btn-sm btn-track">Track Order</a>
-            <a href="{% url 'order_details' order.id %}" class="btn btn-outline-secondary btn-sm btn-view">View Details</a>
+            <a href="{% url 'track_order' order.order_id %}" class="btn btn-outline-primary btn-sm btn-track">Track Order</a>
+            <a href="{% url 'order_details' order.order_id %}" class="btn btn-outline-secondary btn-sm btn-view">View Details</a>
           </div>
         </div>
       </div>

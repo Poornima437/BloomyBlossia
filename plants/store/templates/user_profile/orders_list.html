@@ -1,108 +1,719 @@
-{% extends "user_profile/base_sidebar.html" %}
+{% extends 'user_profile/base_sidebar.html' %}
+{% load static %}
 {% block content %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>My Orders</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <style>
-    body {
-      background-color: #f8f9fa;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    .orders-container {
-      max-width: 1000px;
-      margin: 40px auto;
-      background: #fff;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    }
-    .orders-container h2 {
-      font-weight: 600;
-      margin-bottom: 20px;
-    }
-    .table thead th {
-      background-color: #343a40;
-      color: #fff;
-    }
-    .table-hover tbody tr:hover {
-      background-color: #f1f1f1;
-    }
-    .search-box {
-      margin-bottom: 20px;
-      display: flex;
-      gap: 10px;
-    }
-    .btn-view {
-      background-color: #28a745;
-      color: white;
-      padding: 5px 12px;
-      border-radius: 6px;
-      font-size: 0.9rem;
-    }
-    .btn-view:hover {
-      background-color: #218838;
-    }
-    .no-orders {
-      text-align: center;
-      color: #888;
-      padding: 30px 0;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - BLOOMYBLOSSIA</title>
+    <style>
+        :root {
+            --green-primary: #2C5F2D;
+            --green-light: #87A878;
+            --green-soft: #A8D5BA;
+            --rose-accent: #E8B4B8;
+            --coral-accent: #FF8B7C;
+            --cream: #FFF8F5;
+            --white: #FFFFFF;
+            --text-dark: #2D3436;
+            --text-gray: #636E72;
+            --border-light: #E8ECF1;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 20px rgba(0,0,0,0.1);
+            --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f8f9fa 0%, var(--cream) 100%);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0;
+        }
+        
+        .divider {
+            height: 2px;
+            background: linear-gradient(to right, transparent, var(--green-light), transparent);
+            margin: 20px 0;
+            opacity: 0.3;
+        }
+        
+        .main-content {
+            display: flex;
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+            gap: 30px;
+        }
+        
+        .content {
+            flex: 1;
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            border: 1px solid var(--border-light);
+        }
+
+        /* Header Section */
+        .content-header {
+            background: linear-gradient(135deg, var(--green-primary) 0%, var(--green-light) 100%);
+            padding: 30px 35px;
+            color: white;
+        }
+        
+        .content-header h2 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.5px;
+        }
+        
+        .content-header h2 i {
+            font-size: 1.6rem;
+            opacity: 0.95;
+        }
+
+        .content-body {
+            padding: 35px;
+        }
+        
+        /* Search Section */
+        .search-section {
+            display: flex;
+            margin-bottom: 30px;
+            gap: 12px;
+            align-items: stretch;
+        }
+        
+        .search-section input {
+            flex: 1;
+            padding: 14px 20px;
+            border: 2px solid var(--border-light);
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background-color: var(--cream);
+        }
+        
+        .search-section input:focus {
+            outline: none;
+            border-color: var(--green-light);
+            background-color: var(--white);
+            box-shadow: 0 0 0 4px rgba(135, 168, 120, 0.1);
+        }
+        
+        .search-btn {
+            background: linear-gradient(135deg, var(--green-light), var(--green-primary));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px 28px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .search-btn:hover {
+            background: linear-gradient(135deg, var(--green-primary), #1F4A21);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .search-btn i {
+            font-size: 16px;
+        }
+        
+        .clear-btn {
+            background: linear-gradient(135deg, #95A5A6, #7F8C8D);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px 24px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 15px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .clear-btn:hover {
+            background: linear-gradient(135deg, #7F8C8D, #6C7A7B);
+            color: white;
+            text-decoration: none;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        /* Table Styling */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .orders-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .orders-table th {
+            background: linear-gradient(135deg, var(--green-primary), var(--green-light));
+            color: white;
+            padding: 18px 20px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .orders-table td {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-light);
+            background-color: var(--white);
+            transition: all 0.3s ease;
+        }
+        
+        .orders-table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .orders-table tbody tr:hover {
+            background-color: var(--cream);
+            transform: translateX(5px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .orders-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* Status Badges */
+        .status-badge {
+            padding: 9px 18px;
+            border-radius: 25px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            box-shadow: var(--shadow-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .status-badge::before {
+            content: '●';
+            font-size: 10px;
+            animation: statusPulse 2s infinite;
+        }
+
+        @keyframes statusPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .status-pending {
+            background: linear-gradient(135deg, #F39C12, #E67E22);
+            color: white;
+        }
+        
+        .status-placed {
+            background: linear-gradient(135deg, #3498DB, #2980B9);
+            color: white;
+        }
+        
+        .status-packed {
+            background: linear-gradient(135deg, #A4F4C1, #81C784);
+            color: #2C5F2D;
+        }
+        
+        .status-shipped {
+            background: linear-gradient(135deg, #F1C40F, #F39C12);
+            color: #333;
+        }
+        
+        .status-delivered {
+            background: linear-gradient(135deg, #27AE60, #2ECC71);
+            color: white;
+        }
+        
+        .status-canceled {
+            background: linear-gradient(135deg, #E74C3C, #C0392B);
+            color: white;
+        }
+        
+        /* Action Button */
+        .action-btn {
+            background: transparent;
+            border: 2px solid var(--green-light);
+            color: var(--green-primary);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .action-btn:hover {
+            background: linear-gradient(135deg, var(--green-light), var(--green-primary));
+            color: white;
+            text-decoration: none;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--green-primary);
+        }
+        
+        /* No Orders State */
+        .no-orders {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-gray);
+        }
+        
+        .no-orders i {
+            font-size: 80px;
+            margin-bottom: 20px;
+            color: var(--green-soft);
+            opacity: 0.4;
+        }
+
+        .no-orders p {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        .no-orders p:first-of-type {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 20px;
+        }
+        
+        /* Pagination */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 35px;
+            padding-top: 25px;
+            border-top: 2px solid var(--border-light);
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .page-info {
+            color: var(--text-gray);
+            font-size: 14px;
+            font-weight: 600;
+            background-color: var(--cream);
+            padding: 10px 18px;
+            border-radius: 8px;
+        }
+
+        .pagination {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            gap: 8px;
+        }
+        
+        .page-item {
+            margin: 0;
+        }
+        
+        .page-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 15px;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            color: var(--text-gray);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            min-width: 44px;
+            font-weight: 600;
+            background-color: var(--white);
+        }
+        
+        .page-link:hover {
+            background-color: var(--cream);
+            border-color: var(--green-light);
+            color: var(--green-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .page-item.active .page-link {
+            background: linear-gradient(135deg, var(--green-light), var(--green-primary));
+            color: white;
+            border-color: var(--green-primary);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .page-item.disabled .page-link {
+            color: #BDC3C7;
+            pointer-events: none;
+            background-color: #F8F9FA;
+            border-color: var(--border-light);
+        }
+        
+        /* Order Details */
+        .order-id {
+            font-weight: 700;
+            color: var(--green-primary);
+            letter-spacing: 0.3px;
+            font-size: 15px;
+        }
+        
+        .order-total {
+            font-weight: 700;
+            color: var(--green-primary);
+            font-size: 17px;
+        }
+        
+        .order-date {
+            color: var(--text-gray);
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+                padding: 0 15px;
+            }
+
+            .content-header {
+                padding: 25px 20px;
+            }
+
+            .content-header h2 {
+                font-size: 1.5rem;
+            }
+
+            .content-body {
+                padding: 25px 20px;
+            }
+            
+            .search-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-btn,
+            .clear-btn {
+                justify-content: center;
+            }
+            
+            .table-responsive {
+                border-radius: 0;
+                margin: 0 -20px;
+            }
+
+            .orders-table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .pagination-container {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .pagination {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .orders-table thead {
+                display: none;
+            }
+            
+            .orders-table, 
+            .orders-table tbody, 
+            .orders-table tr, 
+            .orders-table td {
+                display: block;
+                width: 100%;
+            }
+            
+            .orders-table tr {
+                margin-bottom: 20px;
+                border: 2px solid var(--border-light);
+                border-radius: 12px;
+                padding: 20px;
+                box-shadow: var(--shadow-sm);
+                background: var(--white);
+            }
+
+            .orders-table tr:hover {
+                transform: none;
+            }
+            
+            .orders-table td {
+                text-align: right;
+                padding: 15px 0;
+                position: relative;
+                border-bottom: 1px solid var(--border-light);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .orders-table td:before {
+                content: attr(data-label);
+                position: static;
+                font-weight: 600;
+                color: var(--green-primary);
+                text-transform: uppercase;
+                font-size: 12px;
+                letter-spacing: 0.5px;
+            }
+            
+            .orders-table td:last-child {
+                border-bottom: none;
+                padding-top: 20px;
+            }
+
+            .action-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-<div class="orders-container">
-  <h2>My Orders</h2>
+    <div class="container">
+        <div class="divider"></div>
+        
+        <div class="main-content">
+            <main class="content">
+                <div class="content-header">
+                    <h2>
+                        <i class="fas fa-shopping-bag"></i> 
+                        My Orders
+                    </h2>
+                </div>
 
-  <form method="get" class="search-box">
-    <input type="text" name="q" class="form-control" placeholder="Search by Order ID" value="{{ query }}">
-    <button type="submit" class="btn btn-primary">Search</button>
-    {% if query %}
-      <a href="{% url 'orders:orders_list' %}" class="btn btn-secondary">Clear</a>
-    {% endif %}
-  </form>
+                <div class="content-body">
+                    <form method="get" class="search-section">
+                        <input type="text" 
+                               name="q" 
+                               placeholder="🔍 Search by Order ID..." 
+                               value="{{ query|default:'' }}">
+                        <button type="submit" class="search-btn">
+                            <i class="fas fa-search"></i> 
+                            Search
+                        </button>
+                        {% if query %}
+                            <a href="{% url 'orders:orders_list' %}" class="clear-btn">
+                                <i class="fas fa-times"></i> 
+                                Clear
+                            </a>
+                        {% endif %}
+                    </form>
+                    
+                    <div class="table-responsive">
+                        <table class="orders-table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Total</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders %}
+                                <tr>
+                                    <td data-label="Order ID" class="order-id">#{{ order.order_id }}</td>
+                                    <td data-label="Date" class="order-date">{{ order.created_at|date:"M d, Y" }}</td>
+                                    <td data-label="Status">
+                                        <span class="status-badge 
+                                            {% if order.status == 'PENDING' %}status-pending
+                                            {% elif order.status == 'PLACED' %}status-placed
+                                            {% elif order.status == 'PACKED' %}status-packed
+                                            {% elif order.status == 'SHIPPED' %}status-shipped
+                                            {% elif order.status == 'DELIVERED' %}status-delivered
+                                            {% elif order.status == 'CANCELED' %}status-canceled
+                                            {% endif %}">
+                                            <i class="fas 
+                                                {% if order.status == 'PENDING' %}fa-clock
+                                                {% elif order.status == 'PLACED' %}fa-shopping-cart
+                                                {% elif order.status == 'PACKED' %}fa-box
+                                                {% elif order.status == 'SHIPPED' %}fa-shipping-fast
+                                                {% elif order.status == 'DELIVERED' %}fa-check-circle
+                                                {% elif order.status == 'CANCELED' %}fa-times-circle
+                                                {% endif %}"></i>
+                                            {{ order.status }}
+                                        </span>
+                                    </td>
+                                    <td data-label="Total" class="order-total">₹{{ order.total|floatformat:2 }}</td>
+                                    <td data-label="Action">
+                                        <a href="{% url 'orders:order_detail' order.order_id %}" class="action-btn">
+                                            <i class="fas fa-eye"></i> 
+                                            View Details
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="no-orders">
+                                        <i class="fas fa-box-open"></i>
+                                        <p>No orders found</p>
+                                        {% if query %}
+                                            <p style="font-size: 16px; color: var(--text-gray);">Try adjusting your search terms</p>
+                                        {% else %}
+                                            <p style="font-size: 16px; color: var(--text-gray);">Start shopping to see your orders here!</p>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if orders %}
+                    <div class="pagination-container">
+                        <div class="page-info">
+                            <i class="fas fa-info-circle"></i>
+                            Showing {{ orders.start_index }} to {{ orders.end_index }} of {{ orders.paginator.count }} orders
+                        </div>
+                        
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination">
+                                {% if orders.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}" aria-label="First">
+                                            <i class="fas fa-angle-double-left"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ orders.previous_page_number }}{% if query %}&q={{ query }}{% endif %}" aria-label="Previous">
+                                            <i class="fas fa-angle-left"></i>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="fas fa-angle-left"></i></span>
+                                    </li>
+                                {% endif %}
 
-  <table class="table table-hover">
-    <thead>
-      <tr>
-        <th>Order ID</th>
-        <th>Date</th>
-        <th>Status</th>
-        <th>Total</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for order in orders %}
-      <tr>
-        <td>{{ order.order_id }}</td>
-        <td>{{ order.created_at|date:"Y-m-d" }}</td>
-        <td>
-          <span class="badge 
-            {% if order.status == 'PLACED' %}badge-info
-            {% elif order.status == 'PACKED' %}badge-secondary
-            {% elif order.status == 'SHIPPED' %}badge-warning
-            {% elif order.status == 'DELIVERED' %}badge-success
-            {% elif order.status == 'CANCELED' %}badge-danger
-            {% endif %}">
-            {{ order.status }}
-          </span>
-        </td>
-        <td>₹{{ order.total_amount }}</td>
-        <td>
-          <a href="{% url 'orders:order_detail' order.id %}" class="btn-view">View</a>
-        </td>
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="5" class="no-orders">No orders found.</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+                                {% for num in orders.paginator.page_range %}
+                                    {% if orders.number == num %}
+                                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                    {% elif num > orders.number|add:'-3' and num < orders.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if orders.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ orders.next_page_number }}{% if query %}&q={{ query }}{% endif %}" aria-label="Next">
+                                            <i class="fas fa-angle-right"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ orders.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}" aria-label="Last">
+                                            <i class="fas fa-angle-double-right"></i>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="fas fa-angle-right"></i></span>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                    {% endif %}
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add loading state to search button
+            const searchForm = document.querySelector('.search-section');
+            if (searchForm) {
+                searchForm.addEventListener('submit', function() {
+                    const button = this.querySelector('button[type="submit"]');
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+                    button.disabled = true;
+                    
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                    }, 3000);
+                });
+            }
+            
+            // Smooth scroll animation for pagination
+            const paginationLinks = document.querySelectorAll('.page-link');
+            paginationLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
 </body>
 </html>
 {% endblock %}

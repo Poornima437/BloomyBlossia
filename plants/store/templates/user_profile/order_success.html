@@ -29,6 +29,14 @@
     padding: 10px 25px;
     font-size: 16px;
   }
+
+  .order-id-box {
+          background: #f8f9fa;
+          padding: 15px;
+          border-radius: 8px;
+          margin: 20px 0;
+          border-left: 4px solid #28a745;
+  }
 </style>
 
 <div class="container success-container">
@@ -37,10 +45,16 @@
   </div>
   <div class="success-message">
     Order Placed Successfully
+    <p class="text-muted">Thank you for your order. We've received your order and will process it shortly.</p>
+  </div>
+  <!-- Order ID Box -->
+  <div class="order-id-box">
+      <small class="text-muted d-block mb-1">Order ID</small>
+      <h4 class="mb-0 text-dark">{{ order.order_id }}</h4>
   </div>
   <div class="success-actions">
-    <a href="{% url 'order_detail' order.id|stringformat:'s' %}" class="btn btn-success">View Order</a>
-    <a href="{% url 'shop_home' %}" class="btn btn-outline-dark">Continue Shopping</a>
+    <a href="{% url 'orders:order_detail' order.order_id %}" class="btn btn-success">View Order</a>
+    <a href="{% url 'home' %}" class="btn btn-outline-dark">Continue Shopping</a>
   </div>
 </div>
 {% endblock %}

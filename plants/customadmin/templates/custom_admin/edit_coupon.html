@@ -1,0 +1,484 @@
+{% extends 'custom_admin/customadmin_base.html' %}
+{% load static %}
+
+{% block content %}
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-green: #2C5F2D;
+      --secondary-green: #87A878;
+      --accent-green: #A8D5BA;
+      --light-green: #e8f5e9;
+      --white: #ffffff;
+      --light-gray: #f8f9fa;
+      --medium-gray: #e0e0e0;
+      --dark-gray: #616161;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+      --transition: all 0.3s ease;
+    }
+
+    body {
+      background: #fafafa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .container {
+      max-width: 800px;
+    }
+
+    /* Header Styling */
+    .page-header {
+      background: linear-gradient(135deg, #2C5F2D 0%, #87A878 100%);
+      color: white;
+      padding: 30px 0;
+      margin: -20px -20px 30px -20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      opacity: 0.1;
+    }
+
+    .page-header h3 {
+      margin: 0;
+      font-size: 2.5rem;
+      font-weight: 300;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .page-header p {
+      font-size: 1.1rem;
+      color: var(--light-green);
+      margin: 10px 0 0;
+      opacity: 0.9;
+    }
+
+    /* Form Card */
+    .form-card {
+      background: var(--white);
+      border-radius: 15px;
+      padding: 40px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--medium-gray);
+    }
+
+    .form-section-title {
+      color: var(--primary-green);
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 25px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--light-green);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    .form-label {
+      color: var(--primary-green);
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+    }
+
+    .form-label i {
+      color: var(--secondary-green);
+      width: 20px;
+    }
+
+    .form-label .required {
+      color: #e63946;
+      margin-left: 4px;
+    }
+
+    .form-control {
+      border: 2px solid var(--medium-gray);
+      border-radius: 10px;
+      padding: 12px 15px;
+      font-size: 1rem;
+      transition: var(--transition);
+      background: var(--light-gray);
+    }
+
+    .form-control:focus {
+      border-color: var(--secondary-green);
+      box-shadow: 0 0 0 3px rgba(135, 168, 120, 0.1);
+      background: var(--white);
+      outline: none;
+    }
+
+    .form-control:disabled {
+      background: #e9ecef;
+      cursor: not-allowed;
+    }
+
+    .form-text {
+      color: var(--dark-gray);
+      font-size: 0.85rem;
+      margin-top: 5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .form-text i {
+      color: var(--secondary-green);
+    }
+
+    /* Toggle Switch */
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 30px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: var(--transition);
+      border-radius: 30px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: var(--transition);
+      border-radius: 50%;
+    }
+
+    input:checked + .toggle-slider {
+      background: linear-gradient(135deg, var(--secondary-green), var(--primary-green));
+    }
+
+    input:checked + .toggle-slider:before {
+      transform: translateX(30px);
+    }
+
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 15px;
+      background: var(--light-green);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .toggle-label:hover {
+      background: var(--accent-green);
+    }
+
+    .toggle-text {
+      font-weight: 600;
+      color: var(--primary-green);
+    }
+
+    /* Buttons */
+    .form-actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 35px;
+      padding-top: 25px;
+      border-top: 2px solid var(--light-green);
+    }
+
+    .btn-submit {
+      background: linear-gradient(135deg, var(--secondary-green), var(--primary-green));
+      border: none;
+      border-radius: 10px;
+      padding: 14px 35px;
+      font-weight: 600;
+      color: white;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+      color: white;
+    }
+
+    .btn-cancel {
+      background: transparent;
+      border: 2px solid var(--medium-gray);
+      border-radius: 10px;
+      padding: 14px 35px;
+      font-weight: 600;
+      color: var(--dark-gray);
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1rem;
+      text-decoration: none;
+    }
+
+    .btn-cancel:hover {
+      border-color: var(--secondary-green);
+      color: var(--primary-green);
+      transform: translateY(-2px);
+    }
+
+    /* Info Box */
+    .info-box {
+      background: var(--light-green);
+      border-left: 4px solid var(--secondary-green);
+      border-radius: 8px;
+      padding: 15px 20px;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: start;
+      gap: 12px;
+    }
+
+    .info-box i {
+      color: var(--primary-green);
+      font-size: 1.2rem;
+      margin-top: 2px;
+    }
+
+    .info-box-content {
+      flex: 1;
+    }
+
+    .info-box-title {
+      font-weight: 600;
+      color: var(--primary-green);
+      margin-bottom: 5px;
+    }
+
+    .info-box-text {
+      color: var(--dark-gray);
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .form-card {
+        padding: 25px;
+      }
+
+      .page-header h3 {
+        font-size: 2rem;
+      }
+
+      .form-actions {
+        flex-direction: column;
+      }
+
+      .btn-submit,
+      .btn-cancel {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+
+<div class="page-header">
+  <div class="container">
+    <h3><i class="fas fa-edit me-3"></i>Edit Coupon</h3>
+    <p>Update coupon details and settings</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="form-card">
+    <!-- Info Box -->
+    <div class="info-box">
+      <i class="fas fa-info-circle"></i>
+      <div class="info-box-content">
+        <div class="info-box-title">Editing Coupon: {{ coupon.code }}</div>
+        <p class="info-box-text">Make changes to your coupon. All fields marked with <span style="color: #e63946;">*</span> are required.</p>
+      </div>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      
+      <div class="form-section-title">
+        <i class="fas fa-ticket-alt"></i>
+        Coupon Details
+      </div>
+
+      <!-- Coupon Code -->
+      <div class="form-group">
+        <label class="form-label">
+          <i class="fas fa-code"></i>
+          Coupon Code
+          <span class="required">*</span>
+        </label>
+        <input type="text" name="code" class="form-control" value="{{ coupon.code }}" required maxlength="15" style="text-transform: uppercase;">
+        <div class="form-text">
+          <i class="fas fa-lightbulb"></i>
+          Use uppercase letters and numbers (e.g., SAVE50, WELCOME2024)
+        </div>
+      </div>
+
+      <!-- Discount Amount -->
+      <div class="form-group">
+        <label class="form-label">
+          <i class="fas fa-tags"></i>
+          Discount Amount (₹)
+          <span class="required">*</span>
+        </label>
+        <input type="number" name="discount_amount" class="form-control" value="{{ coupon.discount_amount }}" step="0.01" min="0" required>
+        <div class="form-text">
+          <i class="fas fa-info-circle"></i>
+          Fixed discount amount that will be deducted from the order total
+        </div>
+      </div>
+
+      <!-- Valid From -->
+        <div class="form-group">
+        <label class="form-label">
+            <i class="fas fa-calendar-check"></i>
+            Valid From
+        </label>
+        <input type="datetime-local" 
+                name="valid_from" 
+                class="form-control" 
+                value="{% if coupon.valid_from %}{{ coupon.valid_from|date:'Y-m-d\\TH:i' }}{% endif %}">
+        <div class="form-text">
+            <i class="fas fa-info-circle"></i>
+            The coupon will become active from this date and time.
+        </div>
+        </div>
+
+        <!-- Valid To -->
+        <div class="form-group">
+        <label class="form-label">
+            <i class="fas fa-calendar-times"></i>
+            Valid To
+        </label>
+        <input type="datetime-local" 
+                name="valid_to" 
+                class="form-control" 
+                value="{% if coupon.valid_to %}{{ coupon.valid_to|date:'Y-m-d\\TH:i' }}{% endif %}">
+        <div class="form-text">
+            <i class="fas fa-info-circle"></i>
+            Leave empty for no expiry date (coupon will remain valid indefinitely).
+        </div>
+        </div>
+
+
+      <!-- Active Status -->
+      <div class="form-group">
+        <label class="form-label">
+          <i class="fas fa-power-off"></i>
+          Status
+        </label>
+        <label class="toggle-label">
+          <label class="toggle-switch">
+            <input type="checkbox" name="active" {% if coupon.active %}checked{% endif %}>
+            <span class="toggle-slider"></span>
+          </label>
+          <div>
+            <div class="toggle-text">Coupon is Active</div>
+            <small class="text-muted">Toggle to activate or deactivate this coupon</small>
+          </div>
+        </label>
+      </div>
+
+      <!-- Additional Info -->
+      <div class="info-box" style="background: #fff3cd; border-left-color: #ffc107;">
+        <i class="fas fa-exclamation-triangle" style="color: #856404;"></i>
+        <div class="info-box-content">
+          <div class="info-box-title" style="color: #856404;">Coupon Rules</div>
+          <p class="info-box-text" style="color: #856404;">
+            • Minimum order value: ₹500<br>
+            • Discount will be applied at checkout<br>
+            • One coupon per order
+          </p>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button type="submit" class="btn-submit">
+          <i class="fas fa-check-circle"></i>
+          Update Coupon
+        </button>
+        <a href="{% url 'customadmin_coupons' %}" class="btn-cancel">
+          <i class="fas fa-times-circle"></i>
+          Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// Auto-uppercase coupon code
+document.querySelector('input[name="code"]').addEventListener('input', function() {
+  this.value = this.value.toUpperCase();
+});
+
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+  const code = document.querySelector('input[name="code"]').value.trim();
+  const discount = document.querySelector('input[name="discount_amount"]').value;
+
+  if (!code) {
+    e.preventDefault();
+    alert('Please enter a coupon code');
+    return;
+  }
+
+  if (code.length < 3) {
+    e.preventDefault();
+    alert('Coupon code must be at least 3 characters long');
+    return;
+  }
+
+  if (!discount || parseFloat(discount) <= 0) {
+    e.preventDefault();
+    alert('Please enter a valid discount amount');
+    return;
+  }
+});
+</script>
+{% endblock %}

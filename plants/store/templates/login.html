@@ -5,131 +5,564 @@
 
 {% block content %}
 <style>
+    :root {
+        --green-primary: #2C5F2D;
+        --green-light: #87A878;
+        --green-soft: #A8D5BA;
+        --rose-accent: #E8B4B8;
+        --coral-accent: #FF8B7C;
+        --cream: #FFF8F5;
+        --white: #FFFFFF;
+        --text-dark: #2D3436;
+        --text-gray: #636E72;
+        --border-light: #E8ECF1;
+        --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+        --shadow-md: 0 4px 20px rgba(0,0,0,0.1);
+        --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        overflow-x: hidden;
+    }
+
+    .login-container {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* Form Section */
     .form-section {
-        background-color: #ffffff;
-        padding: 60px;
-        height: 100vh;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--cream) 0%, var(--white) 100%);
+        padding: 40px 20px;
+        position: relative;
+        overflow: hidden;
     }
-    .image-section {
-        background: url("{% static 'images/login_leaf.jpeg' %}") no-repeat center center;
-        background-size: cover;
-        height: 100vh;
+
+    .form-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 30l15-15M30 30l-15 15M30 30l15 15M30 30l-15-15' stroke='rgba(44,95,45,0.03)' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+        opacity: 0.5;
     }
-    .form-control {
+
+    .form-wrapper {
+        max-width: 480px;
+        width: 100%;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Logo and Header */
+    .logo-section {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .logo-section img {
+        width: 180px;
+        margin-bottom: 25px;
+        transition: transform 0.3s ease;
+    }
+
+    .logo-section img:hover {
+        transform: scale(1.05);
+    }
+
+    .logo-section h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--green-primary);
+        margin-bottom: 10px;
+        letter-spacing: -0.5px;
+    }
+
+    .logo-section p {
+        color: var(--text-gray);
+        font-size: 1rem;
+    }
+
+    /* Form Styling */
+    .login-form {
+        background: var(--white);
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border-light);
+    }
+
+    /* Error Message */
+    .error-message {
+        background: linear-gradient(135deg, #FFEBEE, #FFCDD2);
+        color: #C62828;
+        padding: 12px 16px;
         border-radius: 10px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        border-left: 4px solid #E53935;
     }
-    .google-btn {
+
+    .error-message i {
+        font-size: 1.1rem;
+    }
+
+    /* Form Groups */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: var(--green-primary);
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .input-wrapper {
+        position: relative;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--green-light);
+        font-size: 1.1rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 14px 16px 14px 45px;
+        border: 2px solid var(--border-light);
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background-color: var(--cream);
+        color: var(--text-dark);
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--green-light);
+        background-color: var(--white);
+        box-shadow: 0 0 0 4px rgba(135, 168, 120, 0.1);
+    }
+
+    .form-control::placeholder {
+        color: var(--text-gray);
+    }
+
+    /* Remember Me and Forgot Password */
+    .form-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        font-size: 0.9rem;
+    }
+
+    .remember-me {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-dark);
+        font-weight: 500;
+    }
+
+    .remember-me input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        border: 2px solid var(--green-light);
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .forgot-link {
+        color: var(--green-primary);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+
+    .forgot-link:hover {
+        color: var(--green-light);
+        text-decoration: underline;
+    }
+
+    /* Login Button */
+    .btn-login {
+        width: 100%;
+        padding: 14px 20px;
+        background: linear-gradient(135deg, var(--green-light), var(--green-primary));
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-sm);
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        padding: 8px;
-        font-weight: 500;
-        background-color: white;
-        color: #444;
-        transition: 0.3s ease;
+    }
+
+    .btn-login:hover {
+        background: linear-gradient(135deg, var(--green-primary), #1F4A21);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-login i {
+        font-size: 1.1rem;
+    }
+
+    /* Divider */
+    .divider {
+        text-align: center;
+        margin: 25px 0;
+        position: relative;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        width: 45%;
+        height: 1px;
+        background: var(--border-light);
+    }
+
+    .divider::before {
+        left: 0;
+    }
+
+    .divider::after {
+        right: 0;
+    }
+
+    .divider span {
+        background: var(--white);
+        padding: 0 15px;
+        color: var(--text-gray);
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    /* Google Button */
+    .google-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 14px 20px;
+        border: 2px solid var(--border-light);
+        border-radius: 10px;
+        background-color: var(--white);
+        color: var(--text-dark);
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+    }
+
+    .google-btn:hover {
+        background-color: var(--cream);
+        border-color: var(--green-soft);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+        color: var(--text-dark);
         text-decoration: none;
     }
-    .google-btn:hover {
-        background-color: #f1f1f1;
+
+    .google-btn img {
+        width: 20px;
+        height: 20px;
     }
-</style>
 
-<div class="container-fluid">
-    <div class="row">
-        <!-- Form Section -->
-        <div class="col-md-6 form-section d-flex flex-column justify-content-center">
-            <div class="mb-4 text-center">
-                <img src="{% static 'images/bloomy.png' %}" alt="logo" style="width: 180px;">
-                <h2 class="mt-4">Welcome back!</h2>
-                <p class="text-muted">Enter your credentials to access your account</p>
-            </div>
+    /* Sign Up Link */
+    .signup-link {
+        text-align: center;
+        color: var(--text-gray);
+        font-size: 0.95rem;
+    }
 
-            <form method="POST" action="{% url 'login' %}" novalidate>
-                {% csrf_token %}
+    .signup-link a {
+        color: var(--green-primary);
+        font-weight: 700;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
 
-                <!-- Inline error message (in red) -->
-                {% if login_error %}
-                    <div class="text-danger mb-2 text-start">{{ login_error }}</div>
-                {% endif %}
+    .signup-link a:hover {
+        color: var(--green-light);
+        text-decoration: underline;
+    }
 
-                <div class="mb-3">
-                    <input type="text" name="username" class="form-control" placeholder="Username"
-                           value="{{ username|default:'' }}">
-                           <!-- <div class="text-danger mt-1">Invalid username or password.</div> -->
-                
-                    
-                </div>
+    /* Image Section */
+    .image-section {
+        flex: 1;
+        background: url("{% static 'images/login_leaf.jpeg' %}") no-repeat center center;
+        background-size: cover;
+        position: relative;
+        overflow: hidden;
+    }
 
-                <div class="mb-3">
-                    <input type="password" name="password" class="form-control" placeholder="Password">
-                </div>
+    .image-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(44, 95, 45, 0.3) 0%, rgba(135, 168, 120, 0.3) 100%);
+    }
 
-                <div class="mb-3 d-flex justify-content-between">
-                    <div>
-                        <input type="checkbox" name="remember"> Remember me
-                    </div>
-                    <div>
-                        <a href="{% url 'accounts:forgot_password' %}">Forgot Password?</a>
-                    </div>
-                </div>
+    .image-overlay {
+        position: absolute;
+        bottom: 40px;
+        left: 40px;
+        right: 40px;
+        color: white;
+        z-index: 1;
+    }
 
-                <button type="submit" class="btn btn-success w-100">Login</button>
+    .image-overlay h3 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
 
-                <div class="text-center mt-3">
-                    <p>or</p>
-                    <a href="{% provider_login_url 'google' %}" class="google-btn w-100 mb-2">
-                        <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google icon">
-                        Sign in with Google
-                    </a>
-                    <p>Don't have an account? <a href="{% url 'register' %}">Sign Up</a></p>
-                </div>
-            </form>
-        </div>
+    .image-overlay p {
+        font-size: 1.2rem;
+        opacity: 0.95;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
 
-        <!-- Image Section -->
-        <div class="col-md-6 image-section d-none d-md-block"></div>
-    </div>
-</div>
-
-<!-- Google OAuth Template Override -->
-{% if process == "login" and provider_login_url %}
-<style>
+    /* Google OAuth Confirmation */
     .google-confirm {
         max-width: 500px;
         margin: 80px auto;
         padding: 40px;
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        background: var(--white);
+        border-radius: 20px;
+        box-shadow: var(--shadow-lg);
         text-align: center;
     }
+
     .google-confirm h2 {
-        font-weight: 600;
-        color: #103d2d;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--green-primary);
         margin-bottom: 20px;
     }
+
     .google-confirm p {
-        color: #555;
+        color: var(--text-gray);
+        font-size: 1rem;
         margin-bottom: 30px;
     }
+
     .google-confirm button {
-        padding: 10px 24px;
-        background-color: #103d2d;
+        padding: 14px 32px;
+        background: linear-gradient(135deg, var(--green-light), var(--green-primary));
         color: white;
         border: none;
-        border-radius: 6px;
-        font-weight: 500;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .google-confirm button:hover {
+        background: linear-gradient(135deg, var(--green-primary), #1F4A21);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 992px) {
+        .image-section {
+            display: none;
+        }
+
+        .form-section {
+            flex: 1;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .form-wrapper {
+            padding: 0 20px;
+        }
+
+        .login-form {
+            padding: 30px 25px;
+        }
+
+        .logo-section h2 {
+            font-size: 1.6rem;
+        }
+
+        .logo-section img {
+            width: 140px;
+        }
+
+        .image-overlay h3 {
+            font-size: 2rem;
+        }
+
+        .image-overlay p {
+            font-size: 1rem;
+        }
     }
 </style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<div class="login-container">
+    <!-- Form Section -->
+    <div class="form-section">
+        <div class="form-wrapper">
+            <!-- Logo and Header -->
+            <div class="logo-section">
+                <img src="{% static 'images/bloomy.png' %}" alt="BloomyBlossia Logo">
+                <h2>Welcome Back!</h2>
+                <p>Enter your credentials to access your account</p>
+            </div>
+
+            <!-- Login Form -->
+            <div class="login-form">
+                <form method="POST" action="{% url 'login' %}" novalidate>
+                    {% csrf_token %}
+
+                    <!-- Error Message -->
+                    {% if login_error %}
+                        <div class="error-message">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>{{ login_error }}</span>
+                        </div>
+                    {% endif %}
+
+                    <!-- Username Field -->
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-user input-icon"></i>
+                            <input type="text" 
+                                   name="username" 
+                                   id="username"
+                                   class="form-control" 
+                                   placeholder="Enter your username"
+                                   value="{{ username|default:'' }}"
+                                   required>
+                        </div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" 
+                                   name="password" 
+                                   id="password"
+                                   class="form-control" 
+                                   placeholder="Enter your password"
+                                   required>
+                        </div>
+                    </div>
+
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="form-options">
+                        <label class="remember-me">
+                            <input type="checkbox" name="remember">
+                            <span>Remember me</span>
+                        </label>
+                        <a href="{% url 'accounts:forgot_password' %}" class="forgot-link">
+                            Forgot Password?
+                        </a>
+                    </div>
+
+                    <!-- Login Button -->
+                    <button type="submit" class="btn-login">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Login
+                    </button>
+
+                    <!-- Divider -->
+                    <div class="divider">
+                        <span>or</span>
+                    </div>
+
+                    <!-- Google Sign In -->
+                    <a href="{% provider_login_url 'google' %}" class="google-btn">
+                        <img src="https://img.icons8.com/color/48/000000/google-logo.png" alt="Google">
+                        Sign in with Google
+                    </a>
+
+                    <!-- Sign Up Link -->
+                    <div class="signup-link">
+                        Don't have an account? <a href="{% url 'register' %}">Sign Up</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Section -->
+    <div class="image-section">
+        <div class="image-overlay">
+            <h3>Bring Nature Home</h3>
+            <p>Discover the perfect plants for your space and transform your environment.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Google OAuth Confirmation -->
+{% if process == "login" and provider_login_url %}
 <div class="google-confirm">
-    <h2>Sign In Via Google</h2>
-    <p>You are about to sign in using your Google account.</p>
+    <h2>
+        <i class="fab fa-google"></i>
+        Sign In Via Google
+    </h2>
+    <p>You are about to sign in using your Google account. Click continue to proceed.</p>
     <form method="post" action="">
         {% csrf_token %}
-        <button type="submit">Continue</button>
+        <button type="submit">
+            <i class="fas fa-arrow-right"></i>
+            Continue
+        </button>
     </form>
 </div>
 {% endif %}

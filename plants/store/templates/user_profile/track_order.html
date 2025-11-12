@@ -82,7 +82,7 @@
     <h4 class="mb-3">Track Order</h4>
 
     <div class="order-summary">
-      <p><strong>Order ID:</strong> #{{ id }}</p>
+      <p><strong>Order ID:</strong> #{{ order_id }}</p>
       <p><strong>Date:</strong> {{ created_at|date:"M d, Y H:i" }}</p>
       <p><strong>Status:</strong> {{ status }}</p>
     </div>
@@ -134,17 +134,17 @@
 
     {% if status not in 'DELIVERED CANCELED' %}
     <div class="btn-action">
-      <a href="{% url 'orders:cancel_order' order.id %}" class="btn btn-danger me-2">Cancel Order</a>
+      <a href="{% url 'orders:cancel_order' order.order_id %}" class="btn btn-danger me-2">Cancel Order</a>
     </div>
     {% elif status == 'DELIVERED' %}
     <div class="btn-action">
-      <a href="{% url 'orders:return_order' order.id %}" class="btn btn-warning">Request Return</a>
+      <a href="{% url 'orders:return_order' order.order_id %}" class="btn btn-warning">Request Return</a>
     </div>
     {% endif %}
 
   </div>
 
-  <!-- Toast -->
+  
   <div class="toast-container">
     {% if messages %}
       {% for message in messages %}

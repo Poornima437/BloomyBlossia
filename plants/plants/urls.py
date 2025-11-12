@@ -13,7 +13,8 @@ urlpatterns = [
     path('cart/', include('cart.urls')),
     path('orders/',include('orders.urls')),
     path('wishlist/',include('wishlist.urls')),
-    path("masboard/", include("octopusdash.urls")),
+    path('wallet/',include('wallet.urls')),
+    path('coupon/', include('coupon.urls')),
     
     
 

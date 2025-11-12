@@ -3,92 +3,508 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>BloomyBlossia Navbar</title>
+  <title>{% block title %}BloomyBlossia{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    .navbar-custom {
-      background-color: #114232;
+    :root {
+      --primary-green: #114232;
+      --accent-green: #2a6b3c;
+      --bright-green: #a3e635;
+      --text-light: #f0fdf4;
     }
-    .navbar-custom .navbar-brand,
+    
+    .navbar-custom {
+      background:  #1B4D3E;
+      padding: 0.8rem 0;
+      transition: all 0.3s ease;
+      height: 81px; /* Compact height */
+    }
+    
+    
+    .navbar-custom.scrolled {
+      padding: 0.5rem 0;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    
     .navbar-custom .nav-link,
     .navbar-custom .btn {
-      color: #f0fdf4 !important;
+      color:#f8f9fa;
     }
-    .navbar-custom .nav-link:hover,
-    .navbar-custom .navbar-brand:hover {
-      color: #a3e635 !important;
+    .navbar-custom .navbar-brand{
+      color: var(--bright-green);
+      text-transform: uppercase;
+      font-family:'Inter', sans-serif;
+      font-size: medium;
+      letter-spacing: 1.5px;
+      margin: 0px 0px 0px 20px;
+      padding: 8px 0px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s;
+      position: relative;
+      padding: 0.5rem 0;
+      font-size: 1.1rem;
     }
+    
+    /* Enhanced Brand Name Styling */
+    /* .brand-name {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--bright-green) !important;
+      text-decoration: none;
+      letter-spacing: 1.2px;
+      position: relative;
+      padding: 0.5rem 0;
+      transition: all 0.3s ease;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    } */
+    .navbar-brand span {
+      color: #A3E635;              /* Fresh light-green text color */
+      font-size: 17.6px;           /* Matches your inspected font size */
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;            /* Slightly bold but elegant */
+      letter-spacing: 0.5px;       /* Adds subtle spacing between letters */
+      text-transform: uppercase;   /* Makes it look professional */
+      margin-left: 8px;            /* Space between leaf and text */
+    }
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      padding: 0 20px 0 0;
+    }
+
+    /* .brand-name:hover {
+      color: #ffffff !important;
+      transform: translateY(-2px);
+    } */
+
+    .navbar-brand span:hover {
+      color: #d7ffb8;
+      text-shadow: 0 0 6px #a3e635;
+    }
+    
+    .brand-name::before {
+      content: '🌿';
+      margin-right: 8px;
+      font-size: 1.3rem;
+    }
+    
+    .brand-name::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--bright-green), #e6e9e4);
+      transition: width 0.3s ease;
+      border-radius: 2px;
+    }
+    
+    .brand-name:hover::after {
+      width: 100%;
+    }
+    
+    .navbar-custom .nav-link {
+      position: relative;
+      margin: 0 0.5rem;
+      padding: 0.6rem 1rem !important;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+    
+    .navbar-custom .nav-link:hover {
+      color: var(--bright-green) !important;
+      background-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+    
+    .navbar-custom .nav-link.active {
+      color: var(--bright-green) !important;
+      font-weight: 600;
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .navbar-custom .nav-link.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 25px;
+      height: 3px;
+      background-color: var(--bright-green);
+      border-radius: 2px;
+    }
+    
     .icon-btn {
-      color: #f0fdf4;
-      font-size: 1.25rem;
-      transition: color 0.3s ease;
+      color: #e6e9e4;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+      padding: 0.5rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      position: relative;
     }
+    
     .icon-btn:hover {
-      color: #a3e635;
+      color: var(--bright-green);
+      background-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
     }
+    
     .profile-pic {
       width: 36px;
       height: 36px;
       border-radius: 50%;
       object-fit: cover;
       border: 2px solid #fff;
+      transition: all 0.3s ease;
+    }
+    
+    .profile-pic:hover {
+      border-color: var(--bright-green);
+      transform: scale(1.1);
+    }
+    
+    .cart-badge {
+      font-size: 0.7rem;
+      padding: 0.25rem 0.4rem;
+      font-weight: 600;
+    }
+    
+    .navbar-toggler {
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 0.3rem 0.5rem;
+      transition: all 0.3s ease;
+    }
+    
+    .navbar-toggler:hover {
+      border-color: var(--bright-green);
+    }
+    
+    .navbar-toggler:focus {
+      box-shadow: 0 0 0 3px rgba(163, 230, 53, 0.3);
+    }
+    
+    .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+      width: 1.3em;
+      height: 1.3em;
+    }
+    
+    .dropdown-menu {
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      border: none;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    .dropdown-item {
+      padding: 0.7rem 1rem;
+      transition: all 0.3s ease;
+    }
+    
+    .dropdown-item:hover {
+      background-color: #f8f9fa;
+      color: var(--primary-green);
+    }
+    
+    .search-dropdown {
+      min-width: 320px;
+      padding: 1rem;
+    }
+    
+    .search-form .form-control {
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      padding: 0.75rem;
+    }
+    
+    .search-form .btn {
+      border-radius: 8px;
+      padding: 0.75rem 1.25rem;
+      background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent-green) 100%);
+      border: none;
+    }
+    
+    .search-form .btn:hover {
+      background: linear-gradient(135deg, var(--accent-green) 0%, var(--primary-green) 100%);
+      transform: translateY(-1px);
+    }
+    
+    /* Auth Buttons Styling */
+    .auth-buttons {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .auth-buttons .btn {
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .auth-buttons .login-btn {
+      background-color: transparent;
+      border: 2px solid var(--bright-green);
+      color: var(--bright-green) !important;
+    }
+    
+    .auth-buttons .login-btn:hover {
+      background-color: var(--bright-green);
+      color: var(--primary-green) !important;
+      transform: translateY(-2px);
+    }
+    
+    .auth-buttons .signup-btn {
+      background-color: var(--bright-green);
+      color: var(--primary-green) !important;
+      border: 2px solid var(--bright-green);
+    }
+    
+    .auth-buttons .signup-btn:hover {
+      background-color: #94d82d;
+      border-color: #94d82d;
+      transform: translateY(-2px);
+    }
+    
+    .user-welcome {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      color: var(--text-light);
+    }
+    
+    .user-welcome span {
+      font-weight: 500;
+    }
+    
+    .user-welcome .logout-btn {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      color: var(--text-light) !important;
+      text-decoration: none;
+      transition: all 0.3s;
+      border: 1px solid transparent;
+    }
+    
+    .user-welcome .logout-btn:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      color: var(--bright-green) !important;
+      border-color: var(--bright-green);
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 991.98px) {
+      .navbar-nav {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+      }
+      
+      .nav-link {
+        padding: 0.8rem 1rem !important;
+        margin: 0.2rem 0;
+      }
+      
+      .d-flex {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        justify-content: center;
+      }
+      
+      .icon-btn {
+        margin: 0 0.5rem;
+      }
+      
+      .search-dropdown {
+        min-width: 100%;
+        margin: 0.5rem 0;
+      }
+      
+      .auth-buttons {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.5rem;
+      }
+      
+      .auth-buttons .btn {
+        width: 100%;
+        text-align: center;
+      }
+      
+      .user-welcome {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .brand-name {
+        font-size: 1.3rem;
+      }
+      
+      .brand-name::before {
+        font-size: 1.1rem;
+        margin-right: 5px;
+      }
     }
   </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-custom shadow-sm">
+<nav class="navbar navbar-expand-lg navbar-custom shadow-sm fixed-top">
   <div class="container">
-    <!-- Logo / Brand -->
-    <a class="navbar-brand fw-bold" href="{% url 'home' %}">
-      <i class="fas fa-leaf me-2 text-success"></i>BLOOMYBLOSSIA
+    <!-- Enhanced Brand Name -->
+    <a class="navbar-brand brand-name" href="{% url 'landing' %}">
+      BloomyBlossia
     </a>
 
     <!-- Toggler -->
-    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <!-- Navbar Links -->
     <div class="collapse navbar-collapse" id="navbarContent">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
-        <li class="nav-item"><a class="nav-link" href="{% url 'landing' %}">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Shop</a></li>
-        {% if user.is_authenticated %}
-          <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
-        {% else %}
-          <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
-        {% endif %}
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+        <li class="nav-item">
+          <a class="nav-link {% if request.path == '/' or 'landing' in request.path %}active{% endif %}" href="{% url 'landing' %}">
+            <i class="fas fa-home me-1 d-lg-none"></i>Home
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if 'shop' in request.path or 'home' in request.path or 'category' in request.path %}active{% endif %}" href="{% url 'home' %}">
+            <i class="fas fa-shopping-bag me-1 d-lg-none"></i>Shop
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if 'about' in request.path %}active{% endif %}" href="{% url 'about' %}">
+            <i class="fas fa-info-circle me-1 d-lg-none"></i>About
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if 'contact' in request.path %}active{% endif %}" href="#">
+            <i class="fas fa-envelope me-1 d-lg-none"></i>Contact
+          </a>
+        </li>
       </ul>
 
       <!-- Icon Group -->
       <div class="d-flex align-items-center gap-3">
+        <!-- Search -->
+        <div class="dropdown">
+          <a class="icon-btn" href="#" role="button" id="searchDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Search Products">
+            <i class="fas fa-search"></i>
+          </a>
+          <div class="dropdown-menu dropdown-menu-end search-dropdown" aria-labelledby="searchDropdown">
+            <form class="search-form d-flex" action="{% url 'search' %}" method="GET">
+              <input class="form-control me-2" type="search" placeholder="What are you looking for?" aria-label="Search" name="q" required>
+              <button class="btn btn-success" type="submit">
+                <i class="fas fa-search"></i>
+              </button>
+            </form>
+          </div>
+        </div>
 
         <!-- Wishlist -->
-        <a href="{% url 'wishlist:wishlist'%}" class="icon-btn" title="Wishlist"><i class="fas fa-heart"></i></a>
-
-        <!-- Cart -->
-        <a href="{% url 'cart:cart' %}" class="btn btn-outline-light position-relative" title="Cart">
-          <i class="fas fa-shopping-cart"></i>
-          <span class="badge bg-light text-dark position-absolute top-0 start-100 translate-middle rounded-pillcart-count">{{cart_count|default:0}}</span>
+        <a href="{% url 'wishlist:wishlist' %}" class="icon-btn" title="My Wishlist">
+          <i class="fas fa-heart"></i>
         </a>
 
-        <!-- User Profile -->
-        {% if user.is_authenticated %}
-          <a href="{% url 'accounts:profile' %}" class="icon-btn" title="Profile">
-            <img src="{% static 'images/default_profile.png' %}" alt="Profile" class="profile-pic">
+        <!-- Cart -->
+        <a href="{% url 'cart:cart' %}" class="icon-btn position-relative" title="Shopping Cart">
+          <i class="fas fa-shopping-cart"></i>
+          {% if cart_count and cart_count > 0 %}
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-light text-dark cart-badge">
+              {{ cart_count }}
+              <span class="visually-hidden">items in cart</span>
+            </span>
+          {% endif %}
           </a>
+        {% if user.is_authenticated %}
+          <div class="dropdown">
+            <a href="#" class="icon-btn" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="My Account">
+              <img src="{% if user.profile.image %}{{ user.profile.image.url }}{% else %}{% static 'images/default_profile.png' %}{% endif %}" alt="Profile" class="profile-pic">
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="fas fa-user me-2"></i>My Profile</a></li>
+              <li><a class="dropdown-item" href="{% url 'orders:orders_list' %}"><i class="fas fa-history me-2"></i>Order History</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+            </ul>
+          </div>
+        {% else %}
+            <a href="{% url 'login' %}" class="btn login-btn">Login</a>
+            <a href="{% url 'register' %}" class="btn signup-btn">Sign Up</a>
         {% endif %}
       </div>
     </div>
   </div>
 </nav>
 
+<!-- Add padding to body to account for fixed navbar -->
+<div style="padding-top: 72px;"></div>
+
 <!-- SweetAlert for Django Messages -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+  // Navbar scroll effect
+  window.addEventListener('scroll', function() {
+    const navbar = document.querySelector('.navbar-custom');
+    if (window.scrollY > 50) {
+      navbar.classList.add('scrolled');
+    } else {
+      navbar.classList.remove('scrolled');
+    }
+  });
+
+  // Highlight active nav item
+  document.addEventListener('DOMContentLoaded', function() {
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    navLinks.forEach(link => {
+      const linkPath = link.getAttribute('href');
+      if (currentPath === linkPath || (linkPath !== '/' && currentPath.startsWith(linkPath))) {
+        link.classList.add('active');
+      }
+    });
+  });
+
+  // Enhanced search functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('input[name="q"]');
+    const searchForm = document.querySelector('.search-form');
+    
+    if (searchInput) {
+      searchInput.addEventListener('focus', function() {
+        this.parentElement.classList.add('focused');
+      });
+      
+      searchInput.addEventListener('blur', function() {
+        this.parentElement.classList.remove('focused');
+      });
+    }
+  });
+
+  // SweetAlert for messages
   {% if messages %}
     {% for message in messages %}
       Swal.fire({
@@ -96,7 +512,10 @@
         text: "{{ message }}",
         icon: "{{ message.tags }}",
         timer: 3000,
-        showConfirmButton: false
+        showConfirmButton: false,
+        position: 'top-end',
+        toast: true,
+        background: '#f8f9fa'
       });
     {% endfor %}
   {% endif %}

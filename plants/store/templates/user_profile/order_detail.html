@@ -1,143 +1,500 @@
 {% extends "user_profile/base_sidebar.html" %}
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Order Details</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <style>
-    body {
-      background-color: #f8f9fa;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    .order-detail-container {
-      max-width: 1000px;
-      margin: 40px auto;
-      background: #fff;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    }
+<style>
+  :root {
+    --green-primary: #2C5F2D;
+    --green-light: #87A878;
+    --green-soft: #A8D5BA;
+    --rose-accent: #E8B4B8;
+    --coral-accent: #FF8B7C;
+    --cream: #FFF8F5;
+    --white: #FFFFFF;
+    --text-dark: #2D3436;
+    --text-gray: #636E72;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 20px rgba(0,0,0,0.1);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+  }
+
+  body {
+    background: linear-gradient(135deg, #f8f9fa 0%, var(--cream) 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text-dark);
+  }
+
+  .order-detail-container {
+    max-width: 1100px;
+    margin: 30px auto;
+    background: var(--white);
+    padding: 0;
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+
+  /* Header Section */
+  .order-header {
+    background: linear-gradient(135deg, var(--green-primary) 0%, var(--green-light) 100%);
+    padding: 30px 40px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+
+  .order-header h2 {
+    font-weight: 600;
+    margin: 0;
+    font-size: 1.8rem;
+    letter-spacing: -0.5px;
+  }
+
+  .order-header h2 i {
+    margin-right: 10px;
+    opacity: 0.9;
+  }
+
+  /* Status Badges */
+  .badge-status {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    border-radius: 25px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .badge-status::before {
+    content: '●';
+    font-size: 1.2rem;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .badge-PLACED { 
+    background: linear-gradient(135deg, #4ECDC4, #44A08D);
+    color: white;
+  }
+  .badge-PACKED { 
+    background: linear-gradient(135deg, #95A5A6, #7F8C8D);
+    color: white;
+  }
+  .badge-SHIPPED { 
+    background: linear-gradient(135deg, #FFB74D, #FFA726);
+    color: #333;
+  }
+  .badge-DELIVERED { 
+    background: linear-gradient(135deg, #81C784, #66BB6A);
+    color: white;
+  }
+  .badge-CANCELED { 
+    background: linear-gradient(135deg, #E57373, #EF5350);
+    color: white;
+  }
+
+  /* Content Sections */
+  .order-content {
+    padding: 40px;
+  }
+
+  .section-card {
+    background: var(--white);
+    border: 1px solid #E8ECF1;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    transition: all 0.3s ease;
+  }
+
+  .section-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .section-card h5 {
+    font-weight: 600;
+    font-size: 1.3rem;
+    color: var(--green-primary);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 3px solid var(--green-light);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-card h5 i {
+    font-size: 1.4rem;
+    color: var(--green-light);
+  }
+
+  /* Info Grid */
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+  }
+
+  .info-item {
+    padding: 12px 0;
+  }
+
+  .info-item strong {
+    color: var(--green-primary);
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .info-item span {
+    color: var(--text-gray);
+    font-size: 1rem;
+  }
+
+  /* Table Styling */
+  .order-items-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    border-radius: 10px;
+  }
+
+  .order-items-table thead {
+    background: linear-gradient(135deg, var(--green-primary), var(--green-light));
+    color: white;
+  }
+
+  .order-items-table th {
+    padding: 16px;
+    text-align: left;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+  }
+
+  .order-items-table td {
+    padding: 16px;
+    border-bottom: 1px solid #E8ECF1;
+    color: var(--text-gray);
+  }
+
+  .order-items-table tbody tr {
+    transition: all 0.2s ease;
+  }
+
+  .order-items-table tbody tr:hover {
+    background-color: var(--cream);
+    transform: scale(1.01);
+  }
+
+  .order-items-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .product-name {
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  /* Order Totals */
+  .order-totals {
+    background: linear-gradient(135deg, var(--cream) 0%, #F0F4F8 100%);
+    padding: 25px;
+    border-radius: 12px;
+    border: 2px solid var(--green-soft);
+  }
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    font-size: 1.05rem;
+  }
+
+  .total-row strong {
+    color: var(--green-primary);
+  }
+
+  .total-row.final {
+    border-top: 3px solid var(--green-light);
+    margin-top: 15px;
+    padding-top: 15px;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--green-primary);
+  }
+
+  /* Action Buttons */
+  .order-actions {
+    margin-top: 30px;
+    padding-top: 25px;
+    border-top: 2px dashed #E8ECF1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    text-decoration: none;
+    color: white;
+  }
+
+  .btn-cancel { 
+    background: linear-gradient(135deg, #E57373, #EF5350);
+  }
+  .btn-cancel:hover { 
+    background: linear-gradient(135deg, #EF5350, #E53935);
+  }
+
+  .btn-return { 
+    background: linear-gradient(135deg, var(--rose-accent), #D4A5A9);
+  }
+  .btn-return:hover { 
+    background: linear-gradient(135deg, #D4A5A9, #C08B8F);
+  }
+
+  .btn-invoice { 
+    background: linear-gradient(135deg, var(--green-light), var(--green-primary));
+  }
+  .btn-invoice:hover { 
+    background: linear-gradient(135deg, var(--green-primary), #1F4A21);
+  }
+
+  .btn-back { 
+    background: linear-gradient(135deg, #95A5A6, #7F8C8D);
+  }
+  .btn-back:hover { 
+    background: linear-gradient(135deg, #7F8C8D, #6C7A7B);
+  }
+
+  /* Cancel/Return Info Alert */
+  .alert-info {
+    background: linear-gradient(135deg, #FFF3CD, #FFE8A1);
+    border-left: 4px solid #FFC107;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+
+  .alert-info strong {
+    color: #856404;
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  .alert-info span {
+    color: #856404;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
     .order-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 30px;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 25px;
     }
-    .order-header h2 {
-      font-weight: 600;
+
+    .order-content {
+      padding: 20px;
     }
-    .badge-status {
-      padding: 5px 10px;
+
+    .info-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .order-items-table {
       font-size: 0.9rem;
-      border-radius: 6px;
-      color: white;
-    }
-    .badge-PLACED { background-color: #17a2b8; }
-    .badge-PACKED { background-color: #6c757d; }
-    .badge-SHIPPED { background-color: #ffc107; color: #212529; }
-    .badge-DELIVERED { background-color: #28a745; }
-    .badge-CANCELED { background-color: #dc3545; }
-
-    .order-info, .order-items, .order-totals {
-      margin-bottom: 30px;
     }
 
-    .order-items table {
-      width: 100%;
-    }
-    .order-items th, .order-items td {
+    .order-items-table th,
+    .order-items-table td {
       padding: 10px;
-      text-align: left;
     }
-    .order-items th {
-      background-color: #343a40;
-      color: white;
+
+    .order-actions {
+      flex-direction: column;
     }
+
     .btn-action {
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      color: white;
-      text-decoration: none;
+      width: 100%;
+      justify-content: center;
     }
-    .btn-cancel { background-color: #dc3545; }
-    .btn-cancel:hover { background-color: #c82333; }
-    .btn-return { background-color: #007bff; }
-    .btn-return:hover { background-color: #0069d9; }
-    .btn-invoice { background-color: #28a745; }
-    .btn-invoice:hover { background-color: #218838; }
+  }
+</style>
 
-    .order-totals p {
-      font-size: 1.1rem;
-      margin: 5px 0;
-    }
-
-  </style>
-</head>
-<body>
 <div class="order-detail-container">
+  <!-- Header -->
   <div class="order-header">
-    <h2>Order Details: {{ order.order_id }}</h2>
+    <h2>
+      <i class="fas fa-receipt"></i>
+      Order {{ order.order_id }}
+    </h2>
     <span class="badge-status badge-{{ order.status }}">{{ order.status }}</span>
   </div>
 
-  <!-- Shipping / User Info -->
-  <div class="order-info">
-    <h5>Shipping Details</h5>
-    <p><strong>Name:</strong> {{ order.user.username }}</p>
-    <p><strong>Email:</strong> {{ order.user.email }}</p>
-    {% if order.address %}
-      <p><strong>Address:</strong> {{ order.address.address_line }}, {{ order.address.city }}, {{ order.address.state }} - {{ order.address.zip_code }}</p>
-      <p><strong>Phone:</strong> {{ order.address.phone }}</p>
-    {% endif %}
-    <p><strong>Order Date:</strong> {{ order.created_at|date:"Y-m-d H:i" }}</p>
-  </div>
+  <div class="order-content">
+    <!-- Shipping Details -->
+    <div class="section-card">
+      <h5>
+        <i class="fas fa-shipping-fast"></i>
+        Shipping Details
+      </h5>
+      <div class="info-grid">
+        <div class="info-item">
+          <strong>Customer Name</strong>
+          <span>{{ order.user.get_full_name|default:order.user.username }}</span>
+        </div>
+        <div class="info-item">
+          <strong>Email Address</strong>
+          <span>{{ order.user.email }}</span>
+        </div>
+        {% if order.address %}
+        <div class="info-item">
+          <strong>Phone Number</strong>
+          <span>{{ order.address.phone }}</span>
+        </div>
+        <div class="info-item" style="grid-column: 1 / -1;">
+          <strong>Delivery Address</strong>
+          <span>{{ order.address.address_line }}, {{ order.address.city }}, {{ order.address.state }} - {{ order.address.zip_code }}</span>
+        </div>
+        {% endif %}
+        <div class="info-item">
+          <strong>Order Date</strong>
+          <span>{{ order.created_at|date:"M d, Y H:i" }}</span>
+        </div>
+        <div class="info-item">
+          <strong>Payment Method</strong>
+          <span>{{ order.get_payment_method_display }}</span>
+        </div>
+      </div>
 
-  <!-- Order Items -->
-  <div class="order-items">
-    <h5>Order Items</h5>
-    <table class="table table-bordered">
-      <thead>
-        <tr>
-          <th>Product</th>
-          <th>Qty</th>
-          <th>Price (₹)</th>
-          <th>Subtotal (₹)</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in items %}
-        <tr>
-          <td>{{ item.product.name }}</td>
-          <td>{{ item.quantity }}</td>
-          <td>₹{{ item.price }}</td>
-          <td>₹{{ item.total_price|floatformat:2 }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+      {% if order.canceled_at %}
+      <div class="alert-info" style="margin-top: 20px;">
+        <strong>Cancellation Information</strong>
+        <span>Canceled on {{ order.canceled_at|date:"M d, Y H:i" }}</span><br>
+        <span>Reason: {{ order.cancel_reason }}</span>
+      </div>
+      {% endif %}
 
-  <!-- Totals -->
-  <div class="order-totals">
-    <p><strong>Subtotal:</strong> ₹{{ subtotal }}</p>
-    <p><strong>Shipping:</strong> ₹{{ shipping_cost }}</p>
-    <p><strong>Total:</strong> ₹{{ total }}</p>
-  </div>
+      {% if order.return_reason %}
+      <div class="alert-info" style="margin-top: 20px;">
+        <strong>Return Information</strong>
+        <span>Return Status: {{ order.return_request }}</span><br>
+        <span>Reason: {{ order.return_reason }}</span>
+      </div>
+      {% endif %}
+    </div>
 
-  <!-- Actions -->
-  <div class="order-actions">
-    {% if order.status != "CANCELED" %}
-      <a href="{% url 'orders:cancel_order' order.id %}" class="btn-action btn-cancel">Cancel Order</a>
-    {% endif %}
-    {% if order.is_returnable %}
-      <a href="{% url 'orders:return_order' order.order_id %}" class="btn-action btn-return">Return Order</a>
-    {% endif %}
-    <a href="{% url 'orders:download_invoice' order.order_id %}" class="btn-action btn-invoice">Download Invoice</a>
+    <!-- Order Items -->
+    <div class="section-card">
+      <h5>
+        <i class="fas fa-box-open"></i>
+        Order Items
+      </h5>
+      <table class="order-items-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+          <tr>
+            <td class="product-name">{{ item.product.name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>₹{{ item.price|floatformat:2 }}</td>
+            <td><strong>₹{{ item.total_price|floatformat:2 }}</strong></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Order Totals -->
+    <div class="section-card">
+      <h5>
+        <i class="fas fa-calculator"></i>
+        Order Summary
+      </h5>
+      <div class="order-totals">
+        <div class="total-row">
+          <strong>Subtotal:</strong>
+          <span>₹{{ subtotal|floatformat:2 }}</span>
+        </div>
+        <div class="total-row">
+          <strong>Shipping Charges:</strong>
+          <span>₹{{ shipping_cost|floatformat:2 }}</span>
+        </div>
+        <div class="total-row final">
+          <strong>Total Amount:</strong>
+          <span>₹{{ total|floatformat:2 }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="order-actions">
+      {% if order.status != "CANCELED" %}
+        <a href="{% url 'orders:cancel_order' order.order_id %}" class="btn-action btn-cancel">
+          <i class="fas fa-times-circle"></i>
+          Cancel Order
+        </a>
+      {% endif %}
+      {% if order.is_returnable %}
+        <a href="{% url 'orders:return_order' order.order_id %}" class="btn-action btn-return">
+          <i class="fas fa-undo"></i>
+          Return Order
+        </a>
+      {% endif %}
+      <a href="{% url 'orders:download_invoice' order.order_id %}" class="btn-action btn-invoice">
+        <i class="fas fa-download"></i>
+        Download Invoice
+      </a>
+      <a href="{% url 'orders:orders_list' %}" class="btn-action btn-back">
+        <i class="fas fa-arrow-left"></i>
+        Back to Orders
+      </a>
+    </div>
   </div>
 </div>
-</body>
-</html>
+
+<!-- Font Awesome for Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 {% endblock %}

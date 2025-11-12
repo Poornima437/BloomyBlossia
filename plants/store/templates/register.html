@@ -5,97 +5,473 @@
 
 {% block content %}
 <style>
+    :root {
+        --green-primary: #2C5F2D;
+        --green-light: #87A878;
+        --green-soft: #A8D5BA;
+        --rose-accent: #E8B4B8;
+        --coral-accent: #FF8B7C;
+        --cream: #FFF8F5;
+        --white: #FFFFFF;
+        --text-dark: #2D3436;
+        --text-gray: #636E72;
+        --border-light: #E8ECF1;
+        --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+        --shadow-md: 0 4px 20px rgba(0,0,0,0.1);
+        --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        overflow-x: hidden;
+    }
+
+    .register-container {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* Form Section */
     .form-section {
-        background-color: #ffffff;
-        padding: 60px;
-        height: 100vh;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--cream) 0%, var(--white) 100%);
+        padding: 40px 20px;
+        position: relative;
+        overflow-y: auto;
     }
-    .image-section {
-        background: url("{% static 'images/login_leaf.jpeg' %}") no-repeat center center;
-        background-size: cover;
-        height: 100vh;
+
+    .form-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 30l15-15M30 30l-15 15M30 30l15 15M30 30l-15-15' stroke='rgba(44,95,45,0.03)' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+        opacity: 0.5;
     }
-    .form-control {
+
+    .form-wrapper {
+        max-width: 520px;
+        width: 100%;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Logo and Header */
+    .logo-section {
+        text-align: center;
+        margin-bottom: 35px;
+    }
+
+    .logo-section img {
+        width: 180px;
+        margin-bottom: 25px;
+        transition: transform 0.3s ease;
+    }
+
+    .logo-section img:hover {
+        transform: scale(1.05);
+    }
+
+    .logo-section h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--green-primary);
+        margin-bottom: 8px;
+        letter-spacing: -0.5px;
+    }
+
+    .logo-section p {
+        color: var(--text-gray);
+        font-size: 1rem;
+    }
+
+    /* Form Styling */
+    .register-form {
+        background: var(--white);
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border-light);
+    }
+
+    /* Error Messages */
+    .alert-danger {
+        background: linear-gradient(135deg, #FFEBEE, #FFCDD2);
+        color: #C62828;
+        padding: 12px 16px;
         border-radius: 10px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        border-left: 4px solid #E53935;
+        border: none;
     }
-    .google-btn {
+
+    .alert-danger::before {
+        content: '\f06a';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        font-size: 1.1rem;
+    }
+
+    /* Form Groups */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: var(--green-primary);
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid var(--border-light);
+        border-radius: 10px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background-color: var(--cream);
+        color: var(--text-dark);
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--green-light);
+        background-color: var(--white);
+        box-shadow: 0 0 0 4px rgba(135, 168, 120, 0.1);
+    }
+
+    .form-control::placeholder {
+        color: var(--text-gray);
+    }
+
+    /* Field Errors */
+    .text-danger {
+        color: #E53935;
+        font-size: 0.85rem;
+        margin-top: 5px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-weight: 500;
+    }
+
+    .text-danger::before {
+        content: '\f071';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        font-size: 0.9rem;
+    }
+
+    /* Register Button */
+    .btn-register {
+        width: 100%;
+        padding: 14px 20px;
+        background: linear-gradient(135deg, var(--green-light), var(--green-primary));
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-sm);
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        padding: 8px;
-        font-weight: 500;
-        background-color: white;
-        color: #444;
-        transition: 0.3s ease;
+        margin-top: 25px;
+    }
+
+    .btn-register:hover {
+        background: linear-gradient(135deg, var(--green-primary), #1F4A21);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-register::before {
+        content: '\f234';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        font-size: 1.1rem;
+    }
+
+    /* Login Link */
+    .login-link {
+        text-align: center;
+        margin-top: 20px;
+        color: var(--text-gray);
+        font-size: 0.95rem;
+    }
+
+    .login-link a {
+        color: var(--green-primary);
+        font-weight: 700;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .login-link a:hover {
+        color: var(--green-light);
+        text-decoration: underline;
+    }
+
+    /* Divider */
+    .divider {
+        text-align: center;
+        margin: 25px 0;
+        position: relative;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        width: 45%;
+        height: 1px;
+        background: var(--border-light);
+    }
+
+    .divider::before {
+        left: 0;
+    }
+
+    .divider::after {
+        right: 0;
+    }
+
+    .divider span {
+        background: var(--white);
+        padding: 0 15px;
+        color: var(--text-gray);
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    /* Google Button */
+    .google-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 14px 20px;
+        border: 2px solid var(--border-light);
+        border-radius: 10px;
+        background-color: var(--white);
+        color: var(--text-dark);
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .google-btn:hover {
+        background-color: var(--cream);
+        border-color: var(--green-soft);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+        color: var(--text-dark);
         text-decoration: none;
     }
-    .google-btn:hover {
-        background-color: #f1f1f1;
+
+    .google-btn img {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Image Section */
+    .image-section {
+        flex: 1;
+        background: url("{% static 'images/login_leaf.jpeg' %}") no-repeat center center;
+        background-size: cover;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .image-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(44, 95, 45, 0.3) 0%, rgba(135, 168, 120, 0.3) 100%);
+    }
+
+    .image-overlay {
+        position: absolute;
+        bottom: 40px;
+        left: 40px;
+        right: 40px;
+        color: white;
+        z-index: 1;
+    }
+
+    .image-overlay h3 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .image-overlay p {
+        font-size: 1.2rem;
+        opacity: 0.95;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Form Grid for Two Columns */
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .form-row .form-group {
+        margin-bottom: 0;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 992px) {
+        .image-section {
+            display: none;
+        }
+
+        .form-section {
+            flex: 1;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .form-wrapper {
+            padding: 0 20px;
+        }
+
+        .register-form {
+            padding: 30px 25px;
+        }
+
+        .logo-section h2 {
+            font-size: 1.6rem;
+        }
+
+        .logo-section img {
+            width: 140px;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+
+        .form-row .form-group {
+            margin-bottom: 20px;
+        }
+
+        .image-overlay h3 {
+            font-size: 2rem;
+        }
+
+        .image-overlay p {
+            font-size: 1rem;
+        }
     }
 </style>
 
-<div class="container-fluid">
-    <div class="row">
-        <!-- Form Side -->
-        <div class="col-md-6 form-section d-flex flex-column justify-content-center">
-            <div class="mb-4 text-center">
-                <img src="{% static 'images/bloomy.png' %}" alt="logo" style="width: 180px;">
-                <h2 class="mt-4">Get Started Now</h2>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<div class="register-container">
+    <!-- Form Section -->
+    <div class="form-section">
+        <div class="form-wrapper">
+            <!-- Logo and Header -->
+            <div class="logo-section">
+                <img src="{% static 'images/bloomy.png' %}" alt="BloomyBlossia Logo">
+                <h2>Get Started Now</h2>
+                <p>Create your account and start your green journey</p>
             </div>
 
+            <!-- Register Form -->
+            <div class="register-form">
+                <form method="POST" action="{% url 'register' %}" novalidate>
+                    {% csrf_token %}
 
+                    <!-- Non-field Errors -->
+                    {% if form.non_field_errors %}
+                        {% for error in form.non_field_errors %}
+                            <div class="alert-danger">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
 
-            <form method="POST" action="{% url 'register' %}" novalidate>
-                {% csrf_token %}
-
-                {% if form.non_field_errors %}
-                    {% for error in form.non_field_errors %}
-                        <div class="alert alert-danger">{{ error }}</div>
+                    <!-- Form Fields -->
+                    {% for field in form %}
+                        <div class="form-group">
+                            {{ field.label_tag }}
+                            {{ field|add_class:"form-control" }}
+                            {% if field.errors %}
+                                <div class="text-danger">
+                                    {{ field.errors|striptags }}
+                                </div>
+                            {% endif %}
+                        </div>
                     {% endfor %}
-                {% endif %}
-                
-                
 
-                {% for field in form %}
-                    <div class="form-group mb-3">
-                        {{ field.label_tag }}
-                        {{ field|add_class:"form-control" }}
-                        {% if field.errors %}
-                            <div class="text-danger">
-                                {{ field.errors }}
-                            </div>
-                        {% endif %}
+                    <!-- Register Button -->
+                    <button type="submit" class="btn-register">
+                        Register
+                    </button>
+
+                    <!-- Login Link -->
+                    <div class="login-link">
+                        Already have an account? <a href="{% url 'login' %}">Login here</a>
                     </div>
-                {% endfor %}
 
-                <div class="d-grid gap-2 mt-3">
-                    <button type="submit" class="btn btn-success">Register</button>
-                </div>
+                    <!-- Divider -->
+                    <div class="divider">
+                        <span>or</span>
+                    </div>
 
-                <div class="text-center mt-3">
-                    <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
-                </div>
-
-                <hr>
-
-                <!-- Google Sign In Button (if using django-allauth) -->
-                <a href="{% provider_login_url 'google' %}" class="google-btn">
-                    <img src="https://developers.google.com/identity/images/g-logo.png" width="20" alt="Google logo">
-                    Continue with Google
-                </a>
-
+                    <!-- Google Sign In -->
+                    <a href="{% provider_login_url 'google' %}" class="google-btn">
+                        <img src="https://img.icons8.com/color/48/000000/google-logo.png" alt="Google">
+                        Continue with Google
+                    </a>
                 </form>
-                </div>
-
-                <!-- Image Side -->
-                <div class="col-md-6 image-section d-none d-md-block">
-                </div>
             </div>
         </div>
+    </div>
 
-    {% endblock %}
+    <!-- Image Section -->
+    <div class="image-section">
+        <div class="image-overlay">
+            <h3>Join Our Community</h3>
+            <p>Start your journey to create a greener, more beautiful space today.</p>
+        </div>
+    </div>
+</div>
 
-
+{% endblock %}

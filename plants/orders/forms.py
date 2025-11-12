@@ -31,9 +31,7 @@ class ReviewForm(forms.ModelForm):
         model = Review
         fields = ['rating', 'feedback']
 
-# orders/forms.py
-from django import forms
-from store.models import Address
+
 
 PAYMENT_CHOICES = [
     ('COD', 'Cash on Delivery'),
@@ -42,12 +40,7 @@ PAYMENT_CHOICES = [
 ]
 
 class CheckoutForm(forms.Form):
-    """
-    Form for handling new address addition during checkout.
-    Address selection is handled via radio buttons in the template.
-    """
-    
-    # New Address Fields (only used when adding new address)
+    # New Address Fields
     fullName = forms.CharField(
         max_length=100,
         required=False,
@@ -127,20 +120,18 @@ class CheckoutForm(forms.Form):
     # Payment Method
     payment_method = forms.ChoiceField(
         choices=PAYMENT_CHOICES,
-        required=False,  # Validated separately for place_order action
+        required=False, 
         widget=forms.RadioSelect(attrs={
             'class': 'form-check-input'
         }),
         initial='COD'
     )
     
-    # Selected address (from existing addresses)
     selected_address = forms.IntegerField(
         required=False,
         widget=forms.HiddenInput()
     )
     
-    # Optional fields
     order_notes = forms.CharField(
         max_length=250,
         required=False,
@@ -152,22 +143,14 @@ class CheckoutForm(forms.Form):
     )
 
     def __init__(self, user, *args, **kwargs):
-        """
-        Initialize form with user context.
-        """
         super().__init__(*args, **kwargs)
         self.user = user
 
     def clean(self):
-        """
-        Custom validation based on the action being performed.
-        """
         cleaned_data = super().clean()
         action = self.data.get('action')
         
-        # Validate based on action type
         if action == 'add_address':
-            # Validate all address fields are present
             required_fields = ['fullName', 'phone', 'address', 'city', 'state', 'zip']
             errors = {}
             
@@ -176,7 +159,6 @@ class CheckoutForm(forms.Form):
                 if not value or not value.strip():
                     errors[field] = f'{field.replace("fullName", "Full Name").replace("zip", "Pincode").title()} is required.'
             
-            # Additional validations
             if cleaned_data.get('phone'):
                 phone = cleaned_data['phone'].strip()
                 if not phone.isdigit() or len(phone) != 10:
@@ -194,20 +176,15 @@ class CheckoutForm(forms.Form):
                     self.add_error(field, error)
         
         elif action == 'place_order':
-            # Validate that an address is selected
             if not cleaned_data.get('selected_address'):
                 raise forms.ValidationError('Please select a shipping address.')
             
-            # Validate payment method is selected
             if not cleaned_data.get('payment_method'):
                 self.add_error('payment_method', 'Please select a payment method.')
         
         return cleaned_data
 
     def clean_payment_method(self):
-        """
-        Validate that the selected payment method is valid.
-        """
         method = self.cleaned_data.get('payment_method')
         if method:
             valid_choices = [choice[0] for choice in PAYMENT_CHOICES]
@@ -217,7 +194,6 @@ class CheckoutForm(forms.Form):
 
 
 class CancelOrderForm(forms.Form):
-    """Form for canceling an order."""
     reason = forms.CharField(
         widget=forms.Textarea(attrs={
             'rows': 3,
@@ -230,7 +206,6 @@ class CancelOrderForm(forms.Form):
 
 
 class ReturnOrderForm(forms.Form):
-    """Form for returning an order."""
     reason = forms.CharField(
         widget=forms.Textarea(attrs={
             'rows': 3,
@@ -266,7 +241,6 @@ class ReturnOrderForm(forms.Form):
     
     
 class CancelOrderForm(forms.Form):
-    """Form for canceling an order."""
     reason = forms.CharField(
         widget=forms.Textarea(attrs={
             'rows': 3,
