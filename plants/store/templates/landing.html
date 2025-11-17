@@ -655,10 +655,17 @@
     <div class="hero-text">
       <h1>Buy Your Dream Plants</h1>
       <p>TOP PLANTS | HOME DECOR | GREEN JOY</p>
-      <form method="GET" action="{% url 'search' %}" class="search-form">
-        <input type="text" name="q" placeholder="Search your plants..." required>
+      <form method="GET" action="{% url 'search' %}" class="search-form"> <input type="text" name="q" placeholder="Search your plants..." required>
         <button type="submit">Search</button>
       </form>
+      <!-- <form id="searchForm">
+        <input type="text" id="searchInput" name="q" placeholder="Search your plants..." required>
+        <button type="submit">Search</button>
+      </form>
+
+      <div id="searchResults"></div> -->
+
+
     </div>
     <div class="hero-image">
       <img src="{% static 'images/hero_plant.png' %}" alt="Beautiful Indoor Plant" />
@@ -787,6 +794,24 @@
         card.style.cursor = 'pointer';
       });
     });
+  </script>
+  <script>
+    document.getElementById("searchForm").addEventListener("submit", function(e){
+        e.preventDefault();
+
+        let query = document.getElementById("searchInput").value;
+
+        fetch(`/search/?q=${query}`, {
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById("searchResults").innerHTML = html;
+        });
+    });
+
   </script>
 
 </body>

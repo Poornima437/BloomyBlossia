@@ -25,6 +25,9 @@ urlpatterns = [
 
     # Shopping
     path('search/', views.search_products, name='search'),
+    
+    # path('search/', views.search, name='search'),
+
     path('product/<int:pk>/', views.product, name='product'),
     path('category/<str:foo>/', views.category, name='category'),
 

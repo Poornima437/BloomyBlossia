@@ -9,7 +9,7 @@ from .models import Product, Category, Address
 from .forms import ProductForm, AddressForm
 from cart.models import Cart, CartItem
 from orders.models import Order
-
+from wishlist.models import WishlistItem
 
 # ---------------- USER VIEWS ----------------
 
@@ -30,6 +30,7 @@ def home(request):
         category__is_deleted=False,
         category__is_blocked=False
     )
+    
 
     # Search
     if search_query:
@@ -71,12 +72,16 @@ def home(request):
     paginator = Paginator(products, 8)
     page_obj = paginator.get_page(page_number)
 
+    # Wishlist items
+    wishlist_items = WishlistItem.objects.filter(user=request.user) if request.user.is_authenticated else WishlistItem.objects.none()
+
     return render(request, 'home.html', {
         'page_obj': page_obj,
         'sort_option': sort_option,
         'category_id': category_id,
         'price_range': price_range,
         'categories': categories,
+        'wishlist_items': wishlist_items,
         'breadcrumbs': [("Home", "/home/")],
     })
 
@@ -95,6 +100,18 @@ def category(request, foo):
         return redirect('home')
     return home(request)
 
+
+# def search(request):
+#     query = request.GET.get('q', '')
+
+#     products = Product.objects.filter(name__icontains=query)
+
+#     # AJAX Condition
+#     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+#         return render(request, "partials/search_results.html", {"products": products})
+
+#     # Fallback if someone opens /search directly
+#     return render(request, "search_results.html", {"products": products, "query": query})
 
 def search_products(request):
     query = request.GET.get('q')

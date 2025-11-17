@@ -4,54 +4,265 @@
 
 <div class="container py-5">
   <div class="col-md-9 offset-md-3">
+    
+    <!-- Profile Edit Form -->
     <div class="form-section">
-      <h4 class="mb-4">Edit Profile</h4>
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">Edit Profile</h4>
+        <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary btn-sm">
+          <i class="fas fa-arrow-left"></i> Back to Profile
+        </a>
+      </div>
+
       <form method="POST" enctype="multipart/form-data" id="profileForm">
         {% csrf_token %}
-        <div class="row g-3">
+        <div class="row g-4">
+
+          <!-- Profile Image Section -->
+          <div class="col-12">
+            <div class="profile-image-section text-center">
+              <label class="form-label">Profile Picture</label>
+              <div class="image-preview-container">
+                <img id="previewImage" 
+                     src="{% if profile_form.instance.profile_image %}{{ profile_form.instance.profile_image.url }}{% else %}{% static 'images/default_profile.png' %}{% endif %}" 
+                     class="profile-preview-img">
+                <div class="image-upload-overlay">
+                  <i class="fas fa-camera"></i>
+                </div>
+              </div>
+              <input type="file" 
+                     name="profile_image" 
+                     id="profileImageInput" 
+                     accept="image/*" 
+                     class="d-none">
+              <button type="button" 
+                      class="btn btn-outline-primary btn-sm mt-2" 
+                      onclick="document.getElementById('profileImageInput').click()">
+                <i class="fas fa-upload"></i> Change Picture
+              </button>
+              <small class="text-muted d-block mt-1">JPG, PNG or GIF (Max 5MB)</small>
+            </div>
+          </div>
+
+          <!-- Personal Information -->
+          <div class="col-12">
+            <h6 class="section-title">Personal Information</h6>
+          </div>
 
           <!-- First Name -->
           <div class="col-md-6">
-            <label class="form-label">First Name</label>
-            {{ user_form.first_name }}
+            <label class="form-label required">First Name</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-user"></i></span>
+              <input type="text" 
+                     name="first_name" 
+                     class="form-control" 
+                     value="{{ user_form.instance.first_name }}"
+                     placeholder="Enter your first name"
+                     required>
+            </div>
+            {% if user_form.first_name.errors %}
+              <small class="text-danger">{{ user_form.first_name.errors|striptags }}</small>
+            {% endif %}
           </div>
 
           <!-- Last Name -->
           <div class="col-md-6">
-            <label class="form-label">Last Name</label>
-            {{ user_form.last_name }}
+            <label class="form-label required">Last Name</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-user"></i></span>
+              <input type="text" 
+                     name="last_name" 
+                     class="form-control" 
+                     value="{{ user_form.instance.last_name }}"
+                     placeholder="Enter your last name"
+                     required>
+            </div>
+            {% if user_form.last_name.errors %}
+              <small class="text-danger">{{ user_form.last_name.errors|striptags }}</small>
+            {% endif %}
           </div>
 
-          <!-- Phone -->
+          <!-- Phone Number -->
           <div class="col-md-6">
             <label class="form-label">Phone Number</label>
-            {{ profile_form.phone }}
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-phone"></i></span>
+              <input type="tel" 
+                     name="phone" 
+                     class="form-control" 
+                     value="{{ profile_form.instance.phone }}"
+                     placeholder="+1 (555) 123-4567">
+            </div>
+            {% if profile_form.phone.errors %}
+              <small class="text-danger">{{ profile_form.phone.errors|striptags }}</small>
+            {% endif %}
           </div>
 
-          <!-- Email -->
+          <!-- Date of Birth -->
           <div class="col-md-6">
-            <label class="form-label">Email</label>
-            {{ user_form.email }}
-            <small class="text-muted d-block">* You will need to verify if you change your email.</small>
+            <label class="form-label">Date of Birth</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+              <input type="date" 
+                     name="date_of_birth" 
+                     class="form-control" 
+                     value="{{ profile_form.instance.date_of_birth|date:'Y-m-d' }}">
+            </div>
           </div>
 
-          <!-- Profile Image -->
-          <div class="col-md-6">
-            <label class="form-label">Profile Image</label><br>
-            <img id="previewImage" 
-                 src="{% if profile_form.instance.profile_image %}{{ profile_form.instance.profile_image.url }}{% else %}{% static 'images/default_profile.png' %}{% endif %}" 
-                 class="mb-2 rounded-circle border">
-            <br>
-            {{ profile_form.profile_image }}
+          <!-- Contact Information -->
+          <div class="col-12 mt-4">
+            <h6 class="section-title">Contact Information</h6>
           </div>
 
-          <!-- Submit -->
+          <!-- Email with Verification -->
           <div class="col-12">
-            <button type="submit" class="btn btn-primary">Update Profile</button>
+            <label class="form-label required">Email Address</label>
+            <div class="email-verification-container">
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                <input type="email" 
+                       name="email" 
+                       id="emailInput"
+                       class="form-control" 
+                       value="{{ user_form.instance.email }}"
+                       placeholder="your.email@example.com"
+                       data-original-email="{{ user_form.instance.email }}"
+                       required>
+                <button type="button" 
+                        class="btn btn-warning" 
+                        id="verifyEmailBtn" 
+                        style="display: none;">
+                  <i class="fas fa-shield-alt"></i> Verify Email
+                </button>
+              </div>
+              {% if user_form.instance.email %}
+                <small class="email-status {% if user_form.instance.profile.email_verified %}text-success{% else %}text-warning{% endif %}">
+                  <i class="fas {% if user_form.instance.profile.email_verified %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+                  {% if user_form.instance.profile.email_verified %}Email Verified{% else %}Email Not Verified{% endif %}
+                </small>
+              {% endif %}
+              <small class="text-muted d-block mt-1">
+                <i class="fas fa-info-circle"></i> Changing your email will require verification via OTP
+              </small>
+            </div>
+          </div>
+
+          <!-- Address -->
+          <div class="col-12">
+            <label class="form-label">Address</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+              <input type="text" 
+                     name="address" 
+                     class="form-control" 
+                     value="{{ profile_form.instance.address }}"
+                     placeholder="Street address">
+            </div>
+          </div>
+
+          <!-- City and State -->
+          <div class="col-md-6">
+            <label class="form-label">City</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-city"></i></span>
+              <input type="text" 
+                     name="city" 
+                     class="form-control" 
+                     value="{{ profile_form.instance.city }}"
+                     placeholder="City">
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">State/Province</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-map"></i></span>
+              <input type="text" 
+                     name="state" 
+                     class="form-control" 
+                     value="{{ profile_form.instance.state }}"
+                     placeholder="State/Province">
+            </div>
+          </div>
+
+          <!-- Bio Section -->
+          <div class="col-12 mt-4">
+            <h6 class="section-title">About</h6>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Bio</label>
+            <textarea name="bio" 
+                      class="form-control" 
+                      rows="4" 
+                      placeholder="Tell us about yourself..."
+                      maxlength="500">{{ profile_form.instance.bio }}</textarea>
+            <small class="text-muted">Tell us about yourself (Max 500 characters)</small>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="col-12 mt-4">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <button type="submit" class="btn btn-primary btn-lg">
+                  <i class="fas fa-save"></i> Save Changes
+                </button>
+                <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary btn-lg ms-2">
+                  <i class="fas fa-times"></i> Cancel
+                </a>
+              </div>
+              <a href="{% url 'accounts:change_password' %}" class="btn btn-outline-danger">
+                <i class="fas fa-key"></i> Change Password
+              </a>
+            </div>
           </div>
 
         </div>
       </form>
+    </div>
+  </div>
+</div>
+
+<!-- Email Verification Modal -->
+<div class="modal fade" id="emailVerificationModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-shield-alt text-primary"></i> Verify Your Email
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-center mb-3">
+          We've sent a 6-digit verification code to<br>
+          <strong id="newEmailDisplay"></strong>
+        </p>
+        <div class="otp-input-container">
+          <input type="text" maxlength="1" class="otp-input" data-index="0">
+          <input type="text" maxlength="1" class="otp-input" data-index="1">
+          <input type="text" maxlength="1" class="otp-input" data-index="2">
+          <input type="text" maxlength="1" class="otp-input" data-index="3">
+          <input type="text" maxlength="1" class="otp-input" data-index="4">
+          <input type="text" maxlength="1" class="otp-input" data-index="5">
+        </div>
+        <input type="hidden" id="verificationToken">
+        <div class="text-center mt-3">
+          <small class="text-muted">
+            Didn't receive the code? 
+            <a href="#" id="resendOtpLink" class="text-primary">Resend OTP</a>
+          </small>
+          <div id="otpTimer" class="text-muted mt-2"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="verifyOtpBtn">
+          <i class="fas fa-check"></i> Verify
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -61,11 +272,21 @@
    Form Section
 ====================== */
 .form-section {
-  background-color: #fff;
-  padding: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  padding: 2.5rem;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+}
+
+/* ======================
+   Section Titles
+====================== */
+.section-title {
+  font-weight: 600;
+  color: #2c3e50;
+  border-bottom: 2px solid #69856c;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 /* ======================
@@ -73,106 +294,526 @@
 ====================== */
 label.form-label {
   font-weight: 500;
-  display: block;
+  color: #495057;
   margin-bottom: 0.5rem;
-  
+}
+
+label.form-label.required::after {
+  content: " *";
+  color: #dc3545;
 }
 
 /* ======================
-   Inputs
+   Input Groups
 ====================== */
+.input-group-text {
+  background-color: #69856c;
+  color: white;
+  border: 2px solid #69856c;
+  font-size: 0.9rem;
+}
+
 input.form-control,
 select.form-control,
 textarea.form-control {
-  width: 99%;
-  padding: 0.6rem 1rem;
-  border: 2px solid #69856c;
-  border-radius: 5px;
-  transition: border-color 0.3s, box-shadow 0.3s;
+  padding: 0.65rem 1rem;
+  border: 2px solid #dee2e6;
+  transition: all 0.3s ease;
+  background-color: #ffffff;
+  color: #495057;
+  font-size: 1rem;
+}
+
+.input-group input.form-control,
+.input-group select.form-control {
+  border-left: none;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-radius: 0 5px 5px 0;
 }
 
 input.form-control:focus,
 select.form-control:focus,
 textarea.form-control:focus {
-  border-color: #096a1f;
-  box-shadow: 0 0 5px rgba(16, 108, 38, 0.3);
+  border-color: #69856c;
+  box-shadow: 0 0 0 0.2rem rgba(105, 133, 108, 0.25);
+  outline: none;
+  background-color: #ffffff;
+}
+
+textarea.form-control {
+  min-height: 100px;
+  resize: vertical;
+  border-radius: 5px;
+}
+
+/* Placeholder styling */
+input.form-control::placeholder,
+textarea.form-control::placeholder {
+  color: #adb5bd;
+  opacity: 1;
+}
+
+/* ======================
+   Profile Image Section
+====================== */
+.profile-image-section {
+  background-color: #f8f9fa;
+  padding: 2rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+}
+
+.image-preview-container {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+.profile-preview-img {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 4px solid #69856c;
+  transition: all 0.3s ease;
+}
+
+.image-upload-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.image-preview-container:hover .image-upload-overlay {
+  opacity: 1;
+}
+
+.image-upload-overlay i {
+  color: white;
+  font-size: 2rem;
+}
+
+/* ======================
+   Email Verification
+====================== */
+.email-verification-container {
+  position: relative;
+}
+
+.email-status {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+#verifyEmailBtn {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+/* ======================
+   OTP Input
+====================== */
+.otp-input-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 2rem 0;
+}
+
+.otp-input {
+  width: 50px;
+  height: 50px;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.otp-input:focus {
+  border-color: #69856c;
+  box-shadow: 0 0 0 0.2rem rgba(105, 133, 108, 0.25);
   outline: none;
 }
 
 /* ======================
-   Profile Image
+   Buttons
 ====================== */
-#previewImage {
-  display: block;
-  max-width: 120px;
-  max-height: 120px;
-  object-fit: cover;
-  border-radius: 50%;
-  border: 2px solid #385c52;
+.btn {
+  padding: 0.6rem 1.5rem;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background-color: #69856c;
+  border-color: #69856c;
+}
+
+.btn-primary:hover {
+  background-color: #5a7159;
+  border-color: #5a7159;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(105, 133, 108, 0.3);
+}
+
+.btn-outline-danger:hover {
+  transform: translateY(-2px);
 }
 
 /* ======================
-   Submit Button
+   Responsive Design
 ====================== */
-button.btn-primary {
-  padding: 0.6rem 1.5rem;
-  font-size: 1rem;
-  border-radius: 5px;
-  transition: background-color 0.3s;
-}
+@media (max-width: 768px) {
+  .form-section {
+    padding: 1.5rem;
+  }
+  
+  .col-md-9.offset-md-3 {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+  
+  .profile-preview-img {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .otp-input {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
 
-button.btn-primary:hover {
-  background-color: #218838;
-  border-color: #1e7e34;
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .d-flex.justify-content-between > div {
+    width: 100%;
+  }
+
+  .btn-lg {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
 }
 </style>
 
-<!-- ======================
-     SweetAlert Script
-====================== -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-  {% if user_form.errors or profile_form.errors %}
-    Swal.fire({
-      icon: 'error',
-      title: 'Form Error',
-      html: `
-        {% for field, errors in user_form.errors.items %}
-          <b>{{ field|title }}</b>: {{ errors|striptags }}<br>
-        {% endfor %}
-        {% for field, errors in profile_form.errors.items %}
-          <b>{{ field|title }}</b>: {{ errors|striptags }}<br>
-        {% endfor %}
-      `
+document.addEventListener("DOMContentLoaded", function () {
+
+    // ================================
+    // ELEMENTS
+    // ================================
+    const emailInput = document.getElementById("emailInput");
+    const originalEmail = emailInput.dataset.originalEmail;
+    const verifyEmailBtn = document.getElementById("verifyEmailBtn");
+    const profileForm = document.getElementById("profileForm");
+
+    let emailChanged = false;
+    let emailVerified = false;
+
+    // ================================
+    // EMAIL CHANGE DETECTION
+    // ================================
+    emailInput.addEventListener("input", function () {
+        if (this.value !== originalEmail && this.value.trim() !== "") {
+            verifyEmailBtn.style.display = "block";
+            emailChanged = true;
+            emailVerified = false;
+        } else {
+            verifyEmailBtn.style.display = "none";
+            emailChanged = false;
+            emailVerified = true;
+        }
     });
-  {% endif %}
 
-  {% if messages %}
-    {% for message in messages %}
-      Swal.fire({
-        icon: 'success',
-        title: 'Success',
-        text: '{{ message }}'
-      });
-    {% endfor %}
-  {% endif %}
 
-  // Real-time profile image preview
-  const fileInput = document.querySelector('input[name="profile_image"]');
-  const previewImage = document.getElementById('previewImage');
+    // ================================
+    // SEND OTP BUTTON CLICK
+    // ================================
+    verifyEmailBtn.addEventListener("click", function (e) {
+        e.preventDefault();
 
-  if (fileInput) {
-    fileInput.addEventListener('change', function () {
-      const file = this.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          previewImage.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
+        const newEmail = emailInput.value.trim();
+
+        if (!newEmail || !validateEmail(newEmail)) {
+            Swal.fire({
+                icon: "error",
+                title: "Invalid Email",
+                text: "Please enter a valid email address"
+            });
+            return;
+        }
+
+        sendOTP(newEmail);
     });
-  }
+
+
+    // ================================
+    // SEND OTP FUNCTION
+    // ================================
+    function sendOTP(email) {
+        Swal.fire({
+            title: "Sending OTP...",
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        fetch("{% url 'accounts:send_email_otp' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
+            },
+            body: JSON.stringify({ email: email })
+        })
+            .then(res => res.json())
+            .then(data => {
+                Swal.close();
+
+                if (data.success) {
+
+                    document.getElementById("newEmailDisplay").textContent = email;
+
+                    const modal = new bootstrap.Modal(
+                        document.getElementById("emailVerificationModal")
+                    );
+                    modal.show();
+
+                    startOTPTimer();
+
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: data.message
+                    });
+                }
+            })
+            .catch(() => {
+                Swal.close();
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Something went wrong. Try again."
+                });
+            });
+    }
+
+
+    // ================================
+    // OTP INPUT LOGIC
+    // ================================
+    const otpInputs = document.querySelectorAll(".otp-input");
+
+    otpInputs.forEach((input, index) => {
+        input.addEventListener("input", function () {
+            if (this.value.length === 1 && index < otpInputs.length - 1) {
+                otpInputs[index + 1].focus();
+            }
+        });
+
+        input.addEventListener("keydown", function (e) {
+            if (e.key === "Backspace" && this.value === "" && index > 0) {
+                otpInputs[index - 1].focus();
+            }
+        });
+
+        input.addEventListener("paste", function (e) {
+            e.preventDefault();
+            const data = e.clipboardData.getData("text").slice(0, 6);
+            data.split("").forEach((char, i) => {
+                if (otpInputs[i]) otpInputs[i].value = char;
+            });
+            if (data.length === 6) otpInputs[5].focus();
+        });
+    });
+
+
+    // ================================
+    // VERIFY OTP CLICK
+    // ================================
+    document.getElementById("verifyOtpBtn").addEventListener("click", function () {
+
+        const otp = Array.from(otpInputs)
+            .map(i => i.value)
+            .join("");
+
+        if (otp.length !== 6) {
+            Swal.fire({
+                icon: "error",
+                title: "Incomplete OTP",
+                text: "Please enter all 6 digits"
+            });
+            return;
+        }
+
+        verifyOTP(otp);
+    });
+
+
+    // ================================
+    // VERIFY OTP FUNCTION  (FIXED)
+    // ================================
+    function verifyOTP(otp) {
+
+        Swal.fire({
+            title: "Verifying...",
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        fetch("{% url 'accounts:verify_email_otp' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
+            },
+            body: JSON.stringify({
+                email: emailInput.value,
+                otp: otp
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                Swal.close();
+
+                if (data.success) {
+
+                    emailVerified = true;
+
+                    bootstrap.Modal.getInstance(
+                        document.getElementById("emailVerificationModal")
+                    ).hide();
+
+                    Swal.fire({
+                        icon: "success",
+                        title: "Email Verified",
+                        text: "You may now save your changes.",
+                        timer: 2000
+                    });
+
+                    verifyEmailBtn.innerHTML =
+                        '<i class="fas fa-check-circle"></i> Verified';
+                    verifyEmailBtn.classList.remove("btn-warning");
+                    verifyEmailBtn.classList.add("btn-success");
+                    verifyEmailBtn.disabled = true;
+
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Invalid OTP",
+                        text: data.message
+                    });
+                }
+            })
+            .catch(() => {
+                Swal.close();
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Verification failed. Try again."
+                });
+            });
+    }
+
+
+    // ================================
+    // RESEND OTP
+    // ================================
+    document.getElementById("resendOtpLink").addEventListener("click", function (e) {
+        e.preventDefault();
+        otpInputs.forEach(i => (i.value = ""));
+        otpInputs[0].focus();
+        sendOTP(emailInput.value);
+    });
+
+
+    // ================================
+    // TIMER FUNCTION
+    // ================================
+    function startOTPTimer() {
+        let timeLeft = 50;
+        const timerDisplay = document.getElementById("otpTimer");
+        const resendBtn = document.getElementById("resendOtpLink");
+
+        resendBtn.style.opacity = "0.5";
+        resendBtn.style.pointerEvents = "none";
+
+        const interval = setInterval(() => {
+            timerDisplay.textContent = `Code expires in 0:${String(timeLeft).padStart(2, "0")}`;
+
+            if (timeLeft <= 0) {
+                clearInterval(interval);
+
+                timerDisplay.textContent = "Code expired. Resend OTP.";
+
+                resendBtn.style.opacity = "1";
+                resendBtn.style.pointerEvents = "auto";
+
+                // Tell backend to expire OTP
+                fetch("{% url 'accounts:expire_email_otp' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
+                    }
+                });
+
+            }
+
+            timeLeft--;
+        }, 1000);
+    }
+
+
+    // ================================
+    // EMAIL FORMAT VALIDATION
+    // ================================
+    function validateEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+
+
+    // ================================
+    // BLOCK FORM SUBMIT IF NOT VERIFIED
+    // ================================
+    profileForm.addEventListener("submit", function (e) {
+        if (emailChanged && !emailVerified) {
+            e.preventDefault();
+            Swal.fire({
+                icon: "warning",
+                title: "Email Not Verified",
+                text: "Please verify your new email before saving.",
+                confirmButtonText: "Verify Now",
+                showCancelButton: true
+            }).then(result => {
+                if (result.isConfirmed) verifyEmailBtn.click();
+            });
+        }
+    });
+
+});
 </script>
-
 {% endblock %}

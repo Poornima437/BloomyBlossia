@@ -552,20 +552,160 @@
             </div>
         {% endfor %}
         {% endif %}
-        
-        <form id="checkoutForm" method="post" action="{% url 'orders:place_order' %}">
+        <!-- <form method="post" action="{% url 'orders:checkout' %}">
             {% csrf_token %}
-            <input type="hidden" name="action" id="formAction" value="place_order">
-            
+            <input type="hidden" name="formAction" id="formAction" value="">
+
             <div class="row">
-                <!-- Left Column: Address & Payment -->
+
+                <div class="col-md-7">
+
+                   
+                    <h5 class="section-header">
+                        <i class="fas fa-map-marker-alt"></i> Shipping Address
+                    </h5>
+
+                    {% if addresses %}
+                        {% for adr in addresses %}
+                        <label class="address-box">
+                            <input type="radio"
+                                name="selected_address"
+                                value="{{ adr.address_id }}"
+                                {% if adr.is_default %}checked{% endif %}
+                                required>
+
+                            <div>
+                                <strong>{{ adr.full_name }}</strong>
+                                {% if adr.is_default %}
+                                    <span class="badge badge-success">DEFAULT</span>
+                                {% endif %}
+                                <br>
+                                {{ adr.address_line }},
+                                {{ adr.city }}, {{ adr.state }} – {{ adr.zip_code }}<br>
+                                📞 {{ adr.phone }}
+                            </div>
+                        </label>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-danger">No saved addresses.</p>
+                    {% endif %}
+
+                  
+                    <button type="button" class="btn btn-outline-primary mt-2"
+                            onclick="toggleAddressForm()">
+                        <i class="fas fa-plus-circle"></i> Add New Address
+                    </button>
+
+               
+                    <div id="newAddressForm"
+                        class="p-3 border rounded mt-3"
+                        style="display:none;">
+
+                        <h6><i class="fas fa-edit"></i> Add New Address</h6>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Full Name *</label>
+                                <input class="form-control" name="fullName" />
+                            </div>
+                            <div class="col-md-6">
+                                <label>Phone *</label>
+                                <input class="form-control" name="phone" />
+                            </div>
+                        </div>
+
+                        <label class="mt-2">Address Line *</label>
+                        <textarea class="form-control" name="address"></textarea>
+
+                        <div class="row mt-2">
+                            <div class="col-md-4">
+                                <label>City *</label>
+                                <input class="form-control" name="city" />
+                            </div>
+                            <div class="col-md-4">
+                                <label>State *</label>
+                                <input class="form-control" name="state" />
+                            </div>
+                            <div class="col-md-4">
+                                <label>Pincode *</label>
+                                <input class="form-control" name="zip" />
+                            </div>
+                        </div>
+
+                        <label class="mt-2">
+                            <input type="checkbox" name="set_as_default">
+                            ⭐ Set as default
+                        </label>
+
+                        <button type="submit"
+                                class="btn btn-primary mt-2"
+                                onclick="document.getElementById('formAction').value='add_address'">
+                            Save Address
+                        </button>
+
+                        <button class="btn btn-secondary mt-2"
+                                type="button" onclick="toggleAddressForm()">
+                            Cancel
+                        </button>
+                    </div>
+
+                    <h5 class="mt-4">
+                        <i class="fas fa-credit-card"></i> Payment Method
+                    </h5>
+
+                    <label>
+                        <input type="radio" name="payment_method" value="COD" checked>
+                        💵 Cash On Delivery
+                    </label><br>
+
+                    <label>
+                        <input type="radio" name="payment_method" value="RAZORPAY">
+                        🪙 Razorpay
+                    </label><br>
+
+                    <label>
+                        <input type="radio" name="payment_method" value="PAYPAL">
+                        💳 PayPal
+                    </label><br>
+
+                </div>
+                <div class="col-md-5">
+
+                    <div class="order-summary-box">
+
+                        <h5><i class="fas fa-receipt"></i> Order Summary</h5>
+                        <hr>
+
+                        <p>Subtotal: ₹{{ subtotal }}</p>
+                        <p>Shipping: ₹{{ shipping_cost }}</p>
+                        <p class="text-success">Discount: -₹{{ discount }}</p>
+
+                        <h4>Total: ₹{{ total }}</h4>
+
+                        <button type="submit"
+                                class="btn btn-success btn-lg btn-block"
+                                onclick="document.getElementById('formAction').value='place_order'">
+                            ✅ Place Order
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+        </form> -->
+
+        
+        <form method="post" action="{% url 'orders:checkout' %}">
+            {% csrf_token %}
+            <input type="hidden" name="formAction" id="formAction" value="">
+
+            <div class="row">
                 <div class="col-md-7">
                     <h5 class="section-header">
                         <i class="fas fa-map-marker-alt"></i>
                         Shipping Address
                     </h5>
                     
-                    <!-- Display Saved Addresses -->
+                     <!-- Display Saved Addresses -->
                     {% if addresses %}
                         <div id="savedAddresses">
                             {% for address in addresses %}
@@ -596,7 +736,7 @@
                         </div>
                     {% endif %}
 
-                    <!-- Add New Address Button -->
+                    Add New Address Button -->
                     <button type="button" class="add-address-btn" onclick="toggleAddressForm()">
                         <i class="fas fa-plus-circle"></i>
                         Add New Address
@@ -665,16 +805,21 @@
                         </div>
 
                         <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-primary" onclick="submitNewAddress()">
-                                <i class="fas fa-save"></i>
-                                Save Address
+                            <button type="submit"
+                                    class="btn btn-primary mt-2"
+                                    onclick="document.getElementById('formAction').value='add_address'">
+                                 Save Address
                             </button>
+                                <!-- <i class="fas fa-save"></i>
+                                Save Address
+                            </button> -->
                             <button type="button" class="btn btn-secondary ml-2" onclick="toggleAddressForm()">
                                 <i class="fas fa-times"></i>
                                 Cancel
                             </button>
                         </div>
                     </div>
+                
 
                     <!-- Payment Method -->
                     <h5 class="section-header mt-4">
@@ -685,7 +830,7 @@
                         <input class="form-check-input" type="radio" name="payment_method" id="cod" value="COD" checked>
                         <label class="form-check-label" for="cod">
                             <i class="fas fa-money-bill-wave"></i>
-                            Cash on Delivery
+                            💵 Cash On Delivery
                         </label>
                     </div>
                     <div class="form-check">
@@ -728,16 +873,28 @@
                             <strong>Total:</strong>
                             <strong>₹{{ total }}</strong>
                         </div>
-                        <button type="button" class="btn btn-success btn-block" onclick="placeOrder()">
+                        <button type="submit"
+                                class="btn btn-success btn-lg btn-block"
+                                onclick="document.getElementById('formAction').value='place_order'">
+                            ✅ Place Order
+                        </button>
+                        <!-- <button type="button" class="btn btn-success btn-block">
                             <i class="fas fa-check-circle"></i>
                             Place Order
-                        </button>
+                        </button> -->
                     </div>
+                
                 </div>
             </div>
         </form>
     </div>
 </div>
+<script>
+function toggleAddressForm() {
+    const box = document.getElementById("newAddressForm");
+    box.style.display = box.style.display === "none" ? "block" : "none";
+}
+</script>
 
 <script>
 const fields = ["fullName", "phone", "address", "city", "state", "zip"];

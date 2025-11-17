@@ -74,6 +74,7 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'orders.middleware.no_cache.NoCacheMiddleware',
     
 ]
 SESSION_COOKIE_AGE = 3600  # 1 hour in seconds

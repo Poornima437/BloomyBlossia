@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if address %}Edit Address{% else %}Add New Address{% endif %}{% endblock %}
+
+{% block content %}
+<style>
+  .address-container {
+    max-width: 600px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  
+  .address-container h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 25px;
+    text-align: center;
+    color: #333;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #555;
+  }
+  
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+  }
+  
+  .form-group input:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: #007bff;
+  }
+  
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+  }
+  
+  .checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .checkbox-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 8px;
+  }
+  
+  .checkbox-group label {
+    margin: 0;
+    font-weight: 500;
+  }
+  
+  .text-danger {
+    color: #dc3545;
+    font-size: 13px;
+    margin-top: 5px;
+  }
+  
+  .alert {
+    padding: 12px 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+  }
+  
+  .alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+  }
+  
+  .btn-box {
+    display: flex;
+    gap: 10px;
+    margin-top: 25px;
+  }
+  
+  .btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    transition: all 0.3s;
+  }
+  
+  .btn-primary {
+    background: #007bff;
+    color: #fff;
+  }
+  
+  .btn-primary:hover {
+    background: #0056b3;
+  }
+  
+  .btn-secondary {
+    background: #6c757d;
+    color: #fff;
+  }
+  
+  .btn-secondary:hover {
+    background: #545b62;
+  }
+  
+  @media (max-width: 768px) {
+    .form-row {
+      grid-template-columns: 1fr;
+    }
+    
+    .address-container {
+      margin: 20px;
+      padding: 20px;
+    }
+  }
+</style>
+
+<div class="address-container">
+  <h2>{% if address %}Edit Address{% else %}Add New Address{% endif %}</h2>
+
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger">
+      {{ form.non_field_errors }}
+    </div>
+  {% endif %}
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    <div class="form-group">
+      {{ form.full_name.label_tag }}
+      {{ form.full_name }}
+      {% if form.full_name.errors %}
+        <div class="text-danger">{{ form.full_name.errors|striptags }}</div>
+      {% endif %}
+    </div>
+
+    <div class="form-group">
+      {{ form.phone.label_tag }}
+      {{ form.phone }}
+      {% if form.phone.errors %}
+        <div class="text-danger">{{ form.phone.errors|striptags }}</div>
+      {% endif %}
+    </div>
+
+    <div class="form-group">
+      {{ form.address_line1.label_tag }}
+      {{ form.address_line1 }}
+      {% if form.address_line1.errors %}
+        <div class="text-danger">{{ form.address_line1.errors|striptags }}</div>
+      {% endif %}
+    </div>
+
+    <div class="form-group">
+      {{ form.address_line2.label_tag }}
+      {{ form.address_line2 }}
+      {% if form.address_line2.errors %}
+        <div class="text-danger">{{ form.address_line2.errors|striptags }}</div>
+      {% endif %}
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        {{ form.city.label_tag }}
+        {{ form.city }}
+        {% if form.city.errors %}
+          <div class="text-danger">{{ form.city.errors|striptags }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        {{ form.state.label_tag }}
+        {{ form.state }}
+        {% if form.state.errors %}
+          <div class="text-danger">{{ form.state.errors|striptags }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        {{ form.postcode.label_tag }}
+        {{ form.postcode }}
+        {% if form.postcode.errors %}
+          <div class="text-danger">{{ form.postcode.errors|striptags }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="form-group">
+      {{ form.country.label_tag }}
+      {{ form.country }}
+      {% if form.country.errors %}
+        <div class="text-danger">{{ form.country.errors|striptags }}</div>
+      {% endif %}
+    </div>
+
+    <div class="checkbox-group">
+      {{ form.is_default }}
+      {{ form.is_default.label_tag }}
+      {% if form.is_default.errors %}
+        <div class="text-danger">{{ form.is_default.errors|striptags }}</div>
+      {% endif %}
+    </div>
+
+    {% if next %}
+      <input type="hidden" name="next" value="{{ next }}">
+    {% endif %}
+
+    <div class="btn-box">
+      <button type="submit" class="btn btn-primary">Save Address</button>
+      
+    </div>
+  </form>
+</div>
+
+{% endblock %}

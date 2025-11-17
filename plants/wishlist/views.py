@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from store.models import Product,ProductVariant
 from .models import WishlistItem
+
 from django.http import JsonResponse
 from cart.models import Cart,CartItem
 
@@ -10,6 +11,26 @@ from cart.models import Cart,CartItem
 def wishlist_view(request):
     wishlist_items = WishlistItem.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'user_profile/wishlist.html', {'wishlist_items': wishlist_items})
+
+@login_required
+def toggle_wishlist(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    size = request.POST.get('size', 'Medium')
+    try:
+        variant = product.variants.get(size__iexact=size)
+    except ProductVariant.DoesNotExist:
+        variant = None
+
+    wishlist_item = WishlistItem.objects.filter(user=request.user, product=product, variant=variant).first()
+
+    if wishlist_item:
+        wishlist_item.delete()
+        status = "removed"
+    else:
+        WishlistItem.objects.create(user=request.user, product=product, variant=variant)
+        status = "added"
+
+    return JsonResponse({"status": status})
 
 
 
@@ -33,18 +54,28 @@ def add_to_wishlist(request, product_id):
     return redirect('wishlist:wishlist')
 
 
-# @login_required
-# def remove_from_wishlist(request, item_id):
-#     # Safe deletion: no 404 if item doesn't exist
-#     WishlistItem.objects.filter(id=item_id, user=request.user).delete()
-#     messages.success(request, "Item removed from wishlist.")
-#     return redirect('wishlist:wishlist')
 @login_required
 def remove_from_wishlist(request, item_id):
     if request.method == "POST":
         WishlistItem.objects.filter(id=item_id, user=request.user).delete()
         return JsonResponse({"success": True})
     return JsonResponse({"success": False}, status=400)
+
+# @login_required
+# def toggle_wishlist(request, product_id):
+#     if not request.user.is_authenticated:
+#         return JsonResponse({'error': 'Login required'}, status=403)
+
+#     product = get_object_or_404(Product, id=product_id)
+#     wishlist_item, created = WishlistItem.objects.get_or_create(user=request.user, product=product)
+
+#     if not created:
+#         wishlist_item.delete()
+#         status = 'removed'
+#     else:
+#         status = 'added'
+
+#     return JsonResponse({'status': status})
 
 
 

@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load wishlist_tags %} 
 {% load cloudinary %}
 
 {% block content %}
@@ -246,6 +247,8 @@
       width: 100%;
       text-align: center;
     }
+
+
     
     .btnn:hover { 
       background: #c1121f; 
@@ -554,15 +557,17 @@
     <div class="product-grid">
       {% for product in page_obj %}
         {% if product.is_sale %}
-        <div class="product-card">
-          <a href="javascript:void(0);" class="wishlist-icon" onclick="addToWishlist({{ product.id }}, this)">
-            <i class="fas fa-heart"></i>
-          </a>
+          <div class="product-card">
+            {% with wishlist_items|get_item:product.id as is_wishlisted %}
+            <a href="javascript:void(0);" class="wishlist-icon {% if is_wishlisted %}added{% endif %}" onclick="toggleWishlist({{ product.id }}, this)">
+              <i class="fas fa-heart"></i>
+            </a>
+            {% endwith %}
           
           {% if product.sale_price and product.price %}
             {% widthratio product.price|floatformat:2|add:"0" product.sale_price|floatformat:2|add:"0" 1 as ratio %}
             {% widthratio 100 1 ratio as discount %}
-            <span class="discount-badge">40% OFF</span>
+            <span class="discount-badge">20% OFF</span>
           {% endif %}
 
           <div class="product-image-container">
@@ -615,17 +620,18 @@
 </div>
 
 <script>
-  function addToWishlist(productId, element) {
-    fetch(`/wishlist/add/${productId}/`, {
-      method: 'GET',
+  function toggleWishlist(productId, element) {
+    fetch(`/wishlist/toggle/${productId}/`, {
+      method: 'POST',
       headers: {
+        'X-CSRFToken': getCookie('csrftoken'),
         'X-Requested-With': 'XMLHttpRequest'
       }
     })
-    .then(response => {
-      if (response.ok) {
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'added') {
         element.classList.add('added');
-
         Swal.fire({
           toast: true,
           position: 'top-end',
@@ -634,11 +640,15 @@
           showConfirmButton: false,
           timer: 1500
         });
-      } else {
+      } else if (data.status === 'removed') {
+        element.classList.remove('added');
         Swal.fire({
-          icon: 'error',
-          title: 'Oops...',
-          text: 'Could not add to wishlist. Please try again!'
+          toast: true,
+          position: 'top-end',
+          icon: 'info',
+          title: 'Removed from wishlist',
+          showConfirmButton: false,
+          timer: 1500
         });
       }
     })
@@ -650,6 +660,21 @@
         text: 'Something went wrong!'
       });
     });
+  }
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
   }
 
   // Search functionality
@@ -693,5 +718,25 @@
       });
     }
   });
+
+  
 </script>
+<script>
+document.getElementById("searchForm").addEventListener("submit", function(e){
+    e.preventDefault();
+
+    let query = document.getElementById("searchInput").value;
+
+    fetch(`/search/?q=${query}`, {
+        headers: {
+            "X-Requested-With": "XMLHttpRequest"
+        }
+    })
+    .then(response => response.text())
+    .then(html => {
+        document.getElementById("searchResults").innerHTML = html;
+    });
+});
+</script>
+
 {% endblock %}

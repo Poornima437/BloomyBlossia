@@ -35,4 +35,5 @@ class Coupon(models.Model):
         return self.code
 
     def is_expired(self):
-        return self.expiry_date and self.expiry_date < timezone.now()
+        return self.valid_to and self.valid_to < timezone.now()
+

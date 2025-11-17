@@ -1,0 +1,9 @@
+{% if products %}
+    {% for p in products %}
+        <div style="padding:6px; border-bottom:1px solid #ddd;">
+            <strong>{{ p.name }}</strong> - ₹{{ p.price }}
+        </div>
+    {% endfor %}
+{% else %}
+    <p>No matching products found ❌</p>
+{% endif %}

@@ -2,7 +2,8 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from accounts.models import UserProfile, Address
-
+from django.core.exceptions import ValidationError
+import re
 
 # Registration Form
 
@@ -26,29 +27,50 @@ class SignUpForm(UserCreationForm):
         model = User
         fields = ('username', 'email', 'password1', 'password2')
 
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+
+      
+        if not re.fullmatch(r'[6-9]\d{9}', phone):
+            raise ValidationError("Phone number must start with 6/7/8/9 and be 10 digits long.")
+
+        return phone
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+
+        if not email.endswith(".com"):
+            raise ValidationError("Email must end with .com")
+
+      
+        if User.objects.filter(email=email).exists():
+            raise ValidationError("This email is already registered.")
+
+        return email
+
     def __init__(self, *args, **kwargs):
         super(SignUpForm, self).__init__(*args, **kwargs)
 
-        # Update placeholder + styling
         self.fields['username'].widget.attrs.update({'class': 'form-control', 'placeholder': 'User Name'})
         self.fields['email'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Email Address'})
         self.fields['password1'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Password'})
         self.fields['password2'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Confirm Password'})
 
-        # Remove labels + help text
         for field in ['username', 'email', 'password1', 'password2']:
             self.fields[field].label = ''
             self.fields[field].help_text = ''
 
     def save(self, commit=True):
         user = super(SignUpForm, self).save(commit=False)
+
         if commit:
             user.save()
-            # Create user profile and store phone
             UserProfile.objects.create(user=user, phone=self.cleaned_data['phone'])
+
         return user
 
-# User Edit Form (basic user info)
+
 
 class UserForm(forms.ModelForm):
     class Meta:
@@ -61,10 +83,6 @@ class UserForm(forms.ModelForm):
            
         }
 
-
-
-# UserProfile Edit Form (extra)
-
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
@@ -75,8 +93,6 @@ class ProfileForm(forms.ModelForm):
         }
 
 
-
-# Address Form
 
 class AddressForm(forms.ModelForm):
     class Meta:

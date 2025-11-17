@@ -422,22 +422,24 @@
           </div>
         </div>
 
-        <!-- Wishlist -->
-        <a href="{% url 'wishlist:wishlist' %}" class="icon-btn" title="My Wishlist">
-          <i class="fas fa-heart"></i>
-        </a>
-
-        <!-- Cart -->
-        <a href="{% url 'cart:cart' %}" class="icon-btn position-relative" title="Shopping Cart">
-          <i class="fas fa-shopping-cart"></i>
-          {% if cart_count and cart_count > 0 %}
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-light text-dark cart-badge">
-              {{ cart_count }}
-              <span class="visually-hidden">items in cart</span>
-            </span>
-          {% endif %}
-          </a>
         {% if user.is_authenticated %}
+          <!-- Wishlist -->
+          <a href="{% url 'wishlist:wishlist' %}" class="icon-btn" title="My Wishlist">
+            <i class="fas fa-heart"></i>
+          </a>
+
+          <!-- Cart -->
+          <a href="{% url 'cart:cart' %}" class="icon-btn position-relative" title="Shopping Cart">
+            <i class="fas fa-shopping-cart"></i>
+            {% if cart_count and cart_count > 0 %}
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-light text-dark cart-badge">
+                {{ cart_count }}
+                <span class="visually-hidden">items in cart</span>
+              </span>
+            {% endif %}
+          </a>
+
+          <!-- Profile Dropdown -->
           <div class="dropdown">
             <a href="#" class="icon-btn" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="My Account">
               <img src="{% if user.profile.image %}{{ user.profile.image.url }}{% else %}{% static 'images/default_profile.png' %}{% endif %}" alt="Profile" class="profile-pic">
@@ -450,10 +452,13 @@
               <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
             </ul>
           </div>
+
         {% else %}
-            <a href="{% url 'login' %}" class="btn login-btn">Login</a>
-            <a href="{% url 'register' %}" class="btn signup-btn">Sign Up</a>
+          <!-- Login & Signup -->
+          <a href="{% url 'login' %}" class="btn login-btn">Login</a>
+          <a href="{% url 'register' %}" class="btn signup-btn">Signup</a>
         {% endif %}
+
       </div>
     </div>
   </div>

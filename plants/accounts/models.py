@@ -2,28 +2,30 @@ from django.db import models
 from django.contrib.auth.models import User
 from decimal import Decimal
 from cloudinary.models import CloudinaryField
+from django.utils import timezone
+
 
 
 # USER PROFILE
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    profile_image = CloudinaryField(
-    'image',
-    folder='profile',
-    blank=True,
-    null=True,
-    default='https://res.cloudinary.com/<your-cloud-name>/image/upload/v123456789/default_profile.png'
-)
+    profile_image = CloudinaryField('image', folder='profile', blank=True, null=True)
+    email_verified = models.BooleanField(default=False)
     phone = models.CharField(max_length=15, blank=True)
+    
 
     def __str__(self):
         return self.user.username
 
     @property
     def get_profile_image(self):
-        if self.profile_image:
-            return self.profile_image.url
+        try:
+            if self.profile_image and getattr(self.profile_image, 'url', None):
+                return self.profile_image.url
+        except Exception:
+            pass
         return '/static/images/default_profile.png'
+
 
 
 # ADDRESS
