@@ -1,79 +1,225 @@
-{% include 'base_sidebar.html' %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Write a Review</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <style>
-    body {
-      background-color: #f9f9f9;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    .review-container {
-      max-width: 600px;
-      margin: 60px auto;
-      background: #fff;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    }
-    .star-rating {
-      display: flex;
-      flex-direction: row-reverse;
-      justify-content: flex-end;
-      margin-bottom: 1rem;
-    }
-    .star-rating input {
-      display: none;
-    }
-    .star-rating label {
-      font-size: 2rem;
-      color: #ccc;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-    .star-rating input:checked ~ label,
-    .star-rating label:hover,
-    .star-rating label:hover ~ label {
-      color: #ffc107;
-    }
-    .form-group textarea {
-      resize: none;
-    }
-    .btn-submit {
-      background-color: #28a745;
-      color: #fff;
-    }
-    .btn-submit:hover {
-      background-color: #218838;
-    }
-  </style>
-</head>
-<body>
-  <div class="container review-container">
-    <h4 class="mb-4 text-center">Write a Review</h4>
-    <form method="post" action="{% if review %}{% url 'update_review' review.id %}{% else %}{% url 'write_review' order.id %}{% endif %}">
-      {% csrf_token %}
-      <div class="form-group">
-        <label>Rating</label>
-        <div class="star-rating">
-          {% for i in "54321" %}
-            <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" {% if review and review.rating == i|add:""|int %}checked{% endif %}>
-            <label for="star{{ i }}">★</label>
-          {% endfor %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Product Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'product_detail' product.id %}">{{ product.name }}</a></li>
+                    <li class="breadcrumb-item active">Reviews</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex align-items-center">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" 
+                         class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                {% endif %}
+                <div>
+                    <h4 class="mb-1">{{ product.name }}</h4>
+                    <div class="d-flex align-items-center">
+                        <div class="rating-stars me-2">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= avg_rating %}
+                                    <i class="fas fa-star text-warning"></i>
+                                {% else %}
+                                    <i class="far fa-star text-warning"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <span class="text-muted">({{ total_reviews }} reviews)</span>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+    </div>
 
-      <div class="form-group">
-        <label for="feedback">Feedback</label>
-        <textarea id="feedback" name="feedback" rows="5" class="form-control" required>{{ review.feedback|default_if_none:"" }}</textarea>
-      </div>
+    <div class="row">
+        <!-- Reviews Sidebar -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h2 class="text-primary mb-1">{{ avg_rating }}</h2>
+                    <div class="rating-stars mb-3">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= avg_rating %}
+                                <i class="fas fa-star text-warning"></i>
+                            {% else %}
+                                <i class="far fa-star text-warning"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <p class="text-muted">{{ total_reviews }} customer reviews</p>
+                    
+                    <!-- Rating Distribution -->
+                    <div class="rating-distribution mt-4">
+                        {% for rating in "54321" %}
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="small me-2" style="width: 20px;">{{ rating }}</span>
+                                <i class="fas fa-star text-warning me-2" style="font-size: 0.8rem;"></i>
+                                <div class="progress flex-grow-1" style="height: 8px;">
+                                    <div class="progress-bar bg-warning" 
+                                         style="width: {% widthratio rating_distribution.rating total_reviews 100 %}%;">
+                                    </div>
+                                </div>
+                                <span class="small ms-2 text-muted" style="width: 30px;">
+                                    ({{ rating_distribution.rating }})
+                                </span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Review Action Button -->
+                    <div class="mt-4">
+                        {% if user.is_authenticated %}
+                            {% if user_has_purchased %}
+                                {% if user_review %}
+                                    <a href="{% url 'reviews:update_review' user_review.id %}" class="btn btn-primary w-100">
+                                        <i class="fas fa-edit me-2"></i>Edit Your Review
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'reviews:add_review_from_product' product.id %}" class="btn btn-primary w-100">
+                                        <i class="fas fa-star me-2"></i>Write a Review
+                                    </a>
+                                    <small class="text-muted d-block mt-1">You purchased this product</small>
+                                {% endif %}
+                            {% else %}
+                                <button class="btn btn-outline-secondary w-100" disabled>
+                                    <i class="fas fa-shopping-bag me-2"></i>Purchase to Review
+                                </button>
+                                <small class="text-muted d-block mt-1">Buy this product to write a review</small>
+                            {% endif %}
+                        {% else %}
+                            <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login to Review
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
 
-      <button type="submit" class="btn btn-submit btn-block">
-        {% if review %}Update{% else %}Publish{% endif %} Review
-      </button>
-    </form>
-  </div>
-</body>
-</html>
+        <!-- Reviews List -->
+        <div class="col-md-8">
+            {% if reviews %}
+                <div class="reviews-list">
+                    {% for review in reviews %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="mb-1">{{ review.user.get_full_name|default:review.user.username }}</h6>
+                                    <div class="rating-stars small">
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= review.rating %}
+                                                <i class="fas fa-star text-warning"></i>
+                                            {% else %}
+                                                <i class="far fa-star text-warning"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                            </div>
+                            
+                            <p class="mb-0">{{ review.feedback }}</p>
+                            
+                            {% if review.user == user %}
+                            <div class="mt-3 pt-2 border-top">
+                                <a href="{% url 'reviews:update_review' review.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <button class="btn btn-sm btn-outline-danger delete-review" data-review-id="{{ review.id }}">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Reviews Yet</h5>
+                        <p class="text-muted">Be the first to review this product!</p>
+                        {% if user.is_authenticated and user_has_purchased %}
+                            <a href="{% url 'reviews:add_review_from_product' product.id %}" class="btn btn-primary">
+                                <i class="fas fa-star me-2"></i>Write First Review
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Delete Review Confirmation Modal -->
+<div class="modal fade" id="deleteReviewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Review</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete your review? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteReviewForm" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete Review</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.rating-stars {
+    font-size: 1.1rem;
+}
+
+.rating-stars.small {
+    font-size: 0.9rem;
+}
+
+.rating-distribution .progress {
+    background-color: #e9ecef;
+}
+
+.review-item {
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+}
+
+.review-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Delete review functionality
+    document.querySelectorAll('.delete-review').forEach(button => {
+        button.addEventListener('click', function() {
+            const reviewId = this.dataset.reviewId;
+            const form = document.getElementById('deleteReviewForm');
+            form.action = `/reviews/delete-review/${reviewId}/`;
+            
+            const modal = new bootstrap.Modal(document.getElementById('deleteReviewModal'));
+            modal.show();
+        });
+    });
+});
+</script>
+{% endblock %}

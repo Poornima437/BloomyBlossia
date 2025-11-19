@@ -2,92 +2,28 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse
-from .models import Order, OrderItem
-from store.models import Product
+from .models import Order, OrderItem,Review
 from django.utils import timezone
 import io
-from wallet.models import WalletTransaction
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from wallet.models import WalletTransaction
-from django.db import transaction
-
-from .models import Order, OrderItem, Review
-from cart.models import Cart, CartItem
-from store.models import Address
-from .forms import CheckoutForm,CancelOrderForm, ReturnOrderForm
-
-
-
-@login_required
-def write_review(request, order_item_id):
-    order_item = get_object_or_404(OrderItem, id=order_item_id, order__user=request.user)
-    existing_review = Review.objects.filter(user=request.user, order_item=order_item).first()
-
-    if request.method == 'POST':
-        rating = int(request.POST['rating'])
-        feedback = request.POST['feedback']
-
-        if existing_review:
-            existing_review.rating = rating
-            existing_review.feedback = feedback
-            existing_review.save()
-        else:
-            Review.objects.create(
-                user=request.user,
-                order_item=order_item,
-                product=order_item.product,
-                rating=rating,
-                feedback=feedback
-            )
-        return redirect('orders:order_history')
-
-    return render(request, 'write_review.html', {
-        'order_item': order_item,
-        'review': existing_review
-    })
-
-
-@login_required
-def update_review(request, review_id):
-    review = get_object_or_404(Review, id=review_id, user=request.user)
-    if request.method == 'POST':
-        review.rating = int(request.POST['rating'])
-        review.feedback = request.POST['feedback']
-        review.save()
-        return redirect('orders:order_history')
-
-    return render(request, 'write_review.html', {'review': review, 'order_item': review.order_item})
-
-
-# ORDERS 
-
-
-from django.db import transaction
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
 from django.db import transaction
 from django.db.models import F
-from django.utils import timezone
-
 from cart.models import CartItem, Cart
-from orders.models import Order, OrderItem
 from store.models import Product, ProductVariant
 from wallet.models import WalletTransaction  # optional
 from django.db import transaction, models
-from django.db.models import F
-from django.shortcuts import redirect
-from django.contrib import messages
-from django.utils import timezone
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404
 
 from cart.models import Cart
-from .models import Order, OrderItem
-from store.models import Product, ProductVariant   # IMPORTANT
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
+from store.models import Address
+from .forms import CheckoutForm,CancelOrderForm, ReturnOrderForm
+from django.http import JsonResponse, HttpResponseForbidden
+from .models import Product
+
+
+# ORDERS 
 @login_required
 @transaction.atomic
 def place_order_view(request):
@@ -196,58 +132,6 @@ def place_order_view(request):
     messages.success(request, "Order placed successfully!")
     return redirect("orders:order_success", order_id=order.order_id)
 
-
-
-# @login_required
-# @transaction.atomic   # ROLLBACK if anything fails
-# def place_order_view(request):
-#     if request.method != "POST":
-#         return redirect("checkout")
-
-#     user = request.user
-#     cart_items = CartItem.objects.filter(cart__user=user)
-
-#     if not cart_items.exists():
-#         messages.error(request, "⚠ Your cart is empty")
-#         return redirect("home")
-
-
-#     for item in cart_items:
-#         if item.product.stock < item.quantity:
-#             messages.error(request, f"⚠ '{item.product.name}' only {item.product.stock} left!")
-#             return redirect("cart")
-
-
-#     subtotal = sum(item.product.price * item.quantity for item in cart_items)
-#     shipping_cost = 100
-#     discount = 20
-#     total = subtotal + shipping_cost - discount
-
-#     order = Order.objects.create(
-#         user=user,
-#         subtotal=subtotal,
-#         shipping_cost=shipping_cost,
-#         discount=discount,
-#         total=total,
-#         status="PLACED"
-#     )
-
- 
-#     for item in cart_items:
-#         OrderItem.objects.create(
-#             order=order,
-#             product=item.product,
-#             quantity=item.quantity,
-#             price=item.product.price * item.quantity
-#         )
-
-#         item.product.stock -= item.quantity
-#         item.product.save()
-
-#     cart_items.delete()
-
-#     messages.success(request, " Order placed successfully!")
-#     return redirect("orders:order_success", order_id=order.order_id)
 
 @login_required
 def checkout_view(request):
@@ -523,200 +407,6 @@ def cancel_order(request, order_id):
         return redirect("orders:orders_list")
 
     return render(request, "user_profile/cancel_order.html", {"order": order})
-# @login_required
-# @transaction.atomic  
-# def cancel_order(request, order_id):
-#     order = get_object_or_404(Order, order_id=order_id, user=request.user)
-
-#     # Order cannot be canceled after shipping
-#     if order.status not in ["PLACED", "PACKED"]:
-#         messages.error(request, "❌ You cannot cancel this order at this stage.")
-#         return redirect("orders:order_detail", order_id=order.order_id)
-
-#     if request.method == "POST":
-#         reason = request.POST.get("reason", "").strip()
-
-#         if len(reason) < 10:
-#             messages.error(request, "⚠ Cancellation reason must be at least 10 characters.")
-#             return render(request, "user_profile/cancel_order.html", {"order": order})
-
-#         # ---------------- RESTORE STOCK ----------------
-#         for item in order.items.all():
-
-#             # If product variant exists
-#             if hasattr(item, "variant") and item.variant:
-#                 item.variant.stock += item.quantity
-#                 item.variant.save()
-
-#             # Normal product
-#             else:
-#                 item.product.stock += item.quantity
-#                 item.product.save()
-
-#         # ---------------- UPDATE ORDER STATUS ----------------
-#         order.status = "CANCELED"
-#         order.canceled_at = timezone.now()
-#         order.cancel_reason = reason
-#         order.save()
-
-#         # ---------------- REFUND IF PREPAID ----------------
-#         is_prepaid = order.payment_method in ["razorpay", "paypal"]
-
-#         # SAFE: check payment_status exists
-#         is_paid = hasattr(order, "payment_status") and order.payment_status == "PAID"
-
-#         if is_prepaid and is_paid:
-
-#             # ✔ Refund to wallet if exists
-#             if hasattr(request.user, "wallet"):
-#                 wallet = request.user.wallet
-#                 wallet.balance += order.total
-#                 wallet.save()
-
-#                 WalletTransaction.objects.create(
-#                     wallet=wallet,
-#                     transaction_type="CREDIT",
-#                     amount=order.total,
-#                     description=f"Refund for canceled order {order.order_id}",
-#                     order=order
-#                 )
-
-#                 messages.success(
-#                     request,
-#                     f" Order #{order.order_id} canceled. ₹{order.total} refunded to your wallet."
-#                 )
-
-#             else:
-#                 messages.success(
-#                     request,
-#                     f" Order #{order.order_id} canceled. Refund will be processed within 5-7 working days."
-#                 )
-#         else:
-#             messages.success(request, f" Order #{order.order_id} canceled successfully.")
-
-#         return redirect("orders:orders_list")
-
-#     # 🔹 GET → Show cancel form
-#     return render(request, "user_profile/cancel_order.html", {"order": order})
-
-# @login_required
-# def cancel_order(request, order_id):
-#     order = get_object_or_404(Order, order_id=order_id, user=request.user)
-    
-#     # Check if order can be cancelled
-#     if order.status not in ["PLACED", "PACKED"]:
-#         messages.error(request, "You cannot cancel this order at this stage.")
-#         return redirect("orders:order_detail", order_id=order.order_id)
-
-#     if request.method == "POST":
-#         reason = request.POST.get("reason", "").strip()
-        
-#         # Validate reason
-#         if not reason or len(reason) < 10:
-#             messages.error(request, "Please provide a cancellation reason with at least 10 characters.")
-#             return render(request, "user_profile/cancel_order.html", {'order': order})
-        
-#         # Update order status
-#         order.status = "CANCELED"
-#         order.canceled_at = timezone.now()  
-#         order.cancel_reason = reason
-#         order.save()
-
-#         # Restore stock for each item
-#         for item in order.items.all():
-#             if hasattr(item, 'variant') and item.variant:
-#                 item.variant.stock += item.quantity
-#                 item.variant.save()
-#             else:
-#                 item.product.stock += item.quantity
-#                 item.product.save()
-
-#         # Handle refund for prepaid orders
-#         if order.payment_method in ["razorpay", "paypal"] and hasattr(order, 'payment_status') and order.payment_status == "PAID":
-#             if hasattr(request.user, 'wallet'):
-#                 wallet = request.user.wallet
-#                 wallet.balance += order.total
-#                 wallet.save()
-                
-#                 # Create wallet transaction record
-#                 WalletTransaction.objects.create(
-#                     wallet=wallet,
-#                     transaction_type="CREDIT",
-#                     amount=order.total,
-#                     description=f"Refund for canceled order {order.order_id}",
-#                     order=order
-#                 )
-                
-#                 messages.success(
-#                     request, 
-#                     f"Order #{order.order_id} canceled successfully. ₹{order.total} has been refunded to your wallet."
-#                 )
-#             else:
-#                 messages.success(
-#                     request, 
-#                     f"Order #{order.order_id} canceled successfully. Refund will be processed within 5-7 business days."
-#                 )
-#         else:
-#             # COD order - no refund needed
-#             messages.success(request, f"Order #{order.order_id} has been canceled successfully.")
-        
-#         return redirect("orders:orders_list")
-
-#     # GET request - show cancellation form
-#     return render(request, "user_profile/cancel_order.html", {'order': order})
-# # CANCEL ORDER 
-# @login_required
-# def cancel_order(request, order_id):
-#     order = get_object_or_404(Order, order_id=order_id, user=request.user)
-#     if order.status not in ["PLACED", "PACKED"]:
-#         messages.error(request, "You cannot cancel this order at this stage.")
-#         return redirect("orders:order_detail", order_id=order.order_id)
-
-#     if request.method == "POST":
-#         reason = request.POST.get("reason", "")
-#         order.status = "CANCELED"
-#         order.canceled_at = timezone.now()  
-#         order.cancel_reason = reason
-#         order.save()
-
-#         for item in order.items.all():
-#             if hasattr(item, 'variant') and item.variant:
-#                 item.variant.stock += item.quantity
-#                 item.variant.save()
-#             else:
-#                 item.product.stock += item.quantity
-#                 item.product.save()
-
-#         if order.payment_method in ["RAZORPAY", "ONLINE", "PREPAID"] and order.payment_status == "PAID":
-#             # Refund to wallet
-#             if hasattr(request.user, 'wallet'):
-#                 wallet = request.user.wallet
-#                 wallet.balance += order.total
-#                 wallet.save()
-                
-#                 # Create wallet transaction record
-#                 WalletTransaction.objects.create(
-#                     wallet=wallet,
-#                     transaction_type="CREDIT",
-#                     amount=order.total,
-#                     description=f"Refund for canceled order {order.order_id}",
-#                     order=order
-#                 )
-                
-#                 messages.success(
-#                     request, 
-#                     f"Order canceled successfully. ₹{order.total} has been refunded to your wallet."
-#                 )
-#             else:
-#                 messages.success(
-#                     request, 
-#                     "Order canceled successfully. Refund will be processed within 5-7 business days."
-#                 )
-#         messages.success(request, "Order has been canceled successfully.")
-#         return redirect("orders:orders_list")
-
-#     return render(request, "user_profile/cancel_order.html", {'order':order})
-
 
 @login_required
 def return_order(request, order_id):
@@ -744,46 +434,6 @@ def return_order(request, order_id):
 def download_invoice(request, order_id):
     order = get_object_or_404(Order, order_id=order_id, user=request.user)
     return render(request, "user_profile/invoice.html", {"order": order})
-# @login_required
-# def download_invoice(request, order_id):
-#     order = get_object_or_404(Order, order_id=order_id, user=request.user)
-
-#     buffer = io.BytesIO()
-#     p = canvas.Canvas(buffer, pagesize=A4)
-#     width, height = A4
-
-#     p.setFont("Helvetica-Bold", 16)
-#     p.drawString(50, height - 50, f"Invoice - {order.order_id}")
-
-#     p.setFont("Helvetica", 12)
-#     p.drawString(50, height - 100, f"Customer: {order.user.username}")
-#     p.drawString(50, height - 120, f"Date: {order.created_at.strftime('%Y-%m-%d')}")
-#     p.drawString(50, height - 140, f"Status: {order.status}")
-
-#     y = height - 180
-#     p.drawString(50, y, "Items:")
-#     y -= 20
-
-#     for item in order.items.all():
-#         p.drawString(60, y, f"{item.product.name} x {item.quantity} = Rs. {item.price * item.quantity}")
-#         y -= 20
-
-#     p.drawString(50, y - 20, f"Subtotal: Rs. {order.subtotal}")
-#     p.drawString(50, y - 40, f"Shipping: Rs. {order.shipping_cost}")
-#     if order.discount > 0:
-#         p.drawString(50, y - 60, f"Discount: Rs. {order.discount}")
-#         p.drawString(50, y - 80, f"Total Amount: Rs. {order.total}")
-#     else:
-#         p.drawString(50, y - 60, f"Total Amount: Rs. {order.total}")
-
-#     p.showPage()
-#     p.save()
-#     buffer.seek(0)
-
-#     response = HttpResponse(buffer, content_type="application/pdf")
-#     response["Content-Disposition"] = f"attachment; filename=invoice_{order.order_id}.pdf"
-#     return response
-
 
 @login_required
 def order_detail(request, order_id):
@@ -830,3 +480,8 @@ def orders_list(request):
     }
 
     return render(request, "user_profile/orders_list.html", {"orders": orders, "query": query})
+
+
+
+
+

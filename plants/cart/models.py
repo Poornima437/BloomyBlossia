@@ -9,31 +9,61 @@ from coupon.models import Coupon
 
 # Create your models here.
 
+# class Cart(models.Model):
+#     user = models.OneToOneField(User, on_delete=models.CASCADE)
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
+
+#     def total(self):
+#         return sum(item.subtotal for item in self.items.all())
+
+    
+#     def discount_amount_value(self):
+#         if self.coupon:
+#             if self.coupon.discount_type == 'percent':
+#                 return self.total() * (self.coupon.discount_amount / 100)
+#             else:  
+#                 return self.coupon.discount_amount
+#         return Decimal('0.00')
+    
+#     def subtotal(self):
+#         return sum(item.subtotal for item in self.items.all())
+
+#     def final_total(self):
+#         subtotal = self.subtotal()
+#         discount = self.discount_amount_value()
+#         shipping_cost = Decimal('50.00') 
+#         total = subtotal + shipping_cost - discount
+#         return total if total >= 0 else Decimal('0.00')
+
+
+    
+    
 class Cart(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
 
-    def total(self):
-        return sum(item.subtotal() for item in self.items.all())
-    
-    def discount_amount_value(self):
-        if self.coupon:
-            if self.coupon.discount_type == 'percent':
-                return self.total() * (self.coupon.discount_amount / 100)
-            else:  
-                return self.coupon.discount_amount
-        return Decimal('0.00')
-    
-    def final_total(self):
-        subtotal = sum(item.subtotal for item in self.items.all())
-        discount = self.discount_amount_value()
-        shipping_cost = 100  
-        total = subtotal + shipping_cost - discount
-        return total if total >= 0 else Decimal('0.00')
+    def subtotal(self):
+        return sum(item.subtotal for item in self.items.all())
 
+    def discount_amount_value(self):
+        if not self.coupon:
+            return Decimal('0.00')
+
+        if self.coupon.discount_type == 'percent':
+            return self.subtotal() * (self.coupon.discount_amount / 100)
+        return self.coupon.discount_amount
+
+    def final_total(self):
+        subtotal = self.subtotal()
+        discount = self.discount_amount_value()
+        # shipping = Decimal('50.00')
+        return max(Decimal('0.00'), subtotal  - discount)
+    
     def __str__(self):
         return f"{self.user.username}'s Cart"
+
 
 
 class CartItem(models.Model):

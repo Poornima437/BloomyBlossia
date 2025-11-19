@@ -2,587 +2,1102 @@
 {% load static %}
 {% block content %}
 
-<div class="container py-5">
-  <div class="col-md-9 offset-md-3">
-    
-    <!-- Profile Header -->
-    <div class="profile-header mb-4">
-      <div class="row align-items-center">
-        <div class="col-md-3 text-center">
-          <div class="profile-avatar-container">
-            <img src="{% if profile.profile_image %}{{ profile.profile_image.url }}{% else %}{% static 'images/default_profile.png' %}{% endif %}" 
-                 alt="Profile Picture" 
-                 class="profile-avatar">
-            <div class="avatar-status {{ profile.email_verified|yesno:'verified,unverified' }}">
-              <i class="fas {{ profile.email_verified|yesno:'fa-check-circle,fa-exclamation-circle' }}"></i>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-9">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <h2 class="mb-1">{{ user.get_full_name|default:user.username }}</h2>
-              <p class="text-muted mb-2">
-                <i class="fas fa-envelope"></i> {{ user.email }}
-                {% if profile.email_verified %}
-                  <span class="badge bg-success ms-2">Verified</span>
-                {% else %}
-                  <span class="badge bg-warning ms-2">Not Verified</span>
-                {% endif %}
-              </p>
-              {% if profile.phone %}
-                <p class="text-muted mb-0">
-                  <i class="fas fa-phone"></i> {{ profile.phone }}
-                </p>
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      
+      <!-- Profile Header -->
+      <div class="profile-header-section mb-5">
+        <div class="profile-banner-gradient"></div>
+        <div class="container-custom">
+          <div class="profile-header-content">
+            <div class="profile-avatar-section">
+              {% if profile.profile_image %}
+                <img src="{{ profile.profile_image.url }}" alt="Profile" class="profile-avatar-img">
+              {% else %}
+                <img src="{% static 'images/default_profile.png' %}" alt="Profile" class="profile-avatar-img">
               {% endif %}
+              <div class="avatar-verified-badge {{ profile.email_verified|yesno:'verified,unverified' }}">
+                <i class="fas {{ profile.email_verified|yesno:'fa-check-circle,fa-exclamation-circle' }}"></i>
+              </div>
             </div>
-            <div>
-              <a href="{% url 'accounts:edit_profile' %}" class="btn btn-primary">
+            
+            <div class="profile-header-info">
+              <h1 class="profile-name">{{ user.get_full_name|default:user.username }}</h1>
+              <p class="profile-email">{{ user.email }}</p>
+              <div class="profile-meta-tags">
+                <span class="meta-tag">
+                  <i class="fas fa-calendar-alt"></i>
+                  Joined {{ user.date_joined|date:"F Y" }}
+                </span>
+                {% if profile.email_verified %}
+                  <span class="meta-tag verified-tag">
+                    <i class="fas fa-check-circle"></i> Verified Account
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="profile-header-actions">
+              <a href="{% url 'accounts:edit_profile' %}" class="btn-edit-profile">
                 <i class="fas fa-edit"></i> Edit Profile
               </a>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Profile Details Section -->
-    <div class="row g-4 mb-4">
-      <!-- Personal Information Card -->
-      <div class="col-md-6">
-        <div class="info-card">
-          <div class="info-card-header">
-            <h5><i class="fas fa-user"></i> Personal Information</h5>
-          </div>
-          <div class="info-card-body">
-            <div class="info-item">
-              <span class="info-label">Username:</span>
-              <span class="info-value">{{ user.username }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">First Name:</span>
-              <span class="info-value">{{ user.first_name|default:"Not provided" }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Last Name:</span>
-              <span class="info-value">{{ user.last_name|default:"Not provided" }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Date of Birth:</span>
-              <span class="info-value">{{ profile.date_of_birth|date:"F d, Y"|default:"Not provided" }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Member Since:</span>
-              <span class="info-value">{{ user.date_joined|date:"F Y" }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Bio Card -->
-      <div class="col-md-6">
-        <div class="info-card">
-          <div class="info-card-header">
-            <h5><i class="fas fa-info-circle"></i> About</h5>
-          </div>
-          <div class="info-card-body">
-            {% if profile.bio %}
-              <p class="bio-text">{{ profile.bio }}</p>
-            {% else %}
-              <p class="text-muted">No bio added yet.</p>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Address Section -->
-    <div class="section-card mb-4">
-      <div class="section-header">
-        <h5><i class="fas fa-map-marker-alt"></i> Addresses</h5>
-        <a href="{% url 'accounts:add_address' %}" class="btn btn-sm btn-outline-primary">
-          <i class="fas fa-plus"></i> Add New Address
-        </a>
-      </div>
-      <div class="section-body">
-        {% if addresses %}
-          <div class="row g-3">
-            {% for address in addresses %}
-              <div class="col-md-6">
-                <div class="address-card {{ address.is_default|yesno:'default-address,' }}">
-                  {% if address.is_default %}
-                    <span class="badge bg-success default-badge">Default</span>
-                  {% endif %}
-                  <h6>{{ address.address_type|title }}</h6>
-                  <p class="mb-1">{{ address.street_address }}</p>
-                  {% if address.apartment %}
-                    <p class="mb-1">{{ address.apartment }}</p>
-                  {% endif %}
-                  <p class="mb-1">{{ address.city }}, {{ address.state }} {{ address.zip_code }}</p>
-                  <p class="mb-2">{{ address.country }}</p>
-                  {% if address.phone %}
-                    <p class="mb-0"><i class="fas fa-phone text-muted"></i> {{ address.phone }}</p>
-                  {% endif %}
-                  <div class="address-actions mt-3">
-                    <a href="{% url 'accounts:edit_address' address.id %}" class="btn btn-sm btn-outline-primary">
-                      <i class="fas fa-edit"></i> Edit
-                    </a>
-                    {% if not address.is_default %}
-                      <a href="{% url 'accounts:set_default_address' address.id %}" class="btn btn-sm btn-outline-success">
-                        <i class="fas fa-check"></i> Set Default
-                      </a>
-                    {% endif %}
-                    <a href="{% url 'accounts:delete_address' address.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this address?')">
-                      <i class="fas fa-trash"></i> Delete
-                    </a>
-                  </div>
+      <!-- Main Content -->
+      <div class="container-custom">
+        <div class="row g-4">
+          
+          <!-- Left Column - Personal Info -->
+          <div class="col-lg-5">
+            <a href="{% url 'accounts:add_address' %}" class="btn-edit-profile">
+                <i class="fas fa-edit"></i> Add address
+              </a>
+            <!-- Personal Information Card -->
+            <div class="profile-card mb-4">
+              <div class="card-header-custom">
+                <h3><i class="fas fa-user-circle"></i> Personal Information</h3>
+              </div>
+              <div class="card-body-custom">
+                <div class="info-row">
+                  <span class="info-label">First Name</span>
+                  <span class="info-value">{{ user.first_name|default:"Not provided" }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Last Name</span>
+                  <span class="info-value">{{ user.last_name|default:"Not provided" }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Email Address</span>
+                  <span class="info-value">{{ user.email }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Phone Number</span>
+                  <span class="info-value">{{ profile.phone|default:"Not provided" }}</span>
                 </div>
               </div>
-            {% endfor %}
-          </div>
-        {% else %}
-          <div class="empty-state">
-            <i class="fas fa-map-marker-alt"></i>
-            <p>No addresses added yet</p>
-            <a href="{% url 'accounts:add_address' %}" class="btn btn-primary">Add Your First Address</a>
-          </div>
-        {% endif %}
-      </div>
-    </div>
+            </div>
 
-    <!-- Orders Section -->
-    <div class="section-card">
-      <div class="section-header">
-        <h5><i class="fas fa-shopping-bag"></i> Recent Orders</h5>
-        <a href="{% url 'orders:orders_list' %}" class="btn btn-sm btn-outline-primary">
-          View All Orders
-        </a>
-      </div>
-      <div class="section-body">
-        {% if orders %}
-          <div class="table-responsive">
-            <table class="table order-table">
-              <thead>
-                <tr>
-                  <th>Order ID</th>
-                  <th>Date</th>
-                  <th>Total</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for order in orders|slice:":5" %}
-                  <tr>
-                    <td>
-                      <a href="{% url 'orders:order_detail' order.id %}" class="order-link">
-                        #{{ order.order_number }}
-                      </a>
-                    </td>
-                    <td>{{ order.created_at|date:"M d, Y" }}</td>
-                    <td>${{ order.total_amount }}</td>
-                    <td>
-                      <span class="badge status-badge status-{{ order.status|lower }}">
-                        {{ order.status }}
-                      </span>
-                    </td>
-                    <td>
-                      <a href="{% url 'orders:order_detail' order.id %}" class="btn btn-sm btn-outline-info">
-                        <i class="fas fa-eye"></i> View
-                      </a>
-                      {% if order.status == 'Pending' %}
-                        <button class="btn btn-sm btn-outline-danger" onclick="cancelOrder({{ order.id }})">
-                          <i class="fas fa-times"></i> Cancel
-                        </button>
-                      {% endif %}
-                    </td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        {% else %}
-          <div class="empty-state">
-            <i class="fas fa-shopping-bag"></i>
-            <p>No orders yet</p>
-            <a href="{% url 'home' %}" class="btn btn-primary">Start Shopping</a>
-          </div>
-        {% endif %}
-      </div>
-    </div>
+            <!-- Bio Card -->
+            {% if profile.bio %}
+            <div class="profile-card mb-4">
+              <div class="card-header-custom">
+                <h3><i class="fas fa-align-left"></i> About Me</h3>
+              </div>
+              <div class="card-body-custom">
+                <p class="bio-content">{{ profile.bio }}</p>
+              </div>
+            </div>
+            {% endif %}
 
-    <!-- Quick Actions -->
-    <div class="row g-3 mt-4">
-      <div class="col-md-4">
-        <div class="quick-action-card">
-          <i class="fas fa-key"></i>
-          <h6>Change Password</h6>
-          <p>Update your account password</p>
-          <a href="{% url 'accounts:change_password' %}" class="btn btn-sm btn-outline-primary">Change</a>
+            <!-- Quick Actions -->
+            <div class="profile-card">
+              <div class="card-header-custom">
+                <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+              </div>
+              <div class="card-body-custom p-2">
+                <a href="{% url 'accounts:change_password' %}" class="action-link">
+                  <i class="fas fa-key"></i>
+                  <span>Change Password</span>
+                  <i class="fas fa-chevron-right ms-auto"></i>
+                </a>
+                <a href="{% url 'accounts:logout' %}" class="action-link text-danger">
+                  <i class="fas fa-sign-out-alt"></i>
+                  <span>Logout</span>
+                  <i class="fas fa-chevron-right ms-auto"></i>
+                </a>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Column - Addresses & Orders -->
+          <div class="col-lg-7">
+            <!-- Recent Orders Section -->
+            <div class="profile-card">
+              <div class="card-header-custom">
+                <h3><i class="fas fa-shopping-bag"></i> Recent Orders</h3>
+                {% if orders %}
+                  <a href="{% url 'orders:orders_list' %}" class="btn-view-all">View All</a>
+                {% endif %}
+              </div>
+              <div class="card-body-custom">
+                {% if orders %}
+                  <div class="orders-list">
+                    {% for order in orders|slice:":4" %}
+                      <div class="order-box">
+                        <div class="order-top">
+                          <div class="order-number">
+                            <i class="fas fa-receipt"></i>
+                            <a href="{% url 'orders:order_detail' order.id %}">#{{ order.order_id }}</a>
+                          </div>
+                          <span class="order-status-badge {{ order.status|lower }}">
+                            {{ order.get_status_display }}
+                          </span>
+                        </div>
+                        <div class="order-bottom">
+                          <span><i class="fas fa-calendar"></i> {{ order.created_at|date:"M d, Y" }}</span>
+                          <span><i class="fas fa-dollar-sign"></i> {{ order.total }}</span>
+                          <a href="{% url 'orders:order_detail' order.order_id %}" class="order-view-link">
+                            View Details <i class="fas fa-arrow-right"></i>
+                          </a>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <div class="empty-box">
+                    <i class="fas fa-shopping-bag"></i>
+                    <h5>No orders yet</h5>
+                    <p>Start shopping and track your orders here</p>
+                    <a href="/" class="btn-primary-custom">
+                      <i class="fas fa-store"></i> Start Shopping
+                    </a>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
-      <!-- <div class="col-md-4">
-        <div class="quick-action-card">
-          <i class="fas fa-heart"></i>
-          <h6>Wishlist</h6>
-          <p>View your saved items</p>
-          <a href="{% url 'wishlist:wishlist' %}" class="btn btn-sm btn-outline-primary">View</a>
-        </div>
-      </div> -->
-      <div class="col-md-4">
-        <div class="quick-action-card">
-          <i class="fas fa-sign-out-alt"></i>
-          <h6>Logout</h6>
-          <p>Sign out of your account</p>
-          <a href="{% url 'accounts:logout' %}" class="btn btn-sm btn-outline-danger">Logout</a>
-        </div>
-      </div>
-    </div>
 
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+  <div id="toastNotification" class="toast" role="alert">
+    <div class="toast-body-custom">
+      <i class="toast-icon"></i>
+      <span class="toast-message"></span>
+      <button type="button" class="btn-close-toast" onclick="closeToast()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
   </div>
 </div>
 
 <style>
-/* Profile Header */
-.profile-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 2rem;
-  border-radius: 15px;
-  color: white;
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+/* ======================
+   Container & Layout
+====================== */
+.container-custom {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
 }
 
-.profile-avatar-container {
+/* ======================
+   Profile Header
+====================== */
+.profile-header-section {
   position: relative;
-  display: inline-block;
+  margin-bottom: 3rem;
 }
 
-.profile-avatar {
-  width: 120px;
-  height: 120px;
+.profile-banner-gradient {
+  height: 180px;
+  background: linear-gradient(135deg, #2d5016 0%, #4a7c2c 50%, #6fa84a 100%);
+  border-radius: 0 0 30px 30px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header-content {
+  display: flex;
+  align-items: flex-end;
+  gap: 2rem;
+  margin-top: -100px;
+  padding: 0 2rem;
+}
+
+.profile-avatar-section {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.profile-avatar-img {
+  width: 180px;
+  height: 180px;
   border-radius: 50%;
+  border: 8px solid white;
   object-fit: cover;
-  border: 4px solid white;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
-.avatar-status {
+.avatar-verified-badge {
   position: absolute;
-  bottom: 5px;
-  right: 5px;
-  width: 30px;
-  height: 30px;
+  bottom: 15px;
+  right: 15px;
+  width: 45px;
+  height: 45px;
   border-radius: 50%;
+  border: 5px solid white;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 3px solid white;
-  font-size: 14px;
+  font-size: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.avatar-status.verified {
-  background-color: #28a745;
+.avatar-verified-badge.verified {
+  background: #28a745;
   color: white;
 }
 
-.avatar-status.unverified {
-  background-color: #ffc107;
+.avatar-verified-badge.unverified {
+  background: #ffc107;
   color: white;
 }
 
-.profile-header h2 {
-  color: white;
-  font-weight: 600;
+.profile-header-info {
+  flex: 1;
+  padding-bottom: 1rem;
 }
 
-.profile-header .text-muted {
-  color: rgba(255, 255, 255, 0.8) !important;
+.profile-name {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 0.5rem 0;
 }
 
-/* Info Cards */
-.info-card {
-  background: white;
-  border-radius: 15px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-  overflow: hidden;
-  height: 100%;
-}
-
-.info-card-header {
-  background: linear-gradient(135deg, #69856c 0%, #5a7159 100%);
-  color: white;
-  padding: 1rem 1.5rem;
-}
-
-.info-card-header h5 {
-  margin: 0;
+.profile-email {
   font-size: 1.1rem;
   font-weight: 600;
+  color: #274324;
+  margin: 0 0 0.1rem 0;
 }
 
-.info-card-body {
-  padding: 1.5rem;
+.profile-meta-tags {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
-.info-item {
+.meta-tag {
+  padding: 0.5rem 1rem;
+  background: white;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.meta-tag i {
+  color: #4a7c2c;
+}
+
+.verified-tag {
+  background: #d4edda;
+  color: #155724;
+}
+
+.verified-tag i {
+  color: #28a745;
+}
+
+.profile-header-actions {
+  padding-bottom: 1rem;
+}
+
+.btn-edit-profile {
+  padding: 0.9rem 2rem;
+  background: linear-gradient(135deg, #4a7c2c 0%, #2d5016 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 6px 20px rgba(74, 124, 44, 0.3);
+  transition: all 0.3s ease;
+}
+
+.btn-edit-profile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(74, 124, 44, 0.4);
+  color: white;
+}
+
+/* ======================
+   Profile Cards
+====================== */
+.profile-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.card-header-custom {
+  padding: 1.5rem 2rem;
+  background: #f8f9fa;
+  border-bottom: 2px solid #e9ecef;
   display: flex;
   justify-content: space-between;
-  padding: 0.75rem 0;
+  align-items: center;
+}
+
+.card-header-custom h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.card-header-custom h3 i {
+  color: #4a7c2c;
+  font-size: 1.4rem;
+}
+
+.card-body-custom {
+  padding: 2rem;
+}
+
+/* ======================
+   Info Rows
+====================== */
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
   border-bottom: 1px solid #f0f0f0;
 }
 
-.info-item:last-child {
+.info-row:last-child {
   border-bottom: none;
 }
 
 .info-label {
-  font-weight: 500;
+  font-weight: 600;
   color: #666;
+  font-size: 0.95rem;
 }
 
 .info-value {
   font-weight: 600;
-  color: #333;
+  color: #1a1a1a;
+  font-size: 1rem;
+  text-align: right;
 }
 
-.bio-text {
+/* ======================
+   Bio Content
+====================== */
+.bio-content {
   line-height: 1.8;
   color: #555;
-}
-
-/* Section Cards */
-.section-card {
-  background: white;
-  border-radius: 15px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-  overflow: hidden;
-}
-
-.section-header {
-  background: #f8f9fa;
-  padding: 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 2px solid #e9ecef;
-}
-
-.section-header h5 {
+  font-size: 1rem;
   margin: 0;
+}
+
+/* ======================
+   Action Links
+====================== */
+.action-link {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  text-decoration: none;
+  color: #1a1a1a;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.action-link:last-child {
+  margin-bottom: 0;
+}
+
+.action-link:hover {
+  background: #f8f9fa;
+  transform: translateX(5px);
+}
+
+.action-link.text-danger:hover {
+  background: #fff5f5;
+  color: #dc3545 !important;
+}
+
+.action-link i:first-child {
+  font-size: 1.2rem;
+  width: 25px;
+}
+
+.action-link .ms-auto {
+  margin-left: auto;
+  color: #ccc;
+}
+
+/* ======================
+   Buttons
+====================== */
+.btn-add-new {
+  padding: 0.6rem 1.2rem;
+  background: #4a7c2c;
+  color: white;
+  border: none;
+  border-radius: 10px;
   font-weight: 600;
-  color: #333;
+  font-size: 0.9rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
 }
 
-.section-body {
-  padding: 1.5rem;
+.btn-add-new:hover {
+  background: #2d5016;
+  transform: translateY(-2px);
+  color: white;
 }
 
-/* Address Cards */
-.address-card {
+.btn-view-all {
+  color: #4a7c2c;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.btn-view-all:hover {
+  text-decoration: underline;
+}
+
+.btn-primary-custom {
+  padding: 0.8rem 1.8rem;
+  background: linear-gradient(135deg, #4a7c2c 0%, #2d5016 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.btn-primary-custom:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(74, 124, 44, 0.3);
+  color: white;
+}
+
+/* ======================
+   Addresses Grid
+====================== */
+.addresses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.address-box {
   background: white;
   border: 2px solid #e9ecef;
-  border-radius: 10px;
+  border-radius: 15px;
   padding: 1.5rem;
   position: relative;
   transition: all 0.3s ease;
 }
 
-.address-card:hover {
-  border-color: #69856c;
-  box-shadow: 0 5px 15px rgba(105, 133, 108, 0.2);
+.address-box:hover {
+  border-color: #4a7c2c;
+  box-shadow: 0 6px 20px rgba(74, 124, 44, 0.15);
   transform: translateY(-3px);
 }
 
-.address-card.default-address {
+.address-box.is-default {
   border-color: #28a745;
   background: linear-gradient(135deg, #ffffff 0%, #f0fff4 100%);
 }
 
-.default-badge {
+.default-label {
   position: absolute;
-  top: 10px;
-  right: 10px;
-}
-
-.address-card h6 {
-  color: #69856c;
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-
-.address-actions {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-/* Orders Table */
-.order-table {
-  margin: 0;
-}
-
-.order-table thead {
-  background: #f8f9fa;
-}
-
-.order-table th {
-  font-weight: 600;
-  color: #333;
-  border: none;
-  padding: 1rem;
-}
-
-.order-table td {
-  padding: 1rem;
-  vertical-align: middle;
-}
-
-.order-link {
-  color: #667eea;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.order-link:hover {
-  text-decoration: underline;
-}
-
-.status-badge {
-  padding: 0.5rem 1rem;
+  top: 1rem;
+  right: 1rem;
+  background: #28a745;
+  color: white;
+  padding: 0.4rem 0.9rem;
   border-radius: 20px;
-  font-weight: 500;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
 }
 
-.status-pending {
-  background-color: #fff3cd;
-  color: #856404;
-}
-
-.status-processing {
-  background-color: #d1ecf1;
-  color: #0c5460;
-}
-
-.status-shipped {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.status-delivered {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.status-cancelled {
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-/* Quick Action Cards */
-.quick-action-card {
-  background: white;
-  border: 2px solid #e9ecef;
-  border-radius: 10px;
-  padding: 1.5rem;
-  text-align: center;
-  transition: all 0.3s ease;
-}
-
-.quick-action-card:hover {
-  border-color: #69856c;
-  box-shadow: 0 5px 15px rgba(105, 133, 108, 0.2);
-  transform: translateY(-3px);
-}
-
-.quick-action-card i {
-  font-size: 2.5rem;
-  color: #69856c;
-  margin-bottom: 1rem;
-}
-
-.quick-action-card h6 {
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.quick-action-card p {
-  color: #666;
+.address-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #e8f5e9;
+  color: #2d5016;
+  border-radius: 8px;
+  font-weight: 700;
   font-size: 0.9rem;
   margin-bottom: 1rem;
 }
 
-/* Empty State */
-.empty-state {
+.address-type-badge i {
+  color: #4a7c2c;
+}
+
+.address-text {
+  margin-bottom: 1rem;
+}
+
+.address-text p {
+  margin: 0.3rem 0;
+  color: #555;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.address-phone {
+  color: #4a7c2c;
+  font-weight: 600;
+  margin-top: 0.7rem !important;
+}
+
+.address-buttons {
+  display: flex;
+  gap: 0.7rem;
+  padding-top: 1rem;
+  border-top: 2px solid #f0f0f0;
+}
+
+.btn-icon-action {
+  flex: 1;
+  padding: 0.7rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon-action.edit {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.btn-icon-action.edit:hover {
+  background: #1976d2;
+  color: white;
+}
+
+.btn-icon-action.star {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.btn-icon-action.star:hover {
+  background: #f57c00;
+  color: white;
+}
+
+.btn-icon-action.delete {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.btn-icon-action.delete:hover {
+  background: #c62828;
+  color: white;
+}
+
+/* ======================
+   Orders List
+====================== */
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.order-box {
+  border: 2px solid #e9ecef;
+  border-radius: 15px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.order-box:hover {
+  border-color: #4a7c2c;
+  box-shadow: 0 4px 15px rgba(74, 124, 44, 0.1);
+}
+
+.order-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.order-number {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.order-number i {
+  color: #4a7c2c;
+}
+
+.order-number a {
+  color: #1a1a1a;
+  text-decoration: none;
+}
+
+.order-number a:hover {
+  color: #4a7c2c;
+}
+
+.order-status-badge {
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.order-status-badge.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.order-status-badge.processing {
+  background: #cfe2ff;
+  color: #084298;
+}
+
+.order-status-badge.shipped {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.order-status-badge.delivered {
+  background: #d4edda;
+  color: #155724;
+}
+
+.order-status-badge.cancelled {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.order-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.order-bottom span {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.order-bottom i {
+  color: #4a7c2c;
+}
+
+.order-view-link {
+  color: #4a7c2c;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.order-view-link:hover {
+  text-decoration: underline;
+}
+
+/* ======================
+   Empty State
+====================== */
+.empty-box {
   text-align: center;
   padding: 3rem 1rem;
 }
 
-.empty-state i {
+.empty-box i {
   font-size: 4rem;
-  color: #ccc;
+  color: #ddd;
   margin-bottom: 1rem;
 }
 
-.empty-state p {
+.empty-box h5 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+}
+
+.empty-box p {
   color: #999;
-  font-size: 1.1rem;
+  font-size: 1rem;
   margin-bottom: 1.5rem;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .col-md-9.offset-md-3 {
-    margin-left: 0 !important;
-    width: 100% !important;
+/* ======================
+   Toast Notification
+====================== */
+.toast {
+  min-width: 350px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  border: none;
+  overflow: hidden;
+}
+
+.toast-body-custom {
+  padding: 1.2rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-weight: 500;
+  color: white;
+}
+
+.toast.success { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); }
+.toast.error { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); }
+.toast.warning { background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%); }
+.toast.info { background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); }
+
+.toast-icon {
+  font-size: 1.5rem;
+}
+
+.toast-message {
+  flex: 1;
+}
+
+.btn-close-toast {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.btn-close-toast:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ======================
+   Responsive Design
+====================== */
+@media (max-width: 1200px) {
+  .container-custom {
+    padding: 0 1.5rem;
   }
-  
-  .profile-header {
+}
+
+@media (max-width: 992px) {
+  .profile-header-content {
+    flex-direction: column;
+    align-items: center;
     text-align: center;
+    padding: 0 1rem;
   }
   
-  .section-header {
+  .profile-header-info {
+    padding-bottom: 0;
+  }
+  
+  .profile-meta-tags {
+    justify-content: center;
+  }
+  
+  .addresses-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-banner-gradient {
+    height: 180px;
+  }
+  
+  .profile-avatar-img {
+    width: 140px;
+    height: 140px;
+  }
+  
+  .profile-name {
+    font-size: 2rem;
+  }
+  
+  .card-header-custom {
     flex-direction: column;
     gap: 1rem;
-    text-align: center;
+    align-items: flex-start;
   }
   
-  .address-actions {
-    justify-content: center;
+  .info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .info-value {
+    text-align: left;
+  }
+  
+  .order-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 576px) {
+  .container-custom {
+    padding: 0 1rem;
+  }
+  
+  .profile-avatar-img {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .avatar-verified-badge {
+    width: 35px;
+    height: 35px;
+    font-size: 16px;
+  }
+  
+  .profile-name {
+    font-size: 1.7rem;
   }
 }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-function cancelOrder(orderId) {
-  Swal.fire({
-    title: 'Cancel Order?',
-    text: "Are you sure you want to cancel this order?",
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#dc3545',
-    cancelButtonColor: '#6c757d',
-    confirmButtonText: 'Yes, cancel it!',
-    cancelButtonText: 'No, keep it'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      window.location.href = `/profile/cancel-order/${orderId}/`;
-    }
-  });
-}
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // ==============================================
+    // TOAST NOTIFICATION SYSTEM
+    // ==============================================
+    function showToast(message, type = 'info', duration = 5000) {
+        const toastEl = document.getElementById('toastNotification');
+        const toastIcon = toastEl.querySelector('.toast-icon');
+        const toastMessage = toastEl.querySelector('.toast-message');
 
-// Display messages
-{% if messages %}
-  {% for message in messages %}
-    Swal.fire({
-      icon: '{{ message.tags }}',
-      title: '{{ message.tags|title }}',
-      text: '{{ message }}',
-      timer: 3000,
-      showConfirmButton: false
-    });
-  {% endfor %}
-{% endif %}
+        const icons = {
+            success: 'fas fa-check-circle',
+            error: 'fas fa-exclamation-circle',
+            warning: 'fas fa-exclamation-triangle',
+            info: 'fas fa-info-circle'
+        };
+
+        toastEl.className = 'toast show';
+        toastEl.classList.add(type);
+        
+        toastIcon.className = `toast-icon ${icons[type]}`;
+        toastMessage.textContent = message;
+
+        setTimeout(() => {
+            closeToast();
+        }, duration);
+    }
+
+    window.closeToast = function() {
+        const toastEl = document.getElementById('toastNotification');
+        toastEl.classList.remove('show');
+    };
+
+    // ==============================================
+    // DISPLAY DJANGO MESSAGES AS TOASTS
+    // ==============================================
+    {% if messages %}
+        {% for message in messages %}
+            showToast(
+                "{{ message|escapejs }}", 
+                "{{ message.tags }}",
+                5000
+            );
+        {% endfor %}
+    {% endif %}
+
+    // ==============================================
+    // EDIT ADDRESS
+    // ==============================================
+    window.editAddress = function(addressId) {
+        window.location.href = `/accounts/edit-address/${addressId}/`;
+    };
+
+    // ==============================================
+    // SET DEFAULT ADDRESS
+    // ==============================================
+    window.setDefault = function(addressId) {
+        Swal.fire({
+            title: 'Set as Default Address?',
+            text: "This address will be used as your default shipping address.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#4a7c2c',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="fas fa-check"></i> Yes, set as default',
+            cancelButtonText: '<i class="fas fa-times"></i> Cancel',
+            customClass: {
+                confirmButton: 'btn-swal-confirm',
+                cancelButton: 'btn-swal-cancel'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Updating...',
+                    text: 'Please wait',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                fetch(`/accounts/set-default-address/${addressId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ address_id: addressId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    Swal.close();
+                    if (data.success) {
+                        showToast('Default address updated successfully!', 'success');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast(data.message || 'Failed to update default address', 'error');
+                    }
+                })
+                .catch(error => {
+                    Swal.close();
+                    showToast('An error occurred. Please try again.', 'error');
+                    console.error('Error:', error);
+                });
+            }
+        });
+    };
+
+    // ==============================================
+    // DELETE ADDRESS
+    // ==============================================
+    window.deleteAddress = function(addressId) {
+        Swal.fire({
+            title: 'Delete Address?',
+            text: "This action cannot be undone!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="fas fa-trash"></i> Yes, delete it',
+            cancelButtonText: '<i class="fas fa-times"></i> Cancel',
+            customClass: {
+                confirmButton: 'btn-swal-confirm',
+                cancelButton: 'btn-swal-cancel'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Deleting...',
+                    text: 'Please wait',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                fetch(`/accounts/delete-address/${addressId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ address_id: addressId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    Swal.close();
+                    if (data.success) {
+                        showToast('Address deleted successfully!', 'success');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast(data.message || 'Failed to delete address', 'error');
+                    }
+                })
+                .catch(error => {
+                    Swal.close();
+                    showToast('An error occurred. Please try again.', 'error');
+                    console.error('Error:', error);
+                });
+            }
+        });
+    };
+
+    // ==============================================
+    // GET CSRF TOKEN
+    // ==============================================
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    console.log('%c✨ Profile Page Loaded Successfully!', 'color: #4a7c2c; font-size: 16px; font-weight: bold;');
+});
 </script>
 
 {% endblock %}

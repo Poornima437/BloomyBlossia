@@ -15,33 +15,51 @@ from coupon.models import Coupon
 
 # ------------------ CART VIEWS ------------------
 
+# @login_required
+# def cart_view(request):
+#     cart, _ = Cart.objects.get_or_create(user=request.user)
+#     items = cart.items.select_related('product','variant')
+#     # subtotal = sum((item.product.sale_price or item.product.price) * item.quantity for item in items)
+#     subtotal = 0
+#     for item in items:
+#         price = (
+#             item.variant.sale_price if item.variant and item.variant.sale_price < item.variant.price else
+#             item.product.sale_price if item.product.sale_price < item.product.price else
+#             item.product.price
+#         )
+#         item_subtotal = price * item.quantity
+#         subtotal += item_subtotal
+
+#     # shipping_cost = 100
+#     discount = cart.discount_amount_value()
+#     total = subtotal - discount
+
+#     context = {
+#         'items': items,
+#         'subtotal': subtotal,
+#         # 'shipping_cost': shipping_cost,
+#         'discount': discount,
+#         'total': total,
+#     }
+#     return render(request, 'user_profile/cart.html', context)
 @login_required
 def cart_view(request):
     cart, _ = Cart.objects.get_or_create(user=request.user)
     items = cart.items.select_related('product','variant')
-    # subtotal = sum((item.product.sale_price or item.product.price) * item.quantity for item in items)
-    subtotal = 0
-    for item in items:
-        price = (
-            item.variant.sale_price if item.variant and item.variant.sale_price < item.variant.price else
-            item.product.sale_price if item.product.sale_price < item.product.price else
-            item.product.price
-        )
-        item_subtotal = price * item.quantity
-        subtotal += item_subtotal
-
-    # shipping_cost = 100
-    discount = cart.discount_amount_value()
-    total = subtotal - discount
+    subtotal = cart.subtotal()                    
+    discount = cart.discount_amount_value()       
+    total = cart.final_total() 
+                    
 
     context = {
-        'items': items,
-        'subtotal': subtotal,
-        # 'shipping_cost': shipping_cost,
-        'discount': discount,
-        'total': total,
+        "items": items,
+        "subtotal": subtotal,
+        "discount": discount,
+        "total": total,
+     
     }
-    return render(request, 'user_profile/cart.html', context)
+    return render(request, "user_profile/cart.html", context)
+
 
 
 
@@ -208,12 +226,41 @@ def add_to_cart(request, product_id):
 #         return redirect('cart:cart')
 
 
+# @login_required
+# def remove_cart_item(request, item_id):
+#     item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+#     item.delete()
+#     messages.success(request, "Item removed from cart.")
+#     return redirect('cart:cart')
 @login_required
 def remove_cart_item(request, item_id):
     item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
-    item.delete()
-    messages.success(request, "Item removed from cart.")
-    return redirect('cart:cart')
+
+    if request.method == "POST":
+        item.delete()
+        cart = item.cart
+
+        # Recalculate totals after removal
+        cart_subtotal = cart.subtotal()
+        discount = cart.discount_amount_value()
+        cart_total = cart.final_total()
+
+        # If AJAX request → return JSON
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse({
+                "success": True,
+                "message": "Item removed from cart.",
+                "cart_subtotal": float(cart_subtotal),
+                "discount": float(discount),
+                "total": float(cart_total)
+            })
+
+        # Normal request → redirect
+        messages.success(request, "Item removed from cart.")
+        return redirect("cart:cart")
+
+    return JsonResponse({"success": False, "message": "Invalid request"})
+
 
 @login_required
 def update_cart_quantity(request, item_id):
@@ -241,32 +288,35 @@ def update_cart_quantity(request, item_id):
             else:
                 return JsonResponse({"success": False, "message": "Quantity cannot be less than 1."})
 
+        else:
+            return JsonResponse({"success": False, "message": "Invalid action"})
+
         item.save()
 
+    
         price = (
             item.variant.sale_price if item.variant and item.variant.sale_price < item.variant.price else
             item.product.sale_price if item.product.sale_price < item.product.price else
             item.product.price
         )
-
         item_subtotal = price * item.quantity
 
-        cart_total = sum(
-            (
-                i.variant.sale_price if i.variant and i.variant.sale_price < i.variant.price else
-                i.product.sale_price if i.product.sale_price < i.product.price else
-                i.product.price
-            ) * i.quantity for i in item.cart.items.all()
-        ) - 20
+        cart = item.cart
+        cart_subtotal = cart.subtotal()                     
+        discount = cart.discount_amount_value()             
+        cart_total = cart.final_total()                     
 
         return JsonResponse({
             "success": True,
             "quantity": item.quantity,
-            "subtotal": item_subtotal,
-            "total": cart_total
+            "subtotal": float(item_subtotal),      
+            "cart_subtotal": float(cart_subtotal), 
+            "discount": float(discount),           
+            "total": float(cart_total)             
         })
 
     return JsonResponse({"success": False, "message": "Invalid request"})
+
 
 
 

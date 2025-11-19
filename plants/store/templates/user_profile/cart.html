@@ -517,10 +517,10 @@
                     <tr>
                         <!-- Remove Button -->
                         <td>
-                            <form method="POST" action="{% url 'cart:remove_cart_item' item.id %}" class="remove-form">
+                            <form method="POST" action="{% url 'cart:remove_cart_item' item.id %}" class="remove-form" data-id="{{ item.id }}">
                                 {% csrf_token %}
                                 <button type="button" class="btn-remove" onclick="confirmRemove(this)">
-                                    <i class="fas fa-times"></i>
+                                    <i class="fas fa-trash"></i>
                                 </button>
                             </form>
                         </td>
@@ -583,6 +583,7 @@
                         <!-- Subtotal -->
                         <td>
                             <span class="subtotal-cell" id="subtotal-{{ item.id }}">₹{{ item.subtotal }}</span>
+
                         </td>
                     </tr>
                     {% empty %}
@@ -614,15 +615,11 @@
                 </h5>
                 <div class="summary-row">
                     <span>Sub-total:</span>
-                    <span>₹{{ subtotal }}</span>
+                    <span id="cart-subtotal">₹{{ subtotal }}</span>
+
                 </div>
-                <!-- <div class="summary-row">
-                    <span>Shipping:</span>
-                    <span>₹{{ shipping_cost }}</span>
-                </div> -->
                 <div class="summary-row">
-                    <span>Discount:</span>
-                    <span style="color: #E57373;">-₹20</span>
+                    <span id="cart-discount" style="color: #E57373;">-₹{{ discount }}</span>
                 </div>
                 <div class="summary-row total">
                     <span>Total:</span>
@@ -675,8 +672,29 @@
     </div>
 </div>
 
-<!-- Scripts -->
+
+
 <script>
+   
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrfToken = getCookie("csrftoken");
+</script>
+
+<script>
+    
     function confirmRemove(button) {
         Swal.fire({
             title: 'Remove Item?',
@@ -694,9 +712,8 @@
         });
     }
 
+ 
     document.addEventListener("DOMContentLoaded", function() {
-        const csrfToken = "{{ csrf_token }}";
-
         document.querySelectorAll(".update-qty").forEach(btn => {
             btn.addEventListener("click", function() {
                 const itemId = this.dataset.id;
@@ -713,10 +730,15 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
+                      
                         document.getElementById("qty-" + itemId).textContent = data.quantity;
                         document.getElementById("subtotal-" + itemId).textContent = "₹" + data.subtotal;
+                        document.getElementById("cart-subtotal").textContent = "₹" + data.cart_subtotal;
+                        const discountEl = document.getElementById("cart-discount");
+                        if (discountEl) {
+                            discountEl.textContent = "-₹" + data.discount;
+                        }
                         document.querySelector(".cart-total").textContent = "₹" + data.total;
-
                         Swal.fire({
                             toast: true,
                             position: "top-end",
@@ -728,17 +750,13 @@
                             color: '#fff'
                         });
                     } else {
-                        Swal.fire({
-                            title: "Oops!",
-                            text: data.message,
-                            icon: "error",
-                            confirmButtonColor: '#87A878'
-                        });
+                        Swal.fire({ title: "Oops!", text: data.message, icon: "error" });
                     }
                 });
             });
         });
     });
 </script>
+
 
 {% endblock %}
