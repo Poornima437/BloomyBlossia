@@ -1,43 +1,41 @@
+# accounts/views.py  (cleaned + session/back-button fixes)
 
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib import messages
 from django.contrib.auth.models import User
 from .forms import SignUpForm
 from django.core.paginator import Paginator
-import random,time
+import random, time
 from django.conf import settings
 from django.core.mail import send_mail
 from orders.models import Order
 from django.contrib.auth.views import PasswordChangeView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.contrib.auth.forms import PasswordChangeForm
-#user profile
+# user profile
 from accounts.forms import UserForm, ProfileForm, AddressForm
 from accounts.models import UserProfile, Address
 
-from django.contrib.auth import update_session_auth_hash
-from django.urls import reverse
-from django.utils.safestring import mark_safe
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import never_cache  # <-- important for back-button behavior
+from django.views.decorators.http import require_POST
+from django.utils.decorators import method_decorator
 
-from PIL import Image,UnidentifiedImageError
+from PIL import Image, UnidentifiedImageError
 from io import BytesIO
-from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.files.base import ContentFile
 from django.contrib.auth import get_backends
-# from uuid import uuid4
 import uuid
-
-from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 import json
 import re
 import logging
-from django.utils.decorators import method_decorator
+import base64
+from django.views.decorators.csrf import csrf_exempt
 
-# Create your views here.
+logger = logging.getLogger(__name__)
 
 
 def generate_otp():
@@ -56,20 +54,23 @@ def send_otp_email(email, otp, user_name=None, company_name="Bloomy Blossia"):
         f"Please do not share this code with anyone.\n\n"
         f"If you did not request this, please ignore this email or contact our support team.\n\n"
         f"Thank you for trusting {company_name}.\n\n"
-
         f"Best regards,\n"
-
         f"{company_name} Team"
     )
-    
     from_email = settings.EMAIL_HOST_USER
     recipient_list = [email]
-    
     send_mail(subject, message, from_email, recipient_list, fail_silently=False)
 
 
+
+@never_cache
 def login_user(request):
+   
     context = {}
+   
+    if request.user.is_authenticated:
+        return redirect('home')
+
     if request.method == "POST":
         username = request.POST.get('username', '').strip()
         password = request.POST.get('password', '').strip()
@@ -82,6 +83,7 @@ def login_user(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
+       
             messages.success(request, "You have been logged in!")
             return redirect('home')
         else:
@@ -91,23 +93,31 @@ def login_user(request):
     return render(request, 'login.html', context)
 
 
-
 def logout_user(request):
+   
     logout(request)
+ 
+    try:
+        request.session.flush()
+    except Exception:
+       
+        request.session.clear()
     messages.success(request, "You have been logged out.")
-    return redirect('home')
+    return redirect('accounts:login')
+
 
 def register_user(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
-            request.session['registration_data'] = form.cleaned_data
-            otp = str(random.randint(100000, 999999))
-            print(f"OTP Generated:{otp}")
-            request.session['registration_otp'] = otp
-            request.session['otp_expiry'] = time.time() + 300
-            request.session.save()
             
+            request.session['registration_data'] = form.cleaned_data
+            otp = generate_otp()
+            request.session['registration_otp'] = otp
+            request.session['otp_expiry'] = time.time() + 600  # 10 minutes
+            request.session.save()
+
+            # send one-time otp email
             send_mail(
                 subject="Your One-Time Password (OTP) Verification",
                 message=(
@@ -124,12 +134,6 @@ def register_user(request):
                 recipient_list=[form.cleaned_data['email']],
                 fail_silently=False,
             )
-
-            
-
-
-          
-            print(f"Generated OTP:{request.session.get('registration_otp','')}")
             return redirect('accounts:verify_otp')
         else:
             messages.error(request, "Please correct the errors below.")
@@ -138,14 +142,11 @@ def register_user(request):
     return render(request, 'register.html', {'form': form})
 
 
-logger = logging.getLogger(__name__)
-
-
 def verify_otp(request):
     email = request.session.get('registration_data', {}).get('email', '')
     if request.method == 'POST':
         entered_otp = request.POST.get('otp', '').strip()
-        session_otp = request.session.get('registration_otp', '').strip()
+        session_otp = str(request.session.get('registration_otp', '')).strip()
         otp_expiry = request.session.get('otp_expiry', 0)
         current_time = time.time()
 
@@ -155,10 +156,12 @@ def verify_otp(request):
             return redirect('accounts:signup')
 
         if current_time > otp_expiry:
+            # cleanup and redirect to resend page
+            request.session.pop('registration_otp', None)
+            request.session.pop('otp_expiry', None)
             messages.error(request, "OTP expired. Please request a new one.")
             return redirect('accounts:resend_otp')
 
-     
         if entered_otp == session_otp:
             username = registration_data['username']
             email = registration_data['email']
@@ -176,12 +179,12 @@ def verify_otp(request):
                 profile.phone = phone
                 profile.save()
 
+            # Clean session
             for key in ['registration_otp', 'otp_expiry', 'registration_data']:
                 request.session.pop(key, None)
 
             messages.success(request, "Your account has been verified successfully! You can now log in.")
             return redirect('accounts:login')
-
         else:
             messages.error(request, "Invalid OTP. Please try again.")
             return render(request, 'otp_verify.html', {'email': email})
@@ -190,21 +193,19 @@ def verify_otp(request):
 
 
 def resend_otp(request):
-    
     if 'registration_data' not in request.session:
         messages.error(request, "Session expired. Please register again.")
         return redirect('accounts:signup')
 
     registration_data = request.session['registration_data']
     email = registration_data.get('email')
-
     if not email:
         messages.error(request, "Email not found in session. Please register again.")
         return redirect('accounts:signup')
 
-    otp = str(random.randint(100000, 999999))
+    otp = generate_otp()
     request.session['registration_otp'] = otp
-    request.session['otp_expiry'] = time.time() + 300 
+    request.session['otp_expiry'] = time.time() + 600
     request.session.save()
 
     try:
@@ -216,38 +217,37 @@ def resend_otp(request):
     return redirect('accounts:verify_otp')
 
 
-    
-
-
 
 def forgot_password_request(request):
     if request.method == "POST":
-        email = request.POST.get("email","").strip()
+        email = request.POST.get("email", "").strip()
         user = User.objects.filter(email=email).first()
         if user:
             otp = generate_otp()
             request.session["reset_email"] = email
             request.session["reset_otp"] = otp
-            request.session['otp_expiry'] = time.time() + 300
+            request.session['otp_expiry'] = time.time() + 600
             request.session.save()
-            send_otp_email(email, otp)  
+            send_otp_email(email, otp)
             return redirect("accounts:password_otp_verify")
         messages.error(request, "Email not found.")
     return render(request, "custom_auth/forgot_password.html")
 
 
-
 def password_otp_verify(request):
     if request.method == "POST":
         entered_otp = request.POST.get("otp", "").strip()
-        otp_session = request.session.get("reset_otp", "").strip()
+        otp_session = str(request.session.get("reset_otp", "")).strip()
         otp_expiry = request.session.get('otp_expiry', 0)
         current_time = time.time()
         logger.info(f"OTP Expiry: {otp_expiry}, Current Time: {current_time}")
         if current_time > otp_expiry:
+            # cleanup
+            request.session.pop('reset_otp', None)
+            request.session.pop('otp_expiry', None)
             messages.error(request, "OTP expired. Please request a new one.")
             return redirect('accounts:resend_reset_otp')
-        print(f"Entered OTP: {entered_otp}, Session OTP: {otp_session}")
+
         if entered_otp == otp_session:
             return redirect("accounts:set_new_password")
         else:
@@ -256,8 +256,8 @@ def password_otp_verify(request):
     return render(request, "custom_auth/password_otp_verify.html")
 
 
+from django.contrib.auth.hashers import make_password  
 
-from django.contrib.auth.hashers import make_password
 
 def set_new_password(request):
     if request.method == "POST":
@@ -284,12 +284,11 @@ def set_new_password(request):
         # Clean up session
         request.session.pop("reset_email", None)
         request.session.pop("reset_otp", None)
+        request.session.pop("otp_expiry", None)
 
         messages.success(request, "Password updated successfully. Please log in.")
         return redirect("accounts:login")
-
     return render(request, "custom_auth/set_new_password.html")
-
 
 
 def resend_reset_otp(request):
@@ -299,9 +298,8 @@ def resend_reset_otp(request):
         return redirect("accounts:forgot_password")
 
     otp = generate_otp()
-    print(f"Generated OTP:{request.session.get('registration_otp','')}")
     request.session["reset_otp"] = otp
-    request.session["otp_expiry"] = time.time() + 300  
+    request.session["otp_expiry"] = time.time() + 600
     request.session.save()
 
     send_otp_email(email, otp)
@@ -309,9 +307,9 @@ def resend_reset_otp(request):
     return redirect("accounts:password_otp_verify")
 
 
-# --------------------------------------------------------------------------------
 
 
+@never_cache
 @login_required
 def user_profile(request):
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
@@ -326,6 +324,8 @@ def user_profile(request):
         'orders': orders,
     })
 
+
+@never_cache
 @login_required
 def edit_profile(request):
     user = request.user
@@ -339,14 +339,13 @@ def edit_profile(request):
             new_email = user_form.cleaned_data['email']
             email_changed = new_email != user.email
 
-            # --- Email Change Handling (Optional Verification) ---
+           
             if email_changed:
-                otp = str(random.randint(100000, 999999))
+                otp = generate_otp()
                 request.session['pending_email'] = new_email
                 request.session['email_otp'] = otp
                 request.session['otp_expired'] = False
-
-                # Send verification email with clear instructions
+                # send verification email
                 verification_message = (
                     f"Dear {user.first_name or 'User'},\n\n"
                     f"You requested to change your account email. "
@@ -362,7 +361,7 @@ def edit_profile(request):
                 send_mail(
                     subject="OTP Verification for Email Update",
                     message=verification_message,
-                    from_email="noreply@yourcompany.com",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[new_email],
                     fail_silently=False
                 )
@@ -370,15 +369,13 @@ def edit_profile(request):
                 messages.info(request, "OTP sent to new email. Please verify to complete email update.")
                 return redirect('accounts:verify_email_edit')
 
-            # --- Save user and profile if email not changed ---
+            # Save if email not changed
             user_form.save()
             profile_form.save()
             messages.success(request, "Profile updated successfully!")
             return redirect('accounts:profile')
 
-        # --- Invalid Form Handling ---
-        messages.error(request, "Please fix the errors below. They will remain visible for 5 seconds.")
-
+        messages.error(request, "Please fix the errors below.")
     else:
         user_form = UserForm(instance=user)
         profile_form = ProfileForm(instance=profile)
@@ -388,10 +385,16 @@ def edit_profile(request):
         'profile_form': profile_form
     })
 
+
+@never_cache
 @login_required
 def verify_email_edit(request):
-    if 'pending_email' not in request.session:
-        messages.warning(request, "No pending email change found.")
+    """
+    Merged duplicate definitions into a single view.
+    This uses session keys 'pending_email' and 'email_otp'.
+    """
+    if "pending_email" not in request.session:
+        messages.warning(request, "No email update request found.")
         return redirect("accounts:edit_profile")
 
     if request.method == 'POST':
@@ -399,12 +402,12 @@ def verify_email_edit(request):
         real_otp = request.session.get('email_otp')
 
         if not otp_entered:
-            messages.error(request, "Please enter the OTP. It will remain visible for 5 seconds.")
+            messages.error(request, "Please enter the OTP.")
             return redirect('accounts:verify_email_edit')
 
         if real_otp and otp_entered == real_otp and not request.session.get('otp_expired', False):
-            user = request.user
             new_email = request.session.get('pending_email')
+            user = request.user
             user.email = new_email
             user.save()
 
@@ -419,258 +422,80 @@ def verify_email_edit(request):
             messages.success(request, "Email updated & verified successfully!")
             return redirect("accounts:profile")
 
-        messages.error(request, "Invalid or expired OTP. Please try again. Visible for 5 seconds.")
+        messages.error(request, "Invalid or expired OTP. Please try again.")
 
     return render(request, "user_profile/verify_email.html")
 
 
+# Password change view (class)
 @method_decorator(login_required, name='dispatch')
+@method_decorator(never_cache, name='dispatch') 
 class CustomPasswordChangeView(PasswordChangeView):
-    template_name = 'user_profile/change_password.html'  # Path to your template
-    success_url = reverse_lazy('accounts:profile')       # Redirect after success
+    template_name = 'user_profile/change_password.html'
+    success_url = reverse_lazy('accounts:profile')
 
     def form_valid(self, form):
-        messages.success(self.request, "Password updated successfully! It will remain visible for 5 seconds.")
-        return super().form_valid(form)
+        messages.success(self.request, "Password updated successfully!")
+        response = super().form_valid(form)
+        
+        update_session_auth_hash(self.request, form.user)
+        return response
 
     def form_invalid(self, form):
-        messages.error(self.request, "Please fix the errors below. They will remain visible for 5 seconds.")
+        messages.error(self.request, "Please fix the errors below.")
         return super().form_invalid(form)
 
 
-# @login_required
-# def edit_profile(request):
-#     profile = get_object_or_404(UserProfile, user=request.user)
-#     user = request.user  # current user
-
-#     if request.method == 'POST':
-#         first_name = request.POST.get('first_name', user.first_name)
-#         last_name = request.POST.get('last_name', user.last_name)
-#         phone = request.POST.get('phone', profile.phone)
-#         email = request.POST.get('email', user.email)
-#         profile_image = request.FILES.get('profile_image')
-
-#         # --- Email Verification ---
-#         if email != user.email:
-#             # Generate token and save in session
-#             token = str(uuid.uuid4())
-#             request.session['new_email'] = email
-#             request.session['email_token'] = token
-
-#             # Send verification email
-#             verification_link = f"http://127.0.0.1:8000/user/profile/verify-email/{token}/"
-#             send_mail(
-#                 'Verify your new email',
-#                 f'Click this link to verify your new email: {verification_link}',
-#                 'from@example.com',
-#                 [email],
-#             )
-#             messages.info(request, 'Verification email sent to your new email!')
-
-#         # --- Update User fields ---
-#         user.first_name = first_name
-#         user.last_name = last_name
-#         # Do NOT update username to avoid null errors
-#         # user.username = user.username
-#         user.save()
-
-#         # --- Update Profile fields ---
-#         profile.phone = phone
-#         if profile_image:
-#             profile.profile_image = profile_image
-#         profile.save()
-
-#         messages.success(request, 'Profile updated successfully!')
-#         return redirect('accounts:profile')
-
-#     # GET request
-#     return render(request, 'user_profile/edit_profile.html', {'profile': profile ,'user': user})
-
-
-# # 3. Verify Email
-# @login_required
-# def verify_email(request, token):
-#     session_token = request.session.get('email_token')
-#     new_email = request.session.get('new_email')
-#     if session_token and token == session_token:
-#         user = request.user
-#         user.email = new_email
-#         user.save()
-#         profile = get_object_or_404(UserProfile, user=user)
-#         profile.email_verified = True
-#         profile.save()
-#         # Clear session
-#         del request.session['email_token']
-#         del request.session['new_email']
-#         messages.success(request, 'Email verified successfully!')
-#     else:
-#         messages.error(request, 'Invalid or expired verification link!')
-#     return redirect('accounts:profile')
-
-
-# from django.http import JsonResponse
-# import random
-# from django.core.mail import send_mail
-
-# @login_required
-# def send_email_otp(request):
-#     if request.method == "POST":
-#         import json
-#         data = json.loads(request.body)
-#         email = data.get("email")
-
-#         if email:
-#             otp = random.randint(100000, 999999)
-#             print("EMAIL VERIFICATION OTP:", otp)
-
-#             request.session['email_otp'] = str(otp)
-#             request.session['email_new'] = email
-#             request.session['otp_expired'] = False  # reset expiry
-
-#             send_mail(
-#                 subject="Your One-Time Password (OTP)",
-#                 message=(
-#                     f"Dear User,\n\n"
-#                     f"Your One-Time Password (OTP) for completing your request is: {otp}\n\n"
-#                     f"Please use this code within the valid time frame. "
-#                     f"If you did not request this, kindly ignore this email.\n\n"
-#                     f"Thank you for choosing our services.\n\n"
-#                     f"Best regards,\n"
-#                     f"Your Company Name"
-#                 ),
-#                 from_email="noreply@yourcompany.com",
-#                 recipient_list=[email],
-#                 fail_silently=False,
-#             )
-
-#             return JsonResponse({"success": True})
-
-#     return JsonResponse({"success": False, "message": "Failed to send OTP."})
-
-
-# @login_required
-# def verify_email_otp(request):
-#     if request.method == "POST":
-#         import json
-#         data = json.loads(request.body)
-
-#         entered_otp = str(data.get("otp", "")).strip()
-
-#         # Always use session values (NEVER trust frontend email)
-#         session_otp = str(request.session.get("email_otp", "")).strip()
-#         session_email = request.session.get("email_new")
-#         expired = request.session.get("otp_expired", False)
-
-#         # Debugging (you can remove later)
-#         print("----- EMAIL OTP DEBUG -----")
-#         print("Entered OTP:", entered_otp)
-#         print("Session OTP:", session_otp)
-#         print("Session Email:", session_email)
-#         print("Expired:", expired)
-#         print("----------------------------")
-
-#         # Expired OTP
-#         if expired:
-#             return JsonResponse({
-#                 "success": False,
-#                 "message": "OTP expired. Please request a new one."
-#             })
-
-#         # OTP Match
-#         if entered_otp == session_otp:
-#             user = request.user
-#             user.email = session_email   # Use session email ONLY
-#             user.save()
-
-#             profile = get_object_or_404(UserProfile, user=user)
-#             profile.email_verified = True
-#             profile.save()
-
-#             # Clear session after success
-#             request.session.pop("email_otp", None)
-#             request.session.pop("email_new", None)
-#             request.session.pop("otp_expired", None)
-
-#             return JsonResponse({"success": True})
-
-#         # Wrong OTP
-#         return JsonResponse({
-#             "success": False,
-#             "message": "Invalid OTP. Please try again."
-#         })
-
-#     return JsonResponse({
-#         "success": False,
-#         "message": "Invalid request method"
-#     })
-
-
-
-# # 4. Change Password
-# @login_required
-# def change_password(request):
-#     if request.method == 'POST':
-#         form = PasswordChangeForm(user=request.user, data=request.POST)
-#         if form.is_valid():
-#             user = form.save()
-#             update_session_auth_hash(request, user)
-#             messages.success(request, 'Password changed successfully!')
-#             return redirect('accounts:profile')
-#         else:
-#             messages.error(request, 'Please fix the errors below.')
-#     else:
-#         form = PasswordChangeForm(user=request.user)
-#     return render(request, 'user_profile/change_password.html', {'form': form})
-
-
-# 5. Cancel Orders
+@never_cache
 @login_required
-def cancel_order(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
-    if order.status == 'Pending':
-        order.status = 'Cancelled'
-        order.save()
-        messages.success(request, 'Order cancelled successfully!')
+def expire_email_otp(request):
+    request.session['otp_expired'] = True
+    return JsonResponse({"status": "expired"})
+
+
+
+
+@never_cache
+@login_required
+def dashboard_view(request):
+    return render(request, 'user_profile/dashboard.html')
+
+
+@never_cache
+@login_required
+def add_address(request):
+    if request.method == 'POST':
+        form = AddressForm(request.POST)
+        if form.is_valid():
+            address = form.save(commit=False)
+            address.user = request.user
+            address.save()
+            return redirect('accounts:profile')
     else:
-        messages.error(request, 'Cannot cancel this order!')
+        form = AddressForm()
+    return render(request, 'user_profile/address.html', {'form': form})
+
+
+@never_cache
+@login_required
+def edit_address(request, pk):
+    address = get_object_or_404(Address, pk=pk, user=request.user)
+    form = AddressForm(request.POST or None, instance=address)
+    if form.is_valid():
+        form.save()
+        return redirect('accounts:profile')
+    return render(request, 'user_profile/add_address.html', {'form': form})
+
+
+@never_cache
+@login_required
+def delete_address(request, pk):
+    address = get_object_or_404(Address, pk=pk, user=request.user)
+    address.delete()
     return redirect('accounts:profile')
 
-# @login_required
-# def edit_profile(request):
-#     user = request.user
-#     profile, _ = UserProfile.objects.get_or_create(user=user)
-    
-#     if request.method == 'POST':
-#         user_form = UserForm(request.POST, instance=user)
-#         profile_form = ProfileForm(request.POST, request.FILES, instance=profile)
 
-#         if user_form.is_valid() and profile_form.is_valid():
-#             new_email = user_form.cleaned_data['email']
-#             if new_email != user.email:
-#                 request.session['pending_email'] = new_email
-#                 otp = generate_otp()
-#                 request.session['email_otp'] = otp
-#                 send_otp_email(new_email, otp)
-#                 return redirect('accounts:verify_email_edit')
-
-#             user_form.save()
-#             profile_form.save()
-#             messages.success(request, 'Profile updated successfully.')
-#             return redirect('accounts:profile')
-#         else:
-#             messages.error(request, " Please correct the errors and try again.")
-#     else:
-#         user_form = UserForm(instance=user)
-#         profile_form = ProfileForm(instance=profile)
-
-#     return render(request, 'user_profile/edit_profile.html', {
-#         'user_form': user_form,
-#         'profile_form': profile_form
-#     })
-
-import base64
-from django.views.decorators.csrf import csrf_exempt
-
+@never_cache
 @login_required
 @csrf_exempt
 def upload_cropped_image(request):
@@ -691,115 +516,16 @@ def upload_cropped_image(request):
             return JsonResponse({'status': 'failed', 'error': 'Invalid image data'}, status=400)
     return JsonResponse({'status': 'failed', 'error': 'Invalid request method'}, status=405)
 
+
+
+@never_cache
 @login_required
-def verify_email_edit(request):
-    if "pending_email" not in request.session:
-        messages.warning(request, "No email update request found.")
-        return redirect("accounts:edit_profile")
-
-    if request.method == 'POST':
-        otp_entered = request.POST.get('otp')
-        real_otp = request.session.get('email_otp')
-
-        if otp_entered == real_otp:
-            new_email = request.session.get('pending_email')
-            user = request.user
-            user.email = new_email
-            user.save()
-
-          
-            profile = UserProfile.objects.get(user=request.user)
-            profile.email_verified = True
-            profile.save()
-
-            request.session.pop('pending_email', None)
-            request.session.pop('email_otp', None)
-
-            messages.success(request, " Email updated & Verified successfully!")
-            return redirect("accounts:profile")
-
-        messages.error(request, " Invalid OTP")
-
-    return render(request, "user_profile/verify_email.html")
-  
-
-
-class CustomPasswordChangeView(PasswordChangeView):
-    template_name = 'user_profile/change_password.html'  
-    success_url = reverse_lazy('accounts:profile')        
-
-    def form_valid(self, form):
-        messages.success(self.request, "Your password was updated successfully!")
-        return super().form_valid(form)
-
-    def form_invalid(self, form):
-        messages.error(self.request, "Please correct the errors below.")
-        return super().form_invalid(form)
-    
-@login_required
-def expire_email_otp(request):
-    request.session['otp_expired'] = True
-    return JsonResponse({"status": "expired"})
-
-
-
-#ADDRESS
-
-@login_required
-def dashboard_view(request):
-    return render(request, 'user_profile/dashboard.html')
-
-# @login_required
-# def add_address(request):
-#     if request.method == "POST":
-#         form = AddressForm(request.POST)
-#         if form.is_valid():
-#             address = form.save(commit=False)
-#             address.user = request.user
-#             address.save()
-#             return JsonResponse({"success": True, "message": "Address added successfully"})
-#         return JsonResponse({"success": False, "errors": form.errors}, status=400)
-
-#     # GET → Show HTML form
-#     form = AddressForm()
-#     return render(request, "user_profile/add_address.html", {"form": form})
-
-
-@login_required
-def add_address(request):
-    if request.method == 'POST':
-        form = AddressForm(request.POST)
-        if form.is_valid():
-            address = form.save(commit=False)
-            address.user = request.user
-            address.save()
-            return redirect('accounts:profile')
+def cancel_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    if order.status == 'Pending':
+        order.status = 'Cancelled'
+        order.save()
+        messages.success(request, 'Order cancelled successfully!')
     else:
-        form = AddressForm()
-    return render(request, 'user_profile/address.html', {'form': form})
-
-@login_required
-def edit_address(request, pk):
-    address = get_object_or_404(Address, pk=pk, user=request.user)
-    form = AddressForm(request.POST or None, instance=address)
-    if form.is_valid():
-        form.save()
-        return redirect('accounts:profile')
-    return render(request, 'user_profile/add_address.html', {'form': form})
-
-@login_required
-def delete_address(request, pk):
-    address = get_object_or_404(Address, pk=pk, user=request.user)
-    address.delete()
+        messages.error(request, 'Cannot cancel this order!')
     return redirect('accounts:profile')
-
-
-
-@login_required
-def address_view(request):
-    return render(request, 'user_profile/address.html')
-
-@login_required
-def user_logout(request):
-    logout(request)
-    return redirect('user_login')
