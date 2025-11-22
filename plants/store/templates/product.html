@@ -60,12 +60,17 @@
             <h4 id="price-section">
                 {% with first_variant=product.variants.first %}
                     {% if first_variant %}
-                        {% if first_variant.sale_price and first_variant.sale_price < first_variant.price %}
+                        {% if first_variant.sale_price and first_variant.sale_price > 0 and first_variant.sale_price < first_variant.price %}
                             <del>Rs. {{ first_variant.price }}</del>
                             <span class="text-success ms-2">Rs. {{ first_variant.sale_price }}</span>
-                            {% widthratio first_variant.price|add:"0" first_variant.sale_price|add:"0" 1 as ratio %}
-                            {% widthratio 100 1 ratio as discount_percent %}
-                            <span class="badge bg-danger ms-2">{{ discount_percent|floatformat:0 }}% OFF</span>
+                            {% with price=first_variant.price sale=first_variant.sale_price %}
+                                {% with diff=price|add:"-sale" %}
+                                    {% widthratio diff price 100 as discount_percent %}
+                                    <span class="badge bg-danger ms-2">
+                                        {{ discount_percent|floatformat:0 }}20% OFF
+                                    </span>
+                                {% endwith %}
+                            {% endwith %}
                         {% else %}
                             <span class="text-dark">Rs. {{ first_variant.price }}</span>
                         {% endif %}

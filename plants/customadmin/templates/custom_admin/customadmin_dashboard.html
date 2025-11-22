@@ -1,105 +1,478 @@
 {% extends 'custom_admin/customadmin_base.html' %}
 {% load static %}
 {% block content %}
-<div class="container mx-auto px-4">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div class="bg-white rounded shadow p-4">
-                <h3 class="text-sm text-gray-500">Today's Sales</h3>
-                <p class="text-2xl font-bold mt-1">₹100,999</p>
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Dashboard</h2>
+        <div class="text-muted small">28 Jan, 2021 - 28 Dec, 2021</div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <p class="text-muted small mb-2">Todays Sales</p>
+                            <h3 class="fw-bold mb-2">₹{{ todays_sales|default:"100,999" }}</h3>
+                            <p class="text-muted small">We have sold {{ items_sold|default:"123" }} items</p>
+                        </div>
+                        <div class="stat-icon bg-primary-light">
+                            <i class="fas fa-chart-line text-primary"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="bg-white rounded shadow p-4">
-                <h3 class="text-sm text-gray-500">Revenue</h3>
-                <p class="text-2xl font-bold mt-1">₹30,000</p>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <p class="text-muted small mb-2">Todays Revenue</p>
+                            <h3 class="fw-bold mb-2">₹{{ todays_revenue|default:"30,000" }}</h3>
+                            <p class="text-muted small">Profit made so today so far</p>
+                        </div>
+                        <div class="stat-icon bg-success-light">
+                            <i class="fas fa-dollar-sign text-success"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="bg-white rounded shadow p-4">
-                <h3 class="text-sm text-gray-500">Total Users</h3>
-                <p class="text-2xl font-bold mt-1">20,390</p>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <p class="text-muted small mb-2">Users Count</p>
+                            <h3 class="fw-bold mb-2">{{ users_count|default:"20390" }}</h3>
+                            <p class="text-muted small">Total users signed up to ex.iphones.</p>
+                        </div>
+                        <div class="stat-icon bg-warning-light">
+                            <i class="fas fa-users text-warning"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Revenue Chart and Most Sold Items -->
+    <div class="row mb-4">
+        <!-- Total Revenue Chart -->
+        <div class="col-md-8 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h5 class="fw-bold mb-1">Total Revenue</h5>
+                            <div class="d-flex align-items-center">
+                                <h4 class="fw-bold mb-0 me-2">₹{{ total_revenue|default:"50,23780" }}</h4>
+                                <span class="badge bg-success-light text-success small">↑ 5% than last month</span>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-3">
+                            <div class="d-flex align-items-center">
+                                <span class="legend-dot bg-primary me-2"></span>
+                                <small class="text-muted">Profit</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="legend-dot bg-secondary me-2"></span>
+                                <small class="text-muted">Loss</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart -->
+                    <div class="chart-container">
+                        <div class="d-flex align-items-end justify-content-between" style="height: 250px;">
+                            {% for month in chart_data %}
+                            <div class="chart-bar-group">
+                                <div class="d-flex gap-1 align-items-end" style="height: 200px;">
+                                    <div class="chart-bar bg-primary" style="height: {{ month.profit }}%;"></div>
+                                    <div class="chart-bar bg-secondary" style="height: {{ month.loss }}%;"></div>
+                                </div>
+                                <small class="text-muted d-block text-center mt-2">{{ month.month }}</small>
+                            </div>
+                            {% empty %}
+                            <!-- Default data if no chart_data -->
+                            <div class="chart-bar-group">
+                                <div class="d-flex gap-1 align-items-end" style="height: 200px;">
+                                    <div class="chart-bar bg-primary" style="height: 90%;"></div>
+                                    <div class="chart-bar bg-secondary" style="height: 30%;"></div>
+                                </div>
+                                <small class="text-muted d-block text-center mt-2">Jan</small>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="d-flex gap-1 align-items-end" style="height: 200px;">
+                                    <div class="chart-bar bg-primary" style="height: 75%;"></div>
+                                    <div class="chart-bar bg-secondary" style="height: 25%;"></div>
+                                </div>
+                                <small class="text-muted d-block text-center mt-2">Feb</small>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="d-flex gap-1 align-items-end" style="height: 200px;">
+                                    <div class="chart-bar bg-primary" style="height: 85%;"></div>
+                                    <div class="chart-bar bg-secondary" style="height: 35%;"></div>
+                                </div>
+                                <small class="text-muted d-block text-center mt-2">Mar</small>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="d-flex gap-1 align-items-end" style="height: 200px;">
+                                    <div class="chart-bar bg-primary" style="height: 70%;"></div>
+                                    <div class="chart-bar bg-secondary" style="height: 30%;"></div>
+                                </div>
+                                <small class="text-muted d-block text-center mt-2">Apr</small>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="d-flex gap-1 align-items-end" style="height: 200px;">
+                                    <div class="chart-bar bg-primary" style="height: 90%;"></div>
+                                    <div class="chart-bar bg-secondary" style="height: 40%;"></div>
+                                </div>
+                                <small class="text-muted d-block text-center mt-2">May</small>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="d-flex gap-1 align-items-end" style="height: 200px;">
+                                    <div class="chart-bar bg-primary" style="height: 50%;"></div>
+                                    <div class="chart-bar bg-secondary" style="height: 20%;"></div>
+                                </div>
+                                <small class="text-muted d-block text-center mt-2">Jun</small>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="d-flex gap-1 align-items-end" style="height: 200px;">
+                                    <div class="chart-bar bg-primary" style="height: 80%;"></div>
+                                    <div class="chart-bar bg-secondary" style="height: 35%;"></div>
+                                </div>
+                                <small class="text-muted d-block text-center mt-2">Jul</small>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="d-flex gap-1 align-items-end" style="height: 200px;">
+                                    <div class="chart-bar bg-primary" style="height: 95%;"></div>
+                                    <div class="chart-bar bg-secondary" style="height: 40%;"></div>
+                                </div>
+                                <small class="text-muted d-block text-center mt-2">Aug</small>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="d-flex gap-1 align-items-end" style="height: 200px;">
+                                    <div class="chart-bar bg-primary" style="height: 85%;"></div>
+                                    <div class="chart-bar bg-secondary" style="height: 45%;"></div>
+                                </div>
+                                <small class="text-muted d-block text-center mt-2">Sep</small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Most Sold Items -->
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4">Most Sold Items</h5>
+                    
+                    {% for item in most_sold_items %}
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="small">{{ item.name }}</span>
+                            <span class="small fw-bold">{{ item.percent }}%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ item.percent }}%"></div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <!-- Default data -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="small">Indoor Plants</span>
+                            <span class="small fw-bold">70%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 70%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="small">Outdoor Plants</span>
+                            <span class="small fw-bold">40%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 40%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Latest Orders -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <h5 class="fw-bold mb-4">Latest Orders</h5>
+            
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Product</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Total</th>
+                            <th>Payment</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in latest_orders %}
+                        <tr>
+                            <td>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="{{ order.id }}">
+                                    <label class="form-check-label text-muted small">{{ order.order_id }}</label>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if order.product_image %}
+                                    <img src="{{ order.product_image.url }}" alt="{{ order.product_name }}" class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                    {% else %}
+                                    <div class="bg-light rounded me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-leaf text-success"></i>
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <div class="small fw-bold">{{ order.product_name }}</div>
+                                        <div class="text-muted" style="font-size: 0.75rem;">+{{ order.items_count }} Products</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="small text-muted">{{ order.order_date|date:"d M Y" }}</td>
+                            <td class="small">{{ order.customer_name }}</td>
+                            <td class="small">₹{{ order.total_amount }}</td>
+                            <td class="small text-muted">{{ order.payment_date|date:"d M Y" }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if order.status == 'Processing' %}bg-warning-light text-warning
+                                    {% elif order.status == 'Shipped' %}bg-info-light text-info
+                                    {% elif order.status == 'Delivered' %}bg-success-light text-success
+                                    {% else %}bg-danger-light text-danger
+                                    {% endif %}">
+                                    {{ order.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'admin:view_order' order.id %}" class="btn btn-sm btn-light">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'admin:delete_order' order.id %}" class="btn btn-sm btn-light text-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <!-- Default sample data -->
+                        <tr>
+                            <td>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox">
+                                    <label class="form-check-label text-muted small">302012</label>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-leaf text-success"></i>
+                                    </div>
+                                    <div>
+                                        <div class="small fw-bold">Americano</div>
+                                        <div class="text-muted" style="font-size: 0.75rem;">+3 Products</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="small text-muted">29 Dec 2022</td>
+                            <td class="small">Josh Wisley</td>
+                            <td class="small">₹59000</td>
+                            <td class="small text-muted">24 Jun 2023</td>
+                            <td><span class="badge bg-warning-light text-warning">Processing</span></td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-light"><i class="fas fa-eye"></i></button>
+                                    <button class="btn btn-sm btn-light text-danger"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox">
+                                    <label class="form-check-label text-muted small">302012</label>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-leaf text-success"></i>
+                                    </div>
+                                    <div>
+                                        <div class="small fw-bold">Portugese oxidus</div>
+                                        <div class="text-muted" style="font-size: 0.75rem;">+3 Products</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="small text-muted">29 Dec 2022</td>
+                            <td class="small">Josh Wisley</td>
+                            <td class="small">₹59000</td>
+                            <td class="small text-muted">24 Jun 2023</td>
+                            <td><span class="badge bg-warning-light text-warning">Processing</span></td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-light"><i class="fas fa-eye"></i></button>
+                                    <button class="btn btn-sm btn-light text-danger"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox">
+                                    <label class="form-check-label text-muted small">302012</label>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-leaf text-success"></i>
+                                    </div>
+                                    <div>
+                                        <div class="small fw-bold">Russsian fieno</div>
+                                        <div class="text-muted" style="font-size: 0.75rem;">+3 Products</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="small text-muted">29 Dec 2022</td>
+                            <td class="small">Josh Wisley</td>
+                            <td class="small">₹59000</td>
+                            <td class="small text-muted">24 Jun 2023</td>
+                            <td><span class="badge bg-warning-light text-warning">Processing</span></td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-light"><i class="fas fa-eye"></i></button>
+                                    <button class="btn btn-sm btn-light text-danger"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
-
-
-  <!-- Revenue Chart -->
-  <div class="bg-white rounded shadow p-4 mb-6">
-    <div class="flex justify-between items-center mb-3">
-      <h3 class="text-lg font-semibold">Total Revenue</h3>
-      <span class="text-green-600 text-sm">+5% than last month</span>
-    </div>
-    <canvas id="revenueChart" height="100"></canvas>
-  </div>
-
-  <!-- Latest Orders Table -->
-  <div class="bg-white rounded shadow p-4">
-    <h3 class="text-lg font-semibold mb-4">Latest Orders</h3>
-    <div class="overflow-x-auto">
-      <table class="min-w-full text-sm text-left">
-        <thead class="bg-gray-100 text-gray-600">
-          <tr>
-            <th class="px-4 py-2">Order ID</th>
-            <th class="px-4 py-2">Product</th>
-            <th class="px-4 py-2">Date</th>
-            <th class="px-4 py-2">Customer</th>
-            <th class="px-4 py-2">Total</th>
-            <th class="px-4 py-2">Payment</th>
-            <th class="px-4 py-2">Status</th>
-            <th class="px-4 py-2">Action</th>
-          </tr>
-        </thead>
-        <tbody class="text-gray-700">
-          {% for order in orders %}
-          <tr class="border-t">
-            <td class="px-4 py-2 text-green-600 font-semibold">{{ order.id }}</td>
-            <td class="px-4 py-2">{{ order.product_name }}<br><span class="text-gray-400 text-xs">+3 Products</span></td>
-            <td class="px-4 py-2">{{ order.date }}</td>
-            <td class="px-4 py-2">{{ order.customer }}</td>
-            <td class="px-4 py-2">₹{{ order.total }}</td>
-            <td class="px-4 py-2">{{ order.payment_date }}</td>
-            <td class="px-4 py-2">
-              <span class="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded">Processing</span>
-            </td>
-            <td class="px-4 py-2 space-x-2">
-              <a href="#"><i class="fas fa-eye text-gray-600"></i></a>
-              <a href="#"><i class="fas fa-trash text-red-500"></i></a>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-  const ctx = document.getElementById('revenueChart').getContext('2d');
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
-      datasets: [
-        {
-          label: 'Profit',
-          data: [80000, 95000, 97000, 67000, 87000, 40000, 70000, 90000, 85000],
-          backgroundColor: '#3B82F6'
-        },
-        {
-          label: 'Loss',
-          data: [45000, 60000, 30000, 82000, 50000, 27000, 35000, 48000, 42000],
-          backgroundColor: '#D1D5DB'
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        y: {
-          beginAtZero: true
-        }
-      }
+<style>
+    /* Custom Styles */
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
     }
-  });
-</script>
+
+    .bg-primary-light {
+        background-color: rgba(13, 110, 253, 0.1);
+    }
+
+    .bg-success-light {
+        background-color: rgba(25, 135, 84, 0.1);
+    }
+
+    .bg-warning-light {
+        background-color: rgba(255, 193, 7, 0.1);
+    }
+
+    .bg-info-light {
+        background-color: rgba(13, 202, 240, 0.1);
+    }
+
+    .bg-danger-light {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+
+    .legend-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .chart-container {
+        padding: 20px 0;
+    }
+
+    .chart-bar-group {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .chart-bar {
+        width: 100%;
+        min-height: 20px;
+        border-radius: 4px 4px 0 0;
+        transition: all 0.3s ease;
+    }
+
+    .chart-bar:hover {
+        opacity: 0.8;
+    }
+
+    .card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    .btn-light {
+        border: 1px solid #e9ecef;
+    }
+
+    .btn-light:hover {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+
+    .badge {
+        padding: 0.35em 0.65em;
+        font-weight: 500;
+    }
+
+    .progress {
+        background-color: #e9ecef;
+    }
+</style>
+
 {% endblock %}

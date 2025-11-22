@@ -15,14 +15,16 @@ class Order(models.Model):
         ("SHIPPED", "Shipped"),
         ("DELIVERED", "Delivered"),
         ("CANCELED", "Canceled"),
+        ("RETURNED", "Returned"),
     ]
 
     RETURN_REQUEST_CHOICES = [
-        ("None", "None"),
+        ("NONE", "None"),
         ("PENDING", "Pending"),
-        ("Verified", "Verified"),
-        ("Rejected", "Rejected"),
+        ("VERIFIED", "Verified"),
+        ("REJECTED", "Rejected"),
     ]
+
 
     PAYMENT_CHOICES = [
         ('cod', 'Cash on Delivery'),
@@ -32,10 +34,11 @@ class Order(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES, default='cod')
-    return_request = models.CharField(max_length=10, choices=RETURN_REQUEST_CHOICES, default="None")
+    return_request = models.CharField(max_length=10, choices=RETURN_REQUEST_CHOICES, default="NONE")
+    return_reason = models.TextField(blank=True, null=True)
     cancel_reason = models.TextField(blank=True, null=True)
     canceled_at = models.DateTimeField(blank=True, null=True)
-    return_reason = models.TextField(blank=True, null=True)
+    
 
     order_notes = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="PLACED")
@@ -66,7 +69,17 @@ class Order(models.Model):
         return f"{self.order_id} - {self.user.username if self.user else 'Guest'}"
 
     def is_returnable(self):
-        return self.status == "DELIVERED" and self.return_request == "None"
+        return self.status == "DELIVERED" and self.return_request == "NONE"
+    
+
+    def cancel(self, reason=None):
+        if self.status not in ["DELIVERED", "CANCELED"]:
+            self.status = "CANCELED"
+            self.cancel_reason = reason if reason else "User canceled the order"
+            self.canceled_at = timezone.now()
+            self.save()
+            return True
+        return False
 
 
 
@@ -75,6 +88,7 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2)  
+    
 
     def __str__(self):
         return f"{self.quantity} x {self.product.name}"
@@ -82,6 +96,23 @@ class OrderItem(models.Model):
     @property
     def total_price(self):
         return self.price * self.quantity
+
+
+class ReturnRequest(models.Model):
+    STATUS_CHOICES = [
+        ("PENDING", "Pending"),
+        ("APPROVED", "Approved"),
+        ("REJECTED", "Rejected"),
+    ]
+
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name="return_request_data")
+    reason = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="PENDING")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Return Request for {self.order.order_id}"
+
 
 
 class Review(models.Model):

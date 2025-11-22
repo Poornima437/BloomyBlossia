@@ -78,11 +78,10 @@
                          class="form-control" 
                          id="id_first_name"
                          name="first_name" 
-                         value="{{ user.first_name }}"
+                         value="{{ user.username }}"
                          placeholder="Enter your first name"
                          required>
                 </div>
-                <div class="invalid-feedback">First name is required</div>
               </div>
 
               <!-- Last Name -->
@@ -154,86 +153,6 @@
             <div class="alert alert-info mt-3 mb-0" role="alert">
               <i class="fas fa-info-circle"></i>
               <strong>Note:</strong> Your current information is pre-filled in the form. Make changes as needed and click "Save Changes" to update your profile.
-            </div>
-          </div>
-
-          <!-- Address Information Section -->
-          <div class="form-section">
-            <div class="section-header">
-              <h5><i class="fas fa-map-marker-alt"></i> Address Information</h5>
-              <p class="text-muted small mb-0">Your location details</p>
-            </div>
-
-            <div class="row g-3">
-              <!-- Street Address -->
-              <div class="col-12">
-                <label for="id_address" class="form-label">Street Address</label>
-                <div class="input-icon-wrapper">
-                  <i class="fas fa-home input-icon"></i>
-                  <input type="text" 
-                         class="form-control" 
-                         id="id_address"
-                         name="address" 
-                         value="{{ profile.address|default:'' }}"
-                         placeholder="123 Main Street, Apt 4B">
-                </div>
-              </div>
-
-              <!-- City -->
-              <div class="col-md-6">
-                <label for="id_city" class="form-label">City</label>
-                <div class="input-icon-wrapper">
-                  <i class="fas fa-city input-icon"></i>
-                  <input type="text" 
-                         class="form-control" 
-                         id="id_city"
-                         name="city" 
-                         value="{{ profile.city|default:'' }}"
-                         placeholder="New York">
-                </div>
-              </div>
-
-              <!-- State/Province -->
-              <div class="col-md-6">
-                <label for="id_state" class="form-label">State/Province</label>
-                <div class="input-icon-wrapper">
-                  <i class="fas fa-map input-icon"></i>
-                  <input type="text" 
-                         class="form-control" 
-                         id="id_state"
-                         name="state" 
-                         value="{{ profile.state|default:'' }}"
-                         placeholder="NY">
-                </div>
-              </div>
-
-              <!-- Postal Code -->
-              <div class="col-md-6">
-                <label for="id_postal_code" class="form-label">Postal/ZIP Code</label>
-                <div class="input-icon-wrapper">
-                  <i class="fas fa-mail-bulk input-icon"></i>
-                  <input type="text" 
-                         class="form-control" 
-                         id="id_postal_code"
-                         name="postal_code" 
-                         value="{{ profile.postal_code|default:'' }}"
-                         placeholder="10001">
-                </div>
-              </div>
-
-              <!-- Country -->
-              <div class="col-md-6">
-                <label for="id_country" class="form-label">Country</label>
-                <div class="input-icon-wrapper">
-                  <i class="fas fa-globe input-icon"></i>
-                  <input type="text" 
-                         class="form-control" 
-                         id="id_country"
-                         name="country" 
-                         value="{{ profile.country|default:'' }}"
-                         placeholder="United States">
-                </div>
-              </div>
             </div>
           </div>
 

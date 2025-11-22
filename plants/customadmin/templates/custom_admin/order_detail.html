@@ -21,6 +21,10 @@
       --transition: all 0.3s ease;
     }
 
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       background: #fafafa;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -28,17 +32,19 @@
 
     .container {
       max-width: 1200px;
+      padding: 0 20px;
     }
 
     /* Header Styling */
     .page-header {
       background: linear-gradient(135deg, #87A878 0%, #6d8b6d 100%);
       color: white;
-      padding: 25px 0;
+      padding: 40px 0;
       margin: -20px -20px 30px -20px;
       text-align: center;
       position: relative;
       overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     }
 
     .page-header::before {
@@ -59,16 +65,16 @@
 
     .page-header h4 {
       margin: 0;
-      font-size: 2rem;
+      font-size: 2.2rem;
       font-weight: 300;
       letter-spacing: 1px;
       text-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
     .page-header p {
-      font-size: 1rem;
+      font-size: 1.1rem;
       color: var(--light-green);
-      margin: 5px 0 0;
+      margin: 8px 0 0;
       opacity: 0.9;
     }
 
@@ -80,6 +86,7 @@
       margin-bottom: 25px;
       border: 1px solid var(--medium-gray);
       transition: var(--transition);
+      background: var(--white);
     }
 
     .card:hover {
@@ -92,7 +99,7 @@
       color: white;
       border-radius: 15px 15px 0 0 !important;
       padding: 20px 25px;
-      border-bottom: 1px solid var(--medium-gray);
+      border-bottom: none;
     }
 
     .card-header h5 {
@@ -101,10 +108,12 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      font-size: 1.1rem;
     }
 
     .card-header h5 i {
       opacity: 0.9;
+      font-size: 1.2rem;
     }
 
     .card-body {
@@ -114,20 +123,32 @@
     /* Button Styling */
     .btn {
       border-radius: 8px;
-      padding: 10px 20px;
+      padding: 12px 24px;
       font-weight: 500;
       transition: var(--transition);
       border: none;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+    }
+
+    .btn i {
+      font-size: 1rem;
     }
 
     .btn-outline-secondary {
       border: 2px solid var(--medium-gray);
       color: var(--dark-gray);
+      background: var(--white);
     }
 
     .btn-outline-secondary:hover {
       border-color: var(--secondary-green);
       color: var(--secondary-green);
+      background: var(--light-green);
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
@@ -135,6 +156,7 @@
     .btn-outline-primary {
       border: 2px solid var(--secondary-green);
       color: var(--secondary-green);
+      background: var(--white);
     }
 
     .btn-outline-primary:hover {
@@ -166,6 +188,11 @@
       box-shadow: 0 4px 15px rgba(230, 57, 70, 0.3);
     }
 
+    .btn-group {
+      display: flex;
+      gap: 10px;
+    }
+
     /* Status Badges */
     .badge {
       padding: 8px 16px;
@@ -174,6 +201,9 @@
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .badge-placed { background: #17a2b8; color: white; }
@@ -203,35 +233,50 @@
     .info-card:hover {
       transform: translateY(-3px);
       box-shadow: var(--shadow-hover);
+      border-color: var(--secondary-green);
     }
 
     .info-card h6 {
       color: var(--primary-green);
       font-weight: 600;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+      font-size: 1rem;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--light-green);
+    }
+
+    .info-card h6 i {
+      color: var(--secondary-green);
+      font-size: 1.2rem;
     }
 
     .info-card p {
-      margin-bottom: 8px;
+      margin-bottom: 12px;
       color: var(--dark-gray);
+      line-height: 1.6;
     }
 
     .info-card strong {
       color: var(--primary-green);
+      font-weight: 600;
     }
 
     /* Table Styling */
-    .table {
-      margin: 0;
+    .table-responsive {
       border-radius: 10px;
       overflow: hidden;
     }
 
+    .table {
+      margin: 0;
+      width: 100%;
+    }
+
     .table thead {
-      background: var(--light-green);
+      background: linear-gradient(135deg, var(--light-green) 0%, #d4e9d4 100%);
     }
 
     .table thead th {
@@ -241,7 +286,8 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
       font-size: 0.85rem;
-      padding: 15px;
+      padding: 18px 15px;
+      white-space: nowrap;
     }
 
     .table tbody tr {
@@ -251,25 +297,49 @@
 
     .table tbody tr:hover {
       background: var(--light-green);
+      transform: scale(1.01);
     }
 
     .table td {
-      padding: 15px;
+      padding: 18px 15px;
       vertical-align: middle;
       border-color: var(--light-gray);
     }
 
     .table tbody tr:last-child {
-      background: var(--light-green);
+      background: linear-gradient(135deg, var(--light-green) 0%, #d4e9d4 100%);
       font-weight: 600;
       color: var(--primary-green);
+    }
+
+    .table tbody tr:last-child:hover {
+      transform: none;
+    }
+
+    .product-image {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 2px solid var(--light-green);
+    }
+
+    .product-placeholder {
+      width: 50px;
+      height: 50px;
+      background: var(--light-gray);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--medium-gray);
     }
 
     /* Form Styling */
     .status-form {
       background: var(--white);
       border-radius: 15px;
-      padding: 25px;
+      padding: 30px;
       box-shadow: var(--shadow);
       border: 1px solid var(--medium-gray);
       margin-top: 25px;
@@ -278,28 +348,65 @@
     .form-control {
       border: 2px solid var(--medium-gray);
       border-radius: 8px;
-      padding: 10px 15px;
+      padding: 12px 15px;
       transition: var(--transition);
+      font-size: 0.95rem;
     }
 
     .form-control:focus {
       border-color: var(--secondary-green);
       box-shadow: 0 0 0 3px rgba(16, 61, 45, 0.1);
+      outline: none;
     }
 
     .form-label {
       color: var(--primary-green);
       font-weight: 600;
       margin-bottom: 10px;
+      display: block;
     }
 
     /* Action Section */
     .action-section {
-      background: var(--light-green);
+      background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
       border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 25px;
+      border: 2px solid var(--sale-red);
+      box-shadow: var(--shadow);
+    }
+
+    .action-section h6 {
+      color: var(--sale-red);
+      font-weight: 600;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .action-section p {
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .action-section .d-flex {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    /* Address Section */
+    .address-content {
+      background: var(--light-green);
       padding: 20px;
-      margin-top: 25px;
-      border: 2px dashed var(--secondary-green);
+      border-radius: 10px;
+      border-left: 4px solid var(--secondary-green);
+      line-height: 1.8;
+    }
+
+    .text-green {
+      color: var(--primary-green);
     }
 
     /* Responsive */
@@ -311,15 +418,81 @@
       .page-header h4 {
         font-size: 1.5rem;
       }
+
+      .page-header p {
+        font-size: 0.9rem;
+      }
       
       .btn-group {
         flex-direction: column;
         gap: 10px;
+        width: 100%;
       }
       
       .btn-group .btn {
         width: 100%;
+        justify-content: center;
       }
+
+      .card-body {
+        padding: 20px;
+      }
+
+      .status-form {
+        padding: 20px;
+      }
+
+      .action-section .d-flex {
+        flex-direction: column;
+      }
+
+      .action-section .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .table {
+        font-size: 0.9rem;
+      }
+
+      .table thead th,
+      .table td {
+        padding: 12px 10px;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .container {
+        padding: 0 15px;
+      }
+
+      .page-header {
+        padding: 30px 0;
+      }
+
+      .card-header h5 {
+        font-size: 1rem;
+      }
+
+      .info-card {
+        padding: 20px;
+      }
+    }
+
+    /* Animation keyframes */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-in {
+      animation: fadeInUp 0.5s ease forwards;
     }
   </style>
 </head>
@@ -327,8 +500,8 @@
 <div class="page-header">
   <div class="container">
     <div class="page-header-content">
-      <h4>Order #{{ order.order_id }}</h4>
-      <p>Order Details & Management</p>
+      <h4><i class="fas fa-file-invoice me-2"></i>Order #{{ order.order_id }}</h4>
+      <p>Complete Order Details & Management Dashboard</p>
     </div>
   </div>
 </div>
@@ -337,44 +510,75 @@
   <!-- Header Actions -->
   <div class="card mb-4">
     <div class="card-body">
-      <div class="d-flex justify-content-between align-items-center">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
-          <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Order Details</h5>
+          <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Order Management</h5>
         </div>
         <div class="btn-group">
           <a href="{% url 'export_invoice' order.order_id %}" class="btn btn-outline-secondary">
-            <i class="fas fa-download me-2"></i>Export
+            <i class="fas fa-download"></i>Export
           </a>
           <a href="{% url 'generate_invoice' order.order_id %}" class="btn btn-outline-primary">
-            <i class="fas fa-file-invoice me-2"></i>Invoice
+            <i class="fas fa-file-invoice"></i>Invoice
           </a>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Return Request Section -->
+  {% if order.return_request == 'Pending' %}
+  <div class="action-section text-center">
+    <h6>
+      <i class="fas fa-exchange-alt"></i>
+      Return Request Pending
+    </h6>
+    <p class="text-muted mb-3">This order has a pending return request that requires your immediate attention and approval.</p>
+    <div class="d-flex justify-content-center gap-3">
+      <a href="{% url 'customadmin:accept_return' order.order_id %}" class="btn btn-success">
+        <i class="fas fa-check-circle"></i>Accept Return
+      </a>
+      <a href="{% url 'customadmin:reject_return' order.order_id %}" class="btn btn-danger">
+        <i class="fas fa-times-circle"></i>Reject Return
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
   <!-- Order Information Cards -->
   <div class="info-grid">
     <div class="info-card">
-      <h6><i class="fas fa-info-circle"></i> Order Information</h6>
-      <p><strong>Status:</strong> <span class="badge badge-{{ order.status|lower }}">{{ order.status }}</span></p>
-      <p><strong>Date:</strong> {{ order.created_at|date:"F j, Y" }} at {{ order.created_at|date:"g:i A" }}</p>
+      <h6><i class="fas fa-info-circle"></i>Order Information</h6>
+      <p><strong>Status:</strong> 
+        <span class="badge badge-{{ order.status|lower }}">
+          <i class="fas 
+            {% if order.status == 'DELIVERED' %}fa-check-circle 
+            {% elif order.status == 'PENDING' %}fa-clock 
+            {% elif order.status == 'SHIPPED' %}fa-shipping-fast 
+            {% elif order.status == 'CANCELED' %}fa-times-circle 
+            {% else %}fa-box{% endif %}"></i>
+          {{ order.status }}
+        </span>
+      </p>
+      <p><strong>Order Date:</strong> {{ order.created_at|date:"F j, Y" }}</p>
+      <p><strong>Order Time:</strong> {{ order.created_at|date:"g:i A" }}</p>
       <p><strong>Payment Method:</strong> {{ order.payment_method }}</p>
       <p><strong>Order ID:</strong> #{{ order.order_id }}</p>
     </div>
 
     <div class="info-card">
-      <h6><i class="fas fa-user"></i> Customer Information</h6>
+      <h6><i class="fas fa-user"></i>Customer Information</h6>
       <p><strong>Name:</strong> {{ order.user.get_full_name|default:order.user.username }}</p>
       <p><strong>Email:</strong> {{ order.user.email }}</p>
       <p><strong>Phone:</strong> {{ order.user.phone_number|default:"Not provided" }}</p>
+      <p><strong>Username:</strong> @{{ order.user.username }}</p>
     </div>
   </div>
 
   <!-- Order Items -->
   <div class="card">
     <div class="card-header">
-      <h5><i class="fas fa-shopping-basket"></i> Order Items</h5>
+      <h5><i class="fas fa-shopping-basket"></i>Order Items</h5>
     </div>
     <div class="card-body">
       <div class="table-responsive">
@@ -382,21 +586,21 @@
           <thead>
             <tr>
               <th>Product</th>
-              <th>Quantity</th>
-              <th>Unit Price</th>
-              <th>Total Price</th>
+              <th class="text-center">Quantity</th>
+              <th class="text-end">Unit Price</th>
+              <th class="text-end">Total Price</th>
             </tr>
           </thead>
           <tbody>
             {% for item in order.items.all %}
             <tr>
               <td>
-                <div class="d-flex align-items-center">
-                  <div class="me-3">
+                <div class="d-flex align-items-center gap-3">
+                  <div>
                     {% if item.product.image %}
-                      <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px;">
+                      <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="product-image">
                     {% else %}
-                      <div style="width: 40px; height: 40px; background: var(--light-gray); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                      <div class="product-placeholder">
                         <i class="fas fa-image text-muted"></i>
                       </div>
                     {% endif %}
@@ -409,14 +613,14 @@
                   </div>
                 </div>
               </td>
-              <td>{{ item.quantity }}</td>
-              <td>&#8377;{{ item.price }}</td>
-              <td><strong>&#8377;{{ item.total_price }}</strong></td>
+              <td class="text-center"><strong>{{ item.quantity }}</strong></td>
+              <td class="text-end">&#8377;{{ item.price }}</td>
+              <td class="text-end"><strong style="color: var(--secondary-green);">&#8377;{{ item.total_price }}</strong></td>
             </tr>
             {% endfor %}
             <tr>
-              <td colspan="3" class="text-end"><strong>Total Amount:</strong></td>
-              <td><strong class="text-success">&#8377;{{ order.total }}</strong></td>
+              <td colspan="3" class="text-end"><strong><i class="fas fa-calculator me-2"></i>Total Amount:</strong></td>
+              <td class="text-end"><strong style="color: var(--primary-green); font-size: 1.2rem;">&#8377;{{ order.total }}</strong></td>
             </tr>
           </tbody>
         </table>
@@ -427,27 +631,29 @@
   <!-- Shipping Address -->
   <div class="card">
     <div class="card-header">
-      <h5><i class="fas fa-truck"></i> Shipping Information</h5>
+      <h5><i class="fas fa-truck"></i>Shipping Information</h5>
     </div>
     <div class="card-body">
       <div class="row">
-        <div class="col-md-8">
-          <h6 class="text-green">Shipping Address</h6>
-          <p class="mb-0" style="line-height: 1.6;">{{ order.address|linebreaksbr }}</p>
+        <div class="col-md-8 mb-3 mb-md-0">
+          <h6 class="text-green mb-3"><i class="fas fa-map-marker-alt me-2"></i>Shipping Address</h6>
+          <div class="address-content">
+            {{ order.address|linebreaksbr }}
+          </div>
         </div>
         <div class="col-md-4">
-          <h6 class="text-green">Delivery Status</h6>
-          <p class="mb-0">
-            <span class="badge badge-{{ order.status|lower }}">
+          <h6 class="text-green mb-3"><i class="fas fa-shipping-fast me-2"></i>Delivery Status</h6>
+          <div style="background: var(--light-green); padding: 15px; border-radius: 10px; text-align: center;">
+            <span class="badge badge-{{ order.status|lower }}" style="font-size: 0.85rem; padding: 10px 20px;">
               <i class="fas 
                 {% if order.status == 'DELIVERED' %}fa-check-circle 
                 {% elif order.status == 'PENDING' %}fa-clock 
                 {% elif order.status == 'SHIPPED' %}fa-shipping-fast 
                 {% elif order.status == 'CANCELED' %}fa-times-circle 
-                {% else %}fa-box{% endif %} me-1"></i>
+                {% else %}fa-box{% endif %}"></i>
               {{ order.status }}
             </span>
-          </p>
+          </div>
         </div>
       </div>
     </div>
@@ -455,42 +661,32 @@
 
   <!-- Status Update Form -->
   <div class="status-form">
+    <h5 class="text-green mb-4"><i class="fas fa-edit me-2"></i>Update Order Status</h5>
     <form method="post" action="{% url 'update_order_status' order.order_id %}">
       {% csrf_token %}
-      <div class="row align-items-end">
-        <div class="col-md-4">
-          <label for="status" class="form-label">Update Order Status</label>
-          <select name="status" class="form-control">
+      <div class="row align-items-end g-3">
+        <div class="col-md-6">
+          <label for="status" class="form-label"><i class="fas fa-list me-2"></i>Select New Status</label>
+          <select name="status" id="status" class="form-control">
             {% for value, display in order.STATUS_CHOICES %}
               <option value="{{ value }}" {% if order.status == value %}selected{% endif %}>{{ display }}</option>
             {% endfor %}
           </select>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-6">
           <button type="submit" class="btn btn-success w-100">
-            <i class="fas fa-sync-alt me-2"></i>Update Status
+            <i class="fas fa-sync-alt"></i>Update Status
           </button>
         </div>
       </div>
     </form>
   </div>
-
-  <!-- Return Request Section -->
-  {% if order.return_request == 'Pending' %}
-  <div class="action-section text-center">
-    <h6 class="text-danger mb-3"><i class="fas fa-exchange-alt me-2"></i>Return Request Pending</h6>
-    <p class="text-muted mb-3">This order has a pending return request that needs verification.</p>
-    <a href="{% url 'verify_return' order.order_id %}" class="btn btn-danger">
-      <i class="fas fa-clipboard-check me-2"></i>Verify Return Request
-    </a>
-  </div>
-  {% endif %}
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   // Add smooth animations to cards
-  const cards = document.querySelectorAll('.card, .info-card');
+  const cards = document.querySelectorAll('.card, .info-card, .action-section');
   cards.forEach((card, index) => {
     card.style.opacity = '0';
     card.style.transform = 'translateY(20px)';
@@ -502,17 +698,28 @@ document.addEventListener('DOMContentLoaded', function() {
     }, index * 100);
   });
 
-  // Add hover effects to buttons
-  const buttons = document.querySelectorAll('.btn');
-  buttons.forEach(button => {
-    button.addEventListener('mouseenter', function() {
-      this.style.transform = 'translateY(-2px)';
+  // Enhance form submission
+  const form = document.querySelector('form');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      const submitBtn = this.querySelector('button[type="submit"]');
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating...';
+      submitBtn.disabled = true;
     });
-    
-    button.addEventListener('mouseleave', function() {
-      this.style.transform = 'translateY(0)';
+  }
+
+  // Add confirmation for status changes
+  const statusSelect = document.getElementById('status');
+  if (statusSelect) {
+    const originalValue = statusSelect.value;
+    statusSelect.addEventListener('change', function() {
+      if (this.value === 'CANCELED' && originalValue !== 'CANCELED') {
+        if (!confirm('Are you sure you want to cancel this order? This action may affect inventory and customer notifications.')) {
+          this.value = originalValue;
+        }
+      }
     });
-  });
+  }
 });
 </script>
 {% endblock %}

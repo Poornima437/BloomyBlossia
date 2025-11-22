@@ -75,10 +75,21 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'orders.middleware.no_cache.NoCacheMiddleware',
+    'accounts.middleware.no_cache.NoCacheMiddleware',
     
 ]
 SESSION_COOKIE_AGE = 3600  # 1 hour in seconds
 SESSION_SAVE_EVERY_REQUEST = True
+
+CACHE_TTL = 0
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 ROOT_URLCONF = 'plants.urls'
 

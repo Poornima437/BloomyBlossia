@@ -324,6 +324,7 @@
     .badge-delivered { background: #28a745; color: white; }
     .badge-canceled { background: var(--sale-red); color: white; }
     .badge-pending { background: #ffc107; color: #212529; }
+    .badge-pending-return { background: #ffc107; color: #212529; }
 
     /* Action Buttons */
     .btn-view {
@@ -534,6 +535,7 @@
                   {% elif order.status == 'PENDING' %}fa-clock 
                   {% elif order.status == 'SHIPPED' %}fa-shipping-fast 
                   {% elif order.status == 'CANCELED' %}fa-times-circle 
+                  {% elif order.status == 'PENDING-RETURN' %}fa-times-circle 
                   {% else %}fa-box{% endif %} me-1"></i>
                 {{ order.status }}
               </span>

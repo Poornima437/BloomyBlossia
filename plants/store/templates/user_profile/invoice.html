@@ -323,59 +323,67 @@
     </div>
     
     <!-- Order Items -->
-    <table class="items-table">
-      <thead>
-        <tr>
-          <th>Product</th>
-          <th class="text-center">Quantity</th>
-          <th class="text-right">Unit Price</th>
-          <th class="text-right">Subtotal</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in order.items.all %}
-        <tr>
-          <td class="product-name">{{ item.product.name }}</td>
-          <td class="text-center">{{ item.quantity }}</td>
-          <td class="text-right">₹{{ item.price|floatformat:2 }}</td>
-          <td class="text-right">₹{{ item.total_price|floatformat:2 }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    
-    <!-- Totals & Payment Info -->
-    <div class="totals-section">
-      <div class="payment-info">
-        <h3>Payment Information</h3>
-        <p><strong>Payment Method:</strong> Credit Card</p>
-        <p><strong>Transaction ID:</strong> TXN-{{ order.order_id }}</p>
-        <p><strong>Payment Status:</strong> <span style="color: #2e7d32;">Paid</span></p>
-        <p><strong>Payment Date:</strong> {{ order.created_at|date:"F j, Y" }}</p>
-      </div>
-      
-      <div>
-        <table class="amounts-table">
-          <tr>
-            <td class="amount-label">Subtotal:</td>
-            <td class="amount-value">₹{{ subtotal|floatformat:2 }}</td>
-          </tr>
-          <tr>
-            <td class="amount-label">Shipping:</td>
-            <td class="amount-value">₹{{ shipping_cost|floatformat:2 }}</td>
-          </tr>
-          <tr>
-            <td class="amount-label">Tax (5%):</td>
-            <td class="amount-value">₹{{ tax|floatformat:2 }}</td>
-          </tr>
-          <tr class="total-row">
-            <td class="amount-label">Total:</td>
-            <td class="amount-value">₹{{ total|floatformat:2 }}</td>
-          </tr>
-        </table>
-      </div>
+  <table class="items-table">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th class="text-center">Quantity</th>
+        <th class="text-right">Price</th>
+        <th class="text-right">Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in order.items.all %}
+      <tr>
+        <td class="product-name">{{ item.product.name }}</td>
+        <td class="text-center">{{ item.quantity }}</td>
+
+        <!-- USE ONLY STORED VALUES -->
+        <td class="text-right">₹{{ item.price|floatformat:2 }}</td>
+        <td class="text-right">₹{{ item.total_price|floatformat:2 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+
+  <!-- Totals & Payment Info -->
+  <div class="totals-section">
+    <div class="payment-info">
+      <h3>Payment Information</h3>
+
+      <p><strong>Payment Method:</strong> {{ order.payment_method }}</p>
+
+      <p><strong>Transaction ID:</strong> TXN-{{ order.order_id }}</p>
+
+      <p><strong>Payment Date:</strong> {{ order.created_at|date:"F j, Y" }}</p>
     </div>
-    
+
+    <div>
+      <table class="amounts-table">
+        <tr>
+          <td class="amount-label">Subtotal:</td>
+          <td class="amount-value">₹{{ order.subtotal|floatformat:2 }}</td>
+        </tr>
+
+        <tr>
+          <td class="amount-label">Shipping:</td>
+          <td class="amount-value">₹{{ order.shipping_cost|floatformat:2 }}</td>
+        </tr>
+
+        <tr>
+          <td class="amount-label">Discount:</td>
+          <td class="amount-value">- ₹{{ order.discount|floatformat:2 }}</td>
+        </tr>
+
+        <tr class="total-row">
+          <td class="amount-label">Total:</td>
+          <td class="amount-value">₹{{ order.total_price|floatformat:2 }}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
     <!-- Footer -->
     <div class="footer">
       <p class="thank-you">Thank you for your purchase! <i class="fas fa-heart" style="color: #e91e63;"></i></p>

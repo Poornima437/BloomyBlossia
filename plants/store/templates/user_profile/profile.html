@@ -42,6 +42,7 @@
               <a href="{% url 'accounts:edit_profile' %}" class="btn-edit-profile">
                 <i class="fas fa-edit"></i> Edit Profile
               </a>
+              
             </div>
           </div>
         </div>
@@ -53,22 +54,19 @@
           
           <!-- Left Column - Personal Info -->
           <div class="col-lg-5">
-            <a href="{% url 'accounts:add_address' %}" class="btn-edit-profile">
-                <i class="fas fa-edit"></i> Add address
+            <div>
+              <a href="{% url 'accounts:add_address' %}" class="btn-add-new">
+                  <i class="fas fa-plus"></i> Add Address
               </a>
-            <!-- Personal Information Card -->
+            </div>
             <div class="profile-card mb-4">
               <div class="card-header-custom">
                 <h3><i class="fas fa-user-circle"></i> Personal Information</h3>
               </div>
               <div class="card-body-custom">
                 <div class="info-row">
-                  <span class="info-label">First Name</span>
-                  <span class="info-value">{{ user.first_name|default:"Not provided" }}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Last Name</span>
-                  <span class="info-value">{{ user.last_name|default:"Not provided" }}</span>
+                  <span class="info-label">Name</span>
+                  <span class="info-value">{{ user.username|default:"Not provided" }}</span>
                 </div>
                 <div class="info-row">
                   <span class="info-label">Email Address</span>
@@ -80,6 +78,70 @@
                 </div>
               </div>
             </div>
+
+            <!-- Address Information Section
+            <div class="profile-card mb-4">
+              <div class="card-header-custom">
+                <h3><i class="fas fa-map-marker-alt"></i> Address Information</h3>
+                
+              </div>
+              <div class="card-body-custom">
+                {% if profile.address or profile.city or profile.state or profile.postal_code or profile.country %}
+                  <div class="address-display">
+                    {% if profile.address %}
+                      <div class="info-row">
+                        <span class="info-label">Street Address</span>
+                        <span class="info-value">{{ profile.address }}</span>
+                      </div>
+                    {% endif %}
+                    
+                    {% if profile.city %}
+                      <div class="info-row">
+                        <span class="info-label">City</span>
+                        <span class="info-value">{{ profile.city }}</span>
+                      </div>
+                    {% endif %}
+                    
+                    {% if profile.state %}
+                      <div class="info-row">
+                        <span class="info-label">State/Province</span>
+                        <span class="info-value">{{ profile.state }}</span>
+                      </div>
+                    {% endif %}
+                    
+                    {% if profile.postal_code %}
+                      <div class="info-row">
+                        <span class="info-label">Postal Code</span>
+                        <span class="info-value">{{ profile.postal_code }}</span>
+                      </div>
+                    {% endif %}
+                    
+                    {% if profile.country %}
+                      <div class="info-row">
+                        <span class="info-label">Country</span>
+                        <span class="info-value">{{ profile.country }}</span>
+                      </div>
+                    {% endif %}
+                    
+                    Edit Address Button -->
+                    <!-- <div class="mt-3 pt-3 border-top">
+                      <a href="{% url 'accounts:edit_profile' %}#address-section" class="btn-edit-profile w-100 text-center">
+                        <i class="fas fa-edit"></i> Edit Address
+                      </a>
+                    </div>
+                  </div>
+                {% else %}
+                  <div class="empty-address text-center py-4">
+                    <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
+                    <h5>No Address Added</h5>
+                    <p class="text-muted mb-3">Add your address to complete your profile</p>
+                    <a href="{% url 'accounts:add_address' %}" class="btn-primary-custom">
+                      <i class="fas fa-plus"></i> Add Your First Address
+                    </a>
+                  </div>
+                {% endif %}
+              </div>
+            </div> --> 
 
             <!-- Bio Card -->
             {% if profile.bio %}
@@ -116,6 +178,63 @@
 
           <!-- Right Column - Addresses & Orders -->
           <div class="col-lg-7">
+            <!-- Multiple Addresses Section (if you have multiple addresses feature) -->
+            {% if addresses %}
+            <div class="profile-card mb-4">
+              <div class="card-header-custom">
+                <h3><i class="fas fa-address-book"></i> Saved Addresses</h3>
+                <a href="{% url 'accounts:add_address' %}" class="btn-add-new">
+                  <i class="fas fa-plus"></i> Add New
+                </a>
+              </div>
+              <div class="card-body-custom">
+                <div class="addresses-grid">
+                  {% for address in addresses %}
+                    <div class="address-box {% if address.is_default %}is-default{% endif %}">
+                      {% if address.is_default %}
+                        <div class="default-label">
+                          <i class="fas fa-star"></i> Default
+                        </div>
+                      {% endif %}
+                      
+                      <div class="address-type-badge">
+                        <i class="fas fa-{{ address.address_type|lower }}"></i>
+                        {{ address.get_address_type_display }}
+                      </div>
+                      
+                      <div class="address-text">
+                        <p><strong>{{ address.full_name }}</strong></p>
+                        <p>{{ address.street_address }}</p>
+                        {% if address.apartment_suite %}
+                          <p>{{ address.apartment_suite }}</p>
+                        {% endif %}
+                        <p>{{ address.city }}, {{ address.state }} {{ address.zip_code }}</p>
+                        <p>{{ address.country }}</p>
+                        <p class="address-phone">
+                          <i class="fas fa-phone"></i> {{ address.phone_number }}
+                        </p>
+                      </div>
+                      
+                      <div class="address-buttons">
+                        <button class="btn-icon-action edit" onclick="editAddress('{{ address.id }}')">
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        {% if not address.is_default %}
+                          <button class="btn-icon-action star" onclick="setDefault('{{ address.id }}')">
+                            <i class="fas fa-star"></i>
+                          </button>
+                        {% endif %}
+                        <button class="btn-icon-action delete" onclick="deleteAddress('{{ address.id }}')">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
             <!-- Recent Orders Section -->
             <div class="profile-card">
               <div class="card-header-custom">
@@ -907,6 +1026,30 @@
   
   .profile-name {
     font-size: 1.7rem;
+  }
+
+
+  .empty-address {
+    padding: 2rem 1rem;
+  }
+
+  .empty-address i {
+    opacity: 0.5;
+  }
+
+  .empty-address h5 {
+    color: #666;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Address Display Styles */
+  .address-display .info-row {
+    border-bottom: 1px solid #f0f0f0;
+    padding: 0.8rem 0;
+  }
+
+  .address-display .info-row:last-child {
+    border-bottom: none;
   }
 }
 </style>

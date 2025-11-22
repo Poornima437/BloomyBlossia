@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
+from orders.views import restore_stock
 
 from django.views.decorators.http import require_POST
 from django.db.models import Q
@@ -28,6 +29,7 @@ from wishlist.models import WishlistItem
 
 from orders.models import Order, OrderItem
 from cart.models import Cart, CartItem
+from wallet.models import WalletTransaction
 
 from accounts.models import UserProfile
 from wallet.models import Wallet
@@ -39,7 +41,13 @@ import json
 from django.conf import settings
 from store.models import ProductVariant,VariantImage
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
+from django.contrib.admin.views.decorators import staff_member_required
+from django.db import transaction
+from django.utils import timezone
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from django.db.models import F
+from orders.models import ReturnRequest
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 
@@ -512,32 +520,165 @@ def customadmin_order_detail(request, order_id):
     order = get_object_or_404(Order, order_id=order_id)
     
     return render(request, 'custom_admin/order_detail.html', {'order': order})
-
 @require_POST
 def update_order_status(request, order_id):
     status = request.POST.get('status')
     order = get_object_or_404(Order, order_id=order_id)
 
-    if status in dict(Order.STATUS_CHOICES).keys():  
+    if status in dict(Order.STATUS_CHOICES).keys():
         order.status = status
         order.save()
 
     return redirect('customadmin_order_detail', order_id=order_id)
 
-def verify_return(request, order_id):
-    order = get_object_or_404(Order, order_id=order_id)
-
-    if order.return_request == 'Pending':
-        order.return_request = 'Verified'
 
 
-        wallet, _ = Wallet.objects.get_or_create(user=order.user)
-        wallet.balance += order.total
-        wallet.save()
+@login_required
+@staff_member_required
+def accept_return(request, order_id):
 
-        order.save()
+    try:
+        with transaction.atomic():
 
-    return redirect('customadmin_order_detail', order_id=order_id)
+            # Lock the ReturnRequest row
+            rr = (
+                ReturnRequest.objects
+                .select_for_update()
+                .get(order__order_id=order_id)
+            )
+
+            order = (
+                Order.objects
+                .select_for_update()
+                .get(order_id=order_id)
+            )
+
+            # Validation
+            if rr.status != "PENDING":
+                messages.error(request, "No pending return request to accept.")
+                return redirect("return_request_detail", order_id=order_id)
+
+            # Update return request status
+            rr.status = "VERIFIED"
+            rr.save()
+
+            # Restore stock for each item
+            for item in order.order_items.all():
+                product = Product.objects.select_for_update().get(id=item.product.id)
+                product.stock += item.quantity
+                product.save()
+
+            # Update order status
+            order.status = "RETURNED"
+            order.save()
+
+            # Refund money to wallet
+            wallet, _ = Wallet.objects.get_or_create(user=order.user)
+            wallet.balance += order.total
+            wallet.save()
+
+        messages.success(request, "Return request accepted successfully.")
+        return redirect("return_request_detail", order_id=order_id)
+
+    except Exception as e:
+        messages.error(request, f"Error accepting return: {e}")
+        return redirect("return_request_detail", order_id=order_id)
+
+
+
+
+@login_required
+@staff_member_required
+def reject_return(request, order_id):
+    rr = get_object_or_404(ReturnRequest, order__order_id=order_id)
+
+    if rr.status != "PENDING":
+        messages.error(request, "No pending return request to reject.")
+        return redirect("return_request_detail", order_id=order_id)
+
+    rr.status = "REJECTED"
+    rr.save()
+
+    messages.success(request, "Return request rejected.")
+    return redirect("return_request_detail", order_id=order_id)
+
+
+
+@login_required
+@staff_member_required
+def return_requests(request):
+    requests = ReturnRequest.objects.select_related("order", "order__user").order_by("-created_at")
+    return render(request, "custom_admin/return_requests_list.html", {"requests": requests})
+
+@login_required
+@staff_member_required
+def return_request_detail(request, order_id):
+    rr = get_object_or_404(ReturnRequest, order__order_id=order_id)
+    return render(request, "custom_admin/return_request_detail.html", {"rr": rr})
+
+
+
+# def verify_return(request, order_id):
+#     order = get_object_or_404(Order, order_id=order_id)
+
+#     if order.return_request == 'Pending':
+#         order.return_request = 'Verified'
+
+
+#         wallet, _ = Wallet.objects.get_or_create(user=order.user)
+#         wallet.balance += order.total
+#         wallet.save()
+
+#         order.save()
+
+#     return redirect('customadmin_order_detail', order_id=order_id)
+
+
+# @login_required
+# @staff_member_required
+# def accept_return(request, order_id):
+#     order = get_object_or_404(Order, order_id=order_id)
+
+#     if order.return_request != "PENDING":
+#         messages.error(request, "No pending return request to accept.")
+#         return redirect("customadmin_order_detail", order_id=order.order_id)
+
+
+#     order.return_request = "VERIFIED"   # Accepted
+#     order.status = "RETURNED"  
+#     restore_stock(order)       
+    
+#     wallet, _ = Wallet.objects.get_or_create(user=order.user)
+#     wallet.balance += order.total
+#     wallet.save()
+#         # add stock back
+#     order.save()
+
+#     messages.success(request, "Return request accepted.")
+#     return redirect("customadmin_order_detail", order_id=order.order_id)
+
+
+# @login_required
+# @staff_member_required
+# def reject_return(request, order_id):
+#     order = get_object_or_404(Order, order_id=order_id)
+
+#     if order.return_request != "PENDING":
+#         messages.error(request, "No pending return request to reject.")
+#         return redirect("customadmin_order_detail", order_id=order.order_id)
+
+
+#     order.return_request = "REJECTED"
+#     order.save()
+
+#     messages.success(request, "Return request rejected.")
+#     return redirect("customadmin_order_detail", order_id=order.order_id)
+
+
+# def return_requests(request):
+#     requests = ReturnRequest.objects.all().order_by("-created_at")
+#     return render(request, "custom_admin/return_requests_list.html", {"requests": requests})
+
 
 @staff_member_required
 def customadmin_coupons(request):
@@ -722,3 +863,6 @@ def customadmin_reorder_variant_images(request, variant_id):
             return JsonResponse({'success': False, 'message': str(e)})
     
     return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
+
+

@@ -103,7 +103,7 @@ def register_user(request):
         if form.is_valid():
             request.session['registration_data'] = form.cleaned_data
             otp = str(random.randint(100000, 999999))
-            print("OTP Generated:", otp)
+            print(f"OTP Generated:{otp}")
             request.session['registration_otp'] = otp
             request.session['otp_expiry'] = time.time() + 300
             request.session.save()
@@ -111,19 +111,20 @@ def register_user(request):
             send_mail(
                 subject="Your One-Time Password (OTP) Verification",
                 message=(
-                    f"Dear ",
-                    f"Thank you for choosing our service. To proceed with your action, please use the following One-Time Password (OTP):\n\n"
+                    "Dear User,\n\n"
+                    "Thank you for choosing our service. To proceed with your action, please use the following One-Time Password (OTP):\n\n"
                     f"OTP: {otp}\n\n"
-                    f"This OTP is valid for the next 10 minutes. Please do not share this OTP with anyone for security reasons.\n\n"
-                    f"If you did not request this, please ignore this email.\n\n"
-                    f"Best regards,\n"
-                    f"Bloomy Blossia\n"
-                    f"Support Team"
+                    "This OTP is valid for the next 10 minutes. Please do not share this OTP with anyone for security reasons.\n\n"
+                    "If you did not request this, please ignore this email.\n\n"
+                    "Best regards,\n"
+                    "Bloomy Blossia\n"
+                    "Support Team"
                 ),
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[form.cleaned_data['email']],
                 fail_silently=False,
             )
+
             
 
 

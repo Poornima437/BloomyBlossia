@@ -23,11 +23,28 @@
         {% if order.status == "DELIVERED" %}
         <form method="POST" id="returnForm">
             {% csrf_token %}
-            <div class="mb-3">
-                <label for="id_reason" class="form-label">Reason for Return <span class="text-danger">*</span></label>
-                {{ form.reason }}
-                <div class="text-danger small" id="reasonError"></div>
+
+            <div class="mb-4">
+                <label for="reason" class="form-label fw-bold">
+                    Reason for Return <span class="text-danger">*</span>
+                </label>
+
+                <textarea 
+                    name="reason" 
+                    id="reason" 
+                    class="form-control reason-textarea" 
+                    required
+                    placeholder="Please tell us why you're returning this order (minimum 5 characters)"
+                    minlength="5"
+                ></textarea>
+
+                <small class="text-muted">Your feedback helps us improve our product and service.</small>
+
+                <div class="invalid-feedback" id="reasonError">
+                    Please provide a reason (minimum 5 characters)
+                </div>
             </div>
+
             <button type="submit" class="btn btn-warning w-100">Submit Return Request</button>
             <a href="{% url 'orders:orders_list' %}" class="btn btn-secondary w-100 mt-2">Cancel</a>
         </form>
@@ -36,6 +53,7 @@
             Return can only be requested for delivered orders.
         </div>
         {% endif %}
+
     </div>
 </div>
 
@@ -60,7 +78,7 @@
 document.getElementById('returnForm')?.addEventListener('submit', function(e) {
     e.preventDefault();
 
-    const reasonInput = document.getElementById('id_reason');
+    const reasonInput = document.getElementById('reason');
     const reason = reasonInput.value.trim();
     const reasonError = document.getElementById('reasonError');
 

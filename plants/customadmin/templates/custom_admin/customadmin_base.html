@@ -391,6 +391,13 @@
                     <span>Coupons</span>
                 </a>
             </div>
+            <div class="nav-item">
+                <a href="{% url 'return_requests'%}" class="nav-link {% if 'return' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-undo nav-icon"></i>
+                    <span>Return Requests</span>
+                </a>
+            </div>
+
             
             <div class="nav-item">
                 <a href="{% url 'customadmin_users' %}" class="nav-link {% if 'user' in request.resolver_match.url_name %}active{% endif %}">

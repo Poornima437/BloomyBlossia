@@ -1,0 +1,1169 @@
+{% extends 'custom_admin/customadmin_base.html' %}
+{% load static %}
+
+{% block content %}
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-green: #0d290d;
+      --secondary-green: #103d2d;
+      --accent-green: #03380a;
+      --light-green: #e8f5e9;
+      --white: #ffffff;
+      --light-gray: #f8f9fa;
+      --medium-gray: #e0e0e0;
+      --dark-gray: #616161;
+      --sale-red: #e63946;
+      --success-green: #28a745;
+      --warning-yellow: #ffc107;
+      --info-blue: #17a2b8;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #fafafa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .container {
+      max-width: 1200px;
+      padding: 0 20px;
+    }
+
+    /* Page Header */
+    .page-header {
+      background: linear-gradient(135deg, #87A878 0%, #6d8b6d 100%);
+      color: white;
+      padding: 40px 0;
+      margin: -20px -20px 30px -20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .page-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      opacity: 0.1;
+    }
+
+    .page-header-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .page-header h1 {
+      margin: 0;
+      font-size: 2.2rem;
+      font-weight: 300;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .page-header p {
+      font-size: 1.1rem;
+      color: var(--light-green);
+      margin: 8px 0 0;
+      opacity: 0.9;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb-nav {
+      background: var(--white);
+      padding: 15px 25px;
+      border-radius: 10px;
+      margin-bottom: 25px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--medium-gray);
+    }
+
+    .breadcrumb {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .breadcrumb-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--dark-gray);
+      font-size: 0.9rem;
+    }
+
+    .breadcrumb-item a {
+      color: var(--secondary-green);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .breadcrumb-item a:hover {
+      color: var(--primary-green);
+      text-decoration: underline;
+    }
+
+    .breadcrumb-item.active {
+      color: var(--primary-green);
+      font-weight: 600;
+    }
+
+    .breadcrumb-separator {
+      color: var(--medium-gray);
+    }
+
+    /* Status Alert Banner */
+    .status-banner {
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 30px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      border: 2px solid;
+    }
+
+    .status-banner.pending {
+      background: linear-gradient(135deg, #fff9e6 0%, #fff3cc 100%);
+      border-color: var(--warning-yellow);
+    }
+
+    .status-banner.verified {
+      background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+      border-color: var(--success-green);
+    }
+
+    .status-banner.rejected {
+      background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+      border-color: var(--sale-red);
+    }
+
+    .status-banner-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      flex-shrink: 0;
+      color: white;
+    }
+
+    .status-banner.pending .status-banner-icon {
+      background: var(--warning-yellow);
+      color: #212529;
+      animation: pulse 2s infinite;
+    }
+
+    .status-banner.verified .status-banner-icon {
+      background: var(--success-green);
+      color: rgb(255, 255, 255);
+    }
+
+    .status-banner.rejected .status-banner-icon {
+      background: var(--sale-red);
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .status-banner-content h3 {
+      margin: 0 0 8px 0;
+      font-weight: 600;
+      font-size: 1.3rem;
+    }
+
+    .status-banner.pending .status-banner-content h3 { color: #856404; }
+    .status-banner.verified .status-banner-content h3 { color: #155724; }
+    .status-banner.rejected .status-banner-content h3 { color: #721c24; }
+
+    .status-banner-content p {
+      margin: 0;
+      color: #666;
+      line-height: 1.6;
+    }
+    .fa-check-circle::before {
+      color: #178515;
+    }
+
+    /* Card Styling */
+    .card {
+      border: none;
+      border-radius: 15px;
+      box-shadow: var(--shadow);
+      margin-bottom: 25px;
+      border: 1px solid var(--medium-gray);
+      transition: var(--transition);
+      background: var(--white);
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, var(--secondary-green) 0%, var(--primary-green) 100%);
+      color: white;
+      border-radius: 15px 15px 0 0 !important;
+      padding: 20px 25px;
+      border-bottom: none;
+    }
+
+    .card-header h5 {
+      margin: 0;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.1rem;
+    }
+
+    .card-header h5 i {
+      opacity: 0.9;
+      font-size: 1.2rem;
+    }
+
+    .card-body {
+      padding: 30px;
+    }
+
+    /* Info Grid */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .info-item {
+      background: var(--light-green);
+      padding: 20px;
+      border-radius: 12px;
+      border-left: 4px solid var(--secondary-green);
+      transition: var(--transition);
+    }
+
+    .info-item:hover {
+      transform: translateX(5px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .info-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--dark-gray);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .info-label i {
+      color: var(--secondary-green);
+      font-size: 1rem;
+    }
+
+    .info-value {
+      font-size: 1.2rem;
+      color: var(--primary-green);
+      font-weight: 600;
+      word-break: break-word;
+    }
+
+    /* Reason Box */
+    .reason-box {
+      background: linear-gradient(135deg, #fff9e6 0%, #fff3cc 100%);
+      border: 2px solid var(--warning-yellow);
+      border-radius: 12px;
+      padding: 25px;
+    }
+
+    .reason-box h6 {
+      color: #856404;
+      font-weight: 600;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.1rem;
+    }
+
+    .reason-box h6 i {
+      font-size: 1.3rem;
+    }
+
+    .reason-text {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      color: var(--dark-gray);
+      line-height: 1.8;
+      font-size: 1rem;
+      border-left: 4px solid var(--warning-yellow);
+    }
+
+    /* Status Badge */
+    .badge {
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
+      color: #08337e;
+      gap: 8px;
+    }
+
+    .badge-pending {
+      background: linear-gradient(135deg, var(--warning-yellow) 0%, #ffb300 100%);
+      color: #212529;
+      box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+    }
+
+    .badge-verified {
+      background: linear-gradient(135deg, var(--success-green) 0%, #218838 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+    }
+
+    .badge-rejected {
+      background: linear-gradient(135deg, var(--sale-red) 0%, #c1121f 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba(230, 57, 70, 0.3);
+    }
+
+    /* Action Section */
+    .action-section {
+      background: linear-gradient(135deg, var(--light-green) 0%, #d4e9d4 100%);
+      border-radius: 15px;
+      padding: 35px;
+      margin-top: 30px;
+      border: 2px solid var(--secondary-green);
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .action-section h5 {
+      color: var(--primary-green);
+      font-weight: 600;
+      margin-bottom: 10px;
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .action-section p {
+      color: var(--dark-gray);
+      margin-bottom: 30px;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .action-taken {
+      background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+      border: 2px solid var(--info-blue);
+      padding: 25px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .action-taken i {
+      font-size: 3rem;
+      color: var(--info-blue);
+      margin-bottom: 15px;
+      display: block;
+    }
+
+    .action-taken h5 {
+      color: #01579b;
+      margin-bottom: 10px;
+      font-size: 1.3rem;
+    }
+
+    .action-taken p {
+      color: #0277bd;
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    /* Button Styling */
+    .btn {
+      border-radius: 10px;
+      padding: 14px 32px;
+      font-weight: 600;
+      transition: var(--transition);
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn i {
+      font-size: 1.1rem;
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, var(--success-green) 0%, #218838 100%);
+      color: white;
+      box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-success:hover {
+      background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, var(--sale-red) 0%, #c1121f 100%);
+      color: white;
+      box-shadow: 0 4px 15px rgba(230, 57, 70, 0.3);
+    }
+
+    .btn-danger:hover {
+      background: linear-gradient(135deg, #c1121f 0%, #a00e1a 100%);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(230, 57, 70, 0.4);
+    }
+
+    .btn-secondary {
+      background: var(--medium-gray);
+      color: var(--dark-gray);
+    }
+
+    .btn-secondary:hover {
+      background: var(--dark-gray);
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .btn-outline-secondary {
+      background: white;
+      border: 2px solid var(--medium-gray);
+      color: var(--dark-gray);
+    }
+
+    .btn-outline-secondary:hover {
+      background: var(--light-gray);
+      border-color: var(--dark-gray);
+    }
+
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    /* Confirmation Panel */
+    .confirmation-panel {
+      display: none;
+      margin-top: 25px;
+      padding: 25px;
+      border-radius: 12px;
+      border: 2px solid;
+      animation: slideDown 0.3s ease;
+    }
+
+    .confirmation-panel.active {
+      display: block;
+    }
+
+    .confirmation-panel.accept {
+      background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+      border-color: var(--success-green);
+    }
+
+    .confirmation-panel.reject {
+      background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+      border-color: var(--sale-red);
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .confirmation-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .confirmation-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: white;
+    }
+
+    .confirmation-panel.accept .confirmation-icon {
+      background: var(--success-green);
+    }
+
+    .confirmation-panel.reject .confirmation-icon {
+      background: var(--sale-red);
+    }
+
+    .confirmation-title {
+      flex: 1;
+    }
+
+    .confirmation-panel.accept .confirmation-title h6 {
+      color: #155724;
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .confirmation-panel.reject .confirmation-title h6 {
+      color: #721c24;
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .confirmation-message {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .confirmation-panel.accept .confirmation-message {
+      border-left: 4px solid var(--success-green);
+      color: #155724;
+    }
+
+    .confirmation-panel.reject .confirmation-message {
+      border-left: 4px solid var(--sale-red);
+      color: #721c24;
+    }
+
+    .confirmation-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    /* Table Styling */
+    .table-responsive {
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .table {
+      width: 100%;
+      margin: 0;
+    }
+
+    .table thead {
+      background: linear-gradient(135deg, var(--light-green) 0%, #d4e9d4 100%);
+    }
+
+    .table thead th {
+      border: none;
+      color: var(--primary-green);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.85rem;
+      padding: 18px 15px;
+    }
+
+    .table tbody tr {
+      transition: var(--transition);
+      border-bottom: 1px solid var(--light-gray);
+    }
+
+    .table tbody tr:hover {
+      background: var(--light-green);
+    }
+
+    .table td {
+      padding: 18px 15px;
+      vertical-align: middle;
+      border-color: var(--light-gray);
+    }
+
+    .product-image {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 2px solid var(--light-green);
+    }
+
+    .product-placeholder {
+      width: 50px;
+      height: 50px;
+      background: var(--light-gray);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--medium-gray);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .page-header h1 {
+        font-size: 1.5rem;
+      }
+
+      .page-header p {
+        font-size: 0.9rem;
+      }
+
+      .card-body {
+        padding: 20px;
+      }
+
+      .action-section {
+        padding: 25px 20px;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .status-banner {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .action-section h5 {
+        font-size: 1.2rem;
+      }
+
+      .breadcrumb-nav {
+        padding: 12px 15px;
+      }
+
+      .confirmation-buttons {
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .container {
+        padding: 0 15px;
+      }
+
+      .btn {
+        padding: 12px 24px;
+        font-size: 0.9rem;
+      }
+    }
+
+    /* Animation */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-in {
+      animation: fadeInUp 0.5s ease forwards;
+    }
+
+    @keyframes ripple {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+
+<div class="page-header">
+  <div class="container">
+    <div class="page-header-content">
+      <h1><i class="fas fa-undo-alt me-3"></i>Return Request Details</h1>
+      <p>Order #{{ rr.order.order_id }}</p>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Breadcrumb Navigation -->
+  <nav class="breadcrumb-nav">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a href="{% url 'dashboard' %}">
+          <i class="fas fa-home"></i> Dashboard
+        </a>
+      </li>
+      <li class="breadcrumb-separator">
+        <i class="fas fa-chevron-right"></i>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{% url 'return_requests' %}">
+          <i class="fas fa-list"></i> Return Requests
+        </a>
+      </li>
+      <li class="breadcrumb-separator">
+        <i class="fas fa-chevron-right"></i>
+      </li>
+      <li class="breadcrumb-item active">
+        <i class="fas fa-file-alt"></i> Order #{{ rr.order.order_id }}
+      </li>
+    </ol>
+  </nav>
+
+  <!-- Status Banner -->
+  <div class="status-banner {% if rr.status == 'PENDING' %}pending{% elif rr.status == 'VERIFIED' %}approved{% else %}rejected{% endif %}">
+    <div class="status-banner-icon">
+      <i class="fas 
+        {% if rr.status == 'PENDING' %}fa-clock
+        {% elif rr.status == 'VERIFIED' %}fa-check-circle
+        {% else %}fa-times-circle
+        {% endif %}"></i>
+    </div>
+    <div class="status-banner-content">
+      <h3>
+        {% if rr.status == "PENDING" %}
+          <span class="status-badge pending">PENDING</span>
+
+        {% elif rr.status == "VERIFIED" %}
+            <div class="alert alert-success">
+                <strong>Return Request Accepted</strong>
+                <p>The return request has been approved.</p>
+            </div>
+            <span class="status-badge verified" style="color: #1e7e34; font-weight: 1000;" >VERIFIED</span>
+
+        {% elif rr.status == "REJECTED" %}
+            <div class="alert alert-danger">
+                <strong>Return Request Rejected</strong>
+                <p>This return request has been rejected. The customer has been notified.</p>
+            </div>
+            <span class="status-badge rejected">REJECTED</span>
+        {% endif %}
+
+      </h3>
+      <p>
+        {% if rr.status == 'PENDING' %}
+          This return request is awaiting admin approval. Please review the details below and take appropriate action.
+        {% elif rr.status == 'VERIFIED' %}
+          This return request has been approved. The customer has been notified and the refund process has begun.
+        {% else %}
+          This return request has been rejected. The customer has been notified of the decision.
+        {% endif %}
+      </p>
+    </div>
+  </div>
+
+  <!-- Return Request Information -->
+  <div class="card">
+    <div class="card-header">
+      <h5><i class="fas fa-info-circle"></i>Return Request Information</h5>
+    </div>
+    <div class="card-body">
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">
+            <i class="fas fa-hashtag"></i>
+            Order ID
+          </div>
+          <div class="info-value">#{{ rr.order.order_id }}</div>
+        </div>
+
+        <div class="info-item">
+          <div class="info-label">
+            <i class="fas fa-calendar-alt"></i>
+            Request Date
+          </div>
+          <div class="info-value">{{ rr.created_at|date:"M d, Y" }}<br><small style="font-size: 0.9rem; opacity: 0.8;">{{ rr.created_at|date:"g:i A" }}</small></div>
+        </div>
+
+        <div class="info-item">
+          <div class="info-label">
+            <i class="fas fa-info-circle"></i>
+            Status
+          </div>
+          <div class="info-value">
+            <span class="badge badge-{% if rr.status == 'PENDING' %}pending{% elif rr.status == 'VERIFIED' %}approved{% else %}rejected{% endif %}">
+              <i class="fas 
+                {% if rr.status == 'PENDING' %}fa-clock
+                {% elif rr.status == 'VERIFIED' %}fa-check-circle
+                {% else %}fa-times-circle
+                {% endif %}"></i>
+              {{ rr.status }}
+            </span>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <div class="info-label">
+            <i class="fas fa-rupee-sign"></i>
+            Refund Amount
+          </div>
+          <div class="info-value">&#8377;{{ rr.order.total }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Information -->
+  <div class="card">
+    <div class="card-header">
+      <h5><i class="fas fa-user-circle"></i>Customer Information</h5>
+    </div>
+    <div class="card-body">
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">
+            <i class="fas fa-user"></i>
+            Customer Name
+          </div>
+          <div class="info-value">{{ rr.order.user.get_full_name|default:rr.order.user.username }}</div>
+        </div>
+
+        <div class="info-item">
+          <div class="info-label">
+            <i class="fas fa-envelope"></i>
+            Email
+          </div>
+          <div class="info-value" style="font-size: 1rem;">{{ rr.order.user.email }}</div>
+        </div>
+
+        <div class="info-item">
+          <div class="info-label">
+            <i class="fas fa-phone"></i>
+            Phone
+          </div>
+          <div class="info-value">{{ rr.order.user.phone_number|default:"Not provided" }}</div>
+        </div>
+
+        <div class="info-item">
+          <div class="info-label">
+            <i class="fas fa-calendar-check"></i>
+            Order Date
+          </div>
+          <div class="info-value">{{ rr.order.created_at|date:"M d, Y" }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Return Reason -->
+  <div class="card">
+    <div class="card-header">
+      <h5><i class="fas fa-comment-dots"></i>Return Reason</h5>
+    </div>
+    <div class="card-body">
+      <div class="reason-box">
+        <h6><i class="fas fa-quote-left"></i>Customer's Reason for Return</h6>
+        <div class="reason-text">
+          {{ rr.reason }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Items -->
+  <div class="card">
+    <div class="card-header">
+      <h5><i class="fas fa-box-open"></i>Items to be Returned</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th class="text-center">Quantity</th>
+              <th class="text-end">Unit Price</th>
+              <th class="text-end">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in rr.order.items.all %}
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-3">
+                  <div>
+                    {% if item.product.image %}
+                      <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="product-image">
+                    {% else %}
+                      <div class="product-placeholder">
+                        <i class="fas fa-image text-muted"></i>
+                      </div>
+                    {% endif %}
+                  </div>
+                  <div>
+                    <strong>{{ item.product.name }}</strong>
+                    {% if item.product.sku %}
+                      <br><small class="text-muted">SKU: {{ item.product.sku }}</small>
+                    {% endif %}
+                  </div>
+                </div>
+              </td>
+              <td class="text-center"><strong>{{ item.quantity }}</strong></td>
+              <td class="text-end">&#8377;{{ item.price }}</td>
+              <td class="text-end"><strong style="color: var(--secondary-green);">&#8377;{{ item.total_price }}</strong></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pickup Address -->
+  <div class="card">
+    <div class="card-header">
+      <h5><i class="fas fa-map-marker-alt"></i>Return Pickup Address</h5>
+    </div>
+    <div class="card-body">
+      <div style="background: var(--light-green); padding: 20px; border-radius: 10px; border-left: 4px solid var(--secondary-green); line-height: 1.8;">
+        {{ rr.order.address|linebreaksbr }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Section -->
+  {% if rr.status == "PENDING" %}
+  <div class="action-section">
+    <h5><i class="fas fa-tasks"></i>Take Action</h5>
+    <p>Review all the information carefully before making your decision. This action will notify the customer immediately.</p>
+    
+    <div class="action-buttons">
+      <button class="btn btn-success" onclick="showConfirmation('accept')">
+        <i class="fas fa-check-circle" style="color: #218838;"></i>Accept Return
+      </button>
+      <button class="btn btn-danger" onclick="showConfirmation('reject')">
+        <i class="fas fa-times-circle"></i>Reject Return
+      </button>
+      <a href="{% url 'return_requests' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i>Back to List
+      </a>
+    </div>
+
+    <!-- Accept Confirmation Panel -->
+    <div id="acceptConfirmation" class="confirmation-panel accept">
+      <div class="confirmation-header">
+        <div class="confirmation-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="confirmation-title">
+          <h6>Confirm Return Acceptance</h6>
+        </div>
+      </div>
+      <div class="confirmation-message">
+        <p style="margin: 0;"><strong>Are you sure you want to ACCEPT this return request?</strong></p>
+        <p style="margin: 10px 0 0 0;">The customer will be notified immediately and the refund process will begin. This action cannot be undone.</p>
+      </div>
+      <div class="confirmation-buttons">
+        <form method="POST" action="{% url 'accept_return' rr.order.order_id %}" style="display: inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-check-double"></i>Yes, Accept Return
+          </button>
+        </form>
+        <button class="btn btn-outline-secondary" onclick="hideConfirmation('accept')">
+          <i class="fas fa-times"></i>Cancel
+        </button>
+      </div>
+    </div>
+
+    <!-- Reject Confirmation Panel -->
+    <div id="rejectConfirmation" class="confirmation-panel reject">
+      <div class="confirmation-header">
+        <div class="confirmation-icon">
+          <i class="fas fa-times-circle"></i>
+        </div>
+        <div class="confirmation-title">
+          <h6>Confirm Return Rejection</h6>
+        </div>
+      </div>
+      <div class="confirmation-message">
+        <p style="margin: 0;"><strong>Are you sure you want to REJECT this return request?</strong></p>
+        <p style="margin: 10px 0 0 0;">The customer will be notified that their return has been denied. Please ensure you have valid reasons for this decision.</p>
+      </div>
+      <div class="confirmation-buttons">
+        <form method="POST" action="{% url 'reject_return' rr.order.order_id %}" style="display: inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">
+            <i class="fas fa-ban"></i>Yes, Reject Return
+          </button>
+        </form>
+        <button class="btn btn-outline-secondary" onclick="hideConfirmation('reject')">
+          <i class="fas fa-times"></i>Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="action-taken">
+    <i class="fas fa-check-circle"></i>
+    <h5>Action Already Taken</h5>
+    <p>This return request has already been processed. No further action is required.</p>
+    <div style="margin-top: 20px;">
+      <a href="{% url 'return_requests' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i>Back to Return Requests
+      </a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+// Show confirmation panel
+function showConfirmation(type) {
+  // Hide both panels first
+  document.getElementById('acceptConfirmation').classList.remove('active');
+  document.getElementById('rejectConfirmation').classList.remove('active');
+  
+  // Show the requested panel
+  if (type === 'accept') {
+    document.getElementById('acceptConfirmation').classList.add('active');
+  } else if (type === 'reject') {
+    document.getElementById('rejectConfirmation').classList.add('active');
+  }
+  
+  // Scroll to the confirmation panel
+  setTimeout(() => {
+    const panel = document.getElementById(type + 'Confirmation');
+    panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 100);
+}
+
+// Hide confirmation panel
+function hideConfirmation(type) {
+  if (type === 'accept') {
+    document.getElementById('acceptConfirmation').classList.remove('active');
+  } else if (type === 'reject') {
+    document.getElementById('rejectConfirmation').classList.remove('active');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Animate elements on load
+  const elements = document.querySelectorAll('.breadcrumb-nav, .status-banner, .card, .action-section, .action-taken');
+  elements.forEach((el, index) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    
+    setTimeout(() => {
+      el.style.transition = 'all 0.5s ease';
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
+    }, index * 100);
+  });
+
+  // Enhanced hover effects for buttons
+  const buttons = document.querySelectorAll('.btn');
+  buttons.forEach(button => {
+    button.addEventListener('mouseenter', function() {
+      if (!this.classList.contains('btn-outline-secondary')) {
+        this.style.transform = 'translateY(-3px)';
+      }
+    });
+    
+    button.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0)';
+    });
+  });
+
+  // Animate info items
+  const infoItems = document.querySelectorAll('.info-item');
+  infoItems.forEach((item, index) => {
+    item.style.opacity = '0';
+    item.style.transform = 'translateX(-10px)';
+    
+    setTimeout(() => {
+      item.style.transition = 'all 0.4s ease';
+      item.style.opacity = '1';
+      item.style.transform = 'translateX(0)';
+    }, 300 + (index * 80));
+  });
+
+  // Add click animation to action buttons
+  const actionButtons = document.querySelectorAll('.action-buttons .btn, .confirmation-buttons .btn');
+  actionButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+      // Create ripple effect
+      const ripple = document.createElement('span');
+      const rect = this.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      const x = e.clientX - rect.left - size / 2;
+      const y = e.clientY - rect.top - size / 2;
+      
+      ripple.style.width = ripple.style.height = size + 'px';
+      ripple.style.left = x + 'px';
+      ripple.style.top = y + 'px';
+      ripple.style.position = 'absolute';
+      ripple.style.borderRadius = '50%';
+      ripple.style.background = 'rgba(255, 255, 255, 0.5)';
+      ripple.style.transform = 'scale(0)';
+      ripple.style.animation = 'ripple 0.6s ease-out';
+      ripple.style.pointerEvents = 'none';
+      
+      this.style.position = 'relative';
+      this.style.overflow = 'hidden';
+      this.appendChild(ripple);
+      
+      setTimeout(() => ripple.remove(), 600);
+    });
+  });
+});
+</script>
+{% endblock %}

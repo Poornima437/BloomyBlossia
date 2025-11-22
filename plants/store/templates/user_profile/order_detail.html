@@ -280,10 +280,10 @@
   }
 
   .btn-return { 
-    background: linear-gradient(135deg, var(--rose-accent), #D4A5A9);
+    background: linear-gradient(135deg, #c4758b, #ad2c37);
   }
   .btn-return:hover { 
-    background: linear-gradient(135deg, #D4A5A9, #C08B8F);
+    background: linear-gradient(135deg, #be0e1d, #b8464f);
   }
 
   .btn-invoice { 
@@ -438,8 +438,8 @@
           <tr>
             <td class="product-name">{{ item.product.name }}</td>
             <td>{{ item.quantity }}</td>
-            <td>₹{{ item.price|floatformat:2 }}</td>
-            <td><strong>₹{{ item.total_price|floatformat:2 }}</strong></td>
+            <td>₹{{ order.subtotal|floatformat:2 }}</td>
+            <td><strong>₹{{ order.total|floatformat:2 }}</strong></td>
           </tr>
           {% endfor %}
         </tbody>
@@ -455,42 +455,52 @@
       <div class="order-totals">
         <div class="total-row">
           <strong>Subtotal:</strong>
-          <span>₹{{ subtotal|floatformat:2 }}</span>
+          <!-- <span>₹{{ item.price|floatformat:2 }}</span> -->
+          <span>₹{{ order.subtotal|floatformat:2 }}</span>
         </div>
         <div class="total-row">
           <strong>Shipping Charges:</strong>
-          <span>₹{{ shipping_cost|floatformat:2 }}</span>
+          <span>₹50</span>
         </div>
         <div class="total-row final">
           <strong>Total Amount:</strong>
-          <span>₹{{ total|floatformat:2 }}</span>
+          <span>₹{{ order.total|floatformat:2 }}</span>
+          <!-- <span>₹{{ total|floatformat:2 }}</span> -->
         </div>
       </div>
     </div>
 
     <!-- Action Buttons -->
     <div class="order-actions">
-      {% if order.status != "CANCELED" %}
+
+      <!-- Show Cancel only if not canceled, not shipped, not delivered -->
+      {% if order.status not in "CANCELED SHIPPED DELIVERED" %}
         <a href="{% url 'orders:cancel_order' order.order_id %}" class="btn-action btn-cancel">
           <i class="fas fa-times-circle"></i>
           Cancel Order
         </a>
       {% endif %}
-      {% if order.is_returnable %}
+
+      <!-- Show Return button only if delivered or shipped -->
+      {% if order.status == "DELIVERED" or order.status == "SHIPPED" %}
         <a href="{% url 'orders:return_order' order.order_id %}" class="btn-action btn-return">
           <i class="fas fa-undo"></i>
           Return Order
         </a>
       {% endif %}
+
       <a href="{% url 'orders:download_invoice' order.order_id %}" class="btn-action btn-invoice">
         <i class="fas fa-download"></i>
         Download Invoice
       </a>
+
       <a href="{% url 'orders:orders_list' %}" class="btn-action btn-back">
         <i class="fas fa-arrow-left"></i>
         Back to Orders
       </a>
+
     </div>
+
   </div>
 </div>
 
