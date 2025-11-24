@@ -10,11 +10,23 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+# from pathlib import Path
+# import os
+
+# from decouple import config
+# import cloudinary
+# import os
+# import cloudinary
+# import cloudinary.uploader
+# import cloudinary.api
+
 from pathlib import Path
 import os
 
 from decouple import config
 import cloudinary
+import cloudinary.uploader
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -62,6 +74,8 @@ SITE_ID = 1
 
 # CLOUDINARY_URL = 'cloudinary://<your_api_key>:<your_api_secret>@dgtmuqijp'
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
+
 
 
 
@@ -169,8 +183,9 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend'
-EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'webmaster@localhost'
+
  
 SOCIALACCOUNT_PROVIDERS={
     'google':{
@@ -203,8 +218,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'npoornima2005@gmail.com'
-EMAIL_HOST_PASSWORD = 'rmdx sqsb jnua plqr'  
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER 
 
 cloudinary.config(
     cloud_name=config('CLOUDINARY_CLOUD_NAME'), 
