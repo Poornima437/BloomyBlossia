@@ -8,6 +8,7 @@ from accounts.views import (
     dashboard_view,
 )
 from wallet.views import wallet_view
+from .views import contact
 
 
 
@@ -16,6 +17,7 @@ urlpatterns = [
     path('', views.landing, name='landing'),
     path('home/', views.home, name='home'),
     path('about/', views.about, name='about'),
+    path("contact/", views.contact, name="contact"),
 
     # User Authentication
     path('login/', login_user, name='login'),
@@ -23,7 +25,12 @@ urlpatterns = [
     path('register/', register_user, name='register'),
     path('change-password/', CustomPasswordChangeView.as_view(), name='change_password'),
 
+    
+
+
     # Shopping
+    
+    path('search-suggestions/', views.search_suggestions, name='search_suggestions'),
     path('search/', views.search_products, name='search'),
     
     # path('search/', views.search, name='search'),

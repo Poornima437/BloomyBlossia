@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import Category, Product, Address, ProductVariant, ProductImage
 from cart.models import Cart
-from accounts.models import UserProfile
+# from accounts.models import UserProfile
 
 # Inline for ProductVariant
 class ProductVariantInline(admin.TabularInline):
@@ -55,4 +55,4 @@ class ProductImageAdmin(admin.ModelAdmin):
 admin.site.register(Address)
 admin.site.register(Cart)
 admin.site.register(Category)
-admin.site.register(UserProfile)
+# admin.site.register(UserProfile)

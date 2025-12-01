@@ -428,18 +428,33 @@
         <thead>
           <tr>
             <th>Product</th>
+            <th>Variant</th>
             <th>Quantity</th>
             <th>Price</th>
             <th>Subtotal</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
           {% for item in items %}
           <tr>
             <td class="product-name">{{ item.product.name }}</td>
+            <td>{% if item.variant %}{{ item.variant.name }}{% else %}-{% endif %}</td>
             <td>{{ item.quantity }}</td>
-            <td>₹{{ order.subtotal|floatformat:2 }}</td>
-            <td><strong>₹{{ order.total|floatformat:2 }}</strong></td>
+            <td>₹{{ item.price|floatformat:2 }}</td>
+            <td>₹{{ item.total_price|floatformat:2 }}</td>
+            <td>
+              {% if item.is_cancelable %}
+                <a href="{% url 'orders:cancel_order_item' item.id %}" class="btn-action btn-cancel">
+                  <i class="fas fa-times-circle"></i> Cancel
+                </a>
+              {% endif %}
+              {% if item.is_returnable %}
+                <a href="{% url 'orders:return_order_item' item.id %}" class="btn-action btn-return">
+                  <i class="fas fa-undo"></i> Return
+                </a>
+              {% endif %}
+            </td>
           </tr>
           {% endfor %}
         </tbody>
@@ -481,13 +496,29 @@
         </a>
       {% endif %}
 
-      <!-- Show Return button only if delivered or shipped -->
+      <!-- Show Return button only if delivered or shipped  -->
       {% if order.status == "DELIVERED" or order.status == "SHIPPED" %}
         <a href="{% url 'orders:return_order' order.order_id %}" class="btn-action btn-return">
           <i class="fas fa-undo"></i>
           Return Order
         </a>
       {% endif %}
+      <!-- {% for item in items %}
+        {% if item.status == "CANCELED" %}
+          <div class="alert-info">
+            <strong>Item Canceled:</strong>
+            <span>{{ item.product.name }} on {{ item.canceled_at|date:"M d, Y H:i" }}</span><br>
+            <span>Reason: {{ item.cancel_reason }}</span>
+          </div>
+        {% elif item.status == "RETURNED" %}
+          <div class="alert-info">
+            <strong>Item Returned:</strong>
+            <span>{{ item.product.name }} on {{ item.returned_at|date:"M d, Y H:i" }}</span><br>
+            <span>Reason: {{ item.return_reason }}</span>
+          </div>
+        {% endif %}
+      {% endfor %} -->
+
 
       <a href="{% url 'orders:download_invoice' order.order_id %}" class="btn-action btn-invoice">
         <i class="fas fa-download"></i>

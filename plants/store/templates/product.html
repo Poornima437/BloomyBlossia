@@ -3,6 +3,7 @@
 {% load cloudinary %}
 {% block content %}
 <div class="container mt-4">
+    <!-- Breadcrumb -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
@@ -16,7 +17,9 @@
             <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
         </ol>
     </nav>
+
     <div class="row">
+        <!-- Product Images -->
         <div class="col-md-6">
             <div class="d-flex flex-column align-items-center">
                 <div class="main-image-container">
@@ -35,12 +38,13 @@
                 </div>
             </div>
         </div>
-        <!-- ✅ Product Details -->
+
+        <!-- Product Details -->
         <div class="col-md-6">
             <h2>{{ product.name }}</h2>
             <p class="text-muted">Product Code: #{{ product.id }}</p>
-            
-            <!-- Rating Display -->
+
+            <!-- Rating -->
             <div class="mb-2">
                 <div class="product-rating">
                     {% with avg_rating=product.average_rating %}
@@ -55,8 +59,8 @@
                     {% endwith %}
                 </div>
             </div>
-            
-            <!-- Pricing -->
+
+            <!-- Price Section -->
             <h4 id="price-section">
                 {% with first_variant=product.variants.first %}
                     {% if first_variant %}
@@ -66,26 +70,25 @@
                             {% with price=first_variant.price sale=first_variant.sale_price %}
                                 {% with diff=price|add:"-sale" %}
                                     {% widthratio diff price 100 as discount_percent %}
-                                    <span class="badge bg-danger ms-2">
-                                        {{ discount_percent|floatformat:0 }}20% OFF
-                                    </span>
+                                    <span class="badge bg-danger ms-2">{{ discount_percent|floatformat:0 }}% OFF</span>
                                 {% endwith %}
                             {% endwith %}
                         {% else %}
                             <span class="text-dark">Rs. {{ first_variant.price }}</span>
                         {% endif %}
                     {% else %}
-                        <span class="text-dark">Rs. {{ product.price }}</span> <!-- fallback -->
+                        <span class="text-dark">Rs. {{ product.price }}</span>
                     {% endif %}
                 {% endwith %}
             </h4>
 
-            <!-- Stock Status and Size Variants -->
-            {% if product.quantity > 0 %}
-                <p class="text-success">In Stock</p>
-                
-                <!-- Size Variant Buttons -->
-                {% if product.variants.all %}
+            <!-- Stock Status -->
+            <p id="stock-status" class="mb-2 text-success">
+                {% if product.quantity > 0 %}✔ In Stock{% else %}❌ Sold Out{% endif %}
+            </p>
+
+            <!-- Size Variants -->
+            {% if product.variants.all %}
                 <div class="size-variants mb-3">
                     <label class="form-label fw-bold">Select Size:</label>
                     <div class="d-flex gap-2 flex-wrap">
@@ -101,266 +104,84 @@
                         {% endfor %}
                     </div>
                 </div>
-                {% endif %}
-                
-                <!-- Add to Wishlist -->
-                <form method="POST" action="{% url 'wishlist:add_to_wishlist' product.id %}" class="d-inline">
-                    {% csrf_token %}
-                    <input type="hidden" name="variant_id" id="wishlist-variant-id" value="">
-                    <button type="submit" class="btn btn-outline-danger mb-3" id="addToWishBtn">
-                        <i class="fas fa-heart"></i> Add to Wishlist
-                    </button>
-                </form>
-                
-                <!-- Add to Cart Form -->
-                <form method="POST" action="{% url 'cart:add_to_cart' product.id %}" class="add-to-cart-form" id="addToCartForm">
-                    {% csrf_token %}
-                    <input type="hidden" name="variant_id" id="selected-variant-id" value="">
-                    
-                    <div class="add-to-cart-wrapper">
-                        <div class="quantity-selector mb-3">
-                            <label class="form-label fw-bold">Quantity:</label>
-                            <select class="form-select quantity-select" name="quantity" id="quantity">
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-add-to-cart w-100" id="addToCartBtn">
-                            <i class="fas fa-shopping-cart"></i> Add to Cart
-                        </button>
-                    </div>
-                </form>
-            {% else %}
-                <p class="text-danger fw-bold">Sold Out</p>
             {% endif %}
-            
-            <!-- Highlights -->
+
+            <!-- Wishlist Form -->
+            <form method="POST" action="{% url 'wishlist:add_to_wishlist' product.id %}" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="variant_id" id="wishlist-variant-id" value="">
+                <button type="submit" class="btn btn-outline-danger mb-3" id="addToWishBtn">
+                    <i class="fas fa-heart"></i> Add to Wishlist
+                </button>
+            </form>
+
+            <!-- Add to Cart Form -->
+            <form method="POST" action="{% url 'cart:add_to_cart' product.id %}" class="add-to-cart-form" id="addToCartForm">
+                {% csrf_token %}
+                <input type="hidden" name="variant_id" id="selected-variant-id" value="">
+                
+                <div class="add-to-cart-wrapper">
+                    <div class="quantity-selector mb-3">
+                        <label class="form-label fw-bold">Quantity:</label>
+                        <select class="form-select quantity-select" name="quantity" id="quantity">
+                            <option value="1">1</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-add-to-cart w-100" id="addToCartBtn">
+                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                    </button>
+                </div>
+            </form>
+
+            <!-- Highlights & Description -->
             <h5 class="mt-4">Highlights</h5>
             <ul>
                 <li>{{ product.category.name }}</li>
                 <li>Air Purifying</li>
                 <li>Low Maintenance</li>
             </ul>
-            
-            <!-- Description -->
             <p class="mt-3">{{ product.description|default:"No description available." }}</p>
         </div>
     </div>
-    
-    <!-- Reviews Summary -->
-    <div class="row mb-4">
-        <div class="col-md-4 text-center">
-            <h2 class="text-primary mb-1">4.2</h2>
-            <div class="rating-stars mb-2">
-                <i class="fas fa-star text-warning"></i>
-                <i class="fas fa-star text-warning"></i>
-                <i class="fas fa-star text-warning"></i>
-                <i class="fas fa-star text-warning"></i>
-                <i class="far fa-star text-warning"></i>
-            </div>
-            <p class="text-muted small">15 reviews</p>
-        </div>
-        <div class="col-md-8">
-            <div class="rating-bar mb-1">
-                <div class="d-flex align-items-center">
-                    <span class="me-2 small">5 star</span>
-                    <div class="progress flex-grow-1" style="height: 6px;">
-                        <div class="progress-bar bg-warning" style="width: 60%"></div>
-                    </div>
-                    <span class="ms-2 text-muted small">(9)</span>
-                </div>
-            </div>
-            <div class="rating-bar mb-1">
-                <div class="d-flex align-items-center">
-                    <span class="me-2 small">4 star</span>
-                    <div class="progress flex-grow-1" style="height: 6px;">
-                        <div class="progress-bar bg-warning" style="width: 27%"></div>
-                    </div>
-                    <span class="ms-2 text-muted small">(4)</span>
-                </div>
-            </div>
-            <div class="rating-bar mb-1">
-                <div class="d-flex align-items-center">
-                    <span class="me-2 small">3 star</span>
-                    <div class="progress flex-grow-1" style="height: 6px;">
-                        <div class="progress-bar bg-warning" style="width: 13%"></div>
-                    </div>
-                    <span class="ms-2 text-muted small">(2)</span>
-                </div>
-            </div>
-            <div class="rating-bar mb-1">
-                <div class="d-flex align-items-center">
-                    <span class="me-2 small">2 star</span>
-                    <div class="progress flex-grow-1" style="height: 6px;">
-                        <div class="progress-bar bg-warning" style="width: 0%"></div>
-                    </div>
-                    <span class="ms-2 text-muted small">(0)</span>
-                </div>
-            </div>
-            <div class="rating-bar mb-1">
-                <div class="d-flex align-items-center">
-                    <span class="me-2 small">1 star</span>
-                    <div class="progress flex-grow-1" style="height: 6px;">
-                        <div class="progress-bar bg-warning" style="width: 0%"></div>
-                    </div>
-                    <span class="ms-2 text-muted small">(0)</span>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Dummy Reviews Section -->
-    <div class="row mt-5">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="mb-0">Customer Reviews</h4>
-                </div>
-                <div class="card-body">
-
-                    <!-- Dummy Reviews List -->
-                    <div class="reviews-list">
-                        <!-- Review 1 -->
-                        <div class="review-item border-bottom pb-3 mb-3">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h6 class="mb-1">Sarah Johnson</h6>
-                                    <div class="rating-stars small">
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                    </div>
-                                </div>
-                                <small class="text-muted">2 days ago</small>
-                            </div>
-                            <p class="mb-1 mt-2">Absolutely love this product! The quality exceeded my expectations. It arrived quickly and was well-packaged. Will definitely purchase again!</p>
-                        </div>
-
-                        <!-- Review 2 -->
-                        <div class="review-item border-bottom pb-3 mb-3">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h6 class="mb-1">Mike Chen</h6>
-                                    <div class="rating-stars small">
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="far fa-star text-warning"></i>
-                                    </div>
-                                </div>
-                                <small class="text-muted">1 week ago</small>
-                            </div>
-                            <p class="mb-1 mt-2">Great product overall. Good value for money. The only minor issue was the size being slightly smaller than expected, but still happy with the purchase.</p>
-                        </div>
-
-                        <!-- Review 3 -->
-                        <div class="review-item border-bottom pb-3 mb-3">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h6 class="mb-1">Emily Rodriguez</h6>
-                                    <div class="rating-stars small">
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                    </div>
-                                </div>
-                                <small class="text-muted">2 weeks ago</small>
-                            </div>
-                            <p class="mb-1 mt-2">This is exactly what I was looking for! The quality is outstanding and it works perfectly. Customer service was also very helpful when I had questions.</p>
-                        </div>
-
-                        <!-- Review 4 -->
-                        <div class="review-item border-bottom pb-3 mb-3">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h6 class="mb-1">David Thompson</h6>
-                                    <div class="rating-stars small">
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="far fa-star text-warning"></i>
-                                        <i class="far fa-star text-warning"></i>
-                                    </div>
-                                </div>
-                                <small class="text-muted">3 weeks ago</small>
-                            </div>
-                            <p class="mb-1 mt-2">Product is okay for the price. Does the job but not exceptional. Delivery was faster than expected which was a plus.</p>
-                        </div>
-
-                        <!-- Review 5 -->
-                        <div class="review-item">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h6 class="mb-1">Lisa Wang</h6>
-                                    <div class="rating-stars small">
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="fas fa-star text-warning"></i>
-                                        <i class="far fa-star text-warning"></i>
-                                    </div>
-                                </div>
-                                <small class="text-muted">1 month ago</small>
-                            </div>
-                            <p class="mb-1 mt-2">Very satisfied with this purchase. The product is durable and well-made. Would recommend to friends and family.</p>
-                        </div>
-                    </div>
-
-                    <!-- Load More Reviews Button -->
-                    <div class="text-center mt-4">
-                        <i class="fas fa-comments me-2"></i>Load More Reviews
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
     <!-- Related Products -->
     {% if related_products %}
-    <div class="mt-5">
-        <h4>Related Products</h4>
-        <div class="row">
-            {% for p in related_products %}
-            <div class="col-md-3 mb-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="related-image-container">
-                        {% if p.image %}
-                            {% cloudinary p.image width=300 height=300 crop="fill" gravity="center" quality="auto" fetch_format="auto" class="related-image" alt=p.name %}
-                        {% else %}
-                            <img src="{% static 'images/no-image.png' %}" class="related-image" alt="No image">
-                        {% endif %}
+        <div class="mt-5">
+            <h4>Related Products</h4>
+            <div class="row">
+                {% for p in related_products %}
+                    <div class="col-md-3 mb-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="related-image-container">
+                                {% if p.image %}
+                                    {% cloudinary p.image width=300 height=300 crop="fill" gravity="center" quality="auto" fetch_format="auto" class="related-image" alt=p.name %}
+                                {% else %}
+                                    <img src="{% static 'images/no-image.png' %}" class="related-image" alt="No image">
+                                {% endif %}
+                            </div>
+                            <div class="card-body">
+                                <h6 class="card-title">{{ p.name }}</h6>
+                                {% if p.is_sale %}
+                                    <p class="card-text mb-1">
+                                        <del class="text-muted">Rs. {{ p.price }}</del>
+                                        <span class="text-success ms-1">Rs. {{ p.sale_price }}</span>
+                                    </p>
+                                    <span class="badge bg-danger">20% OFF</span>
+                                {% else %}
+                                    <p class="card-text">Rs. {{ p.price }}</p>
+                                {% endif %}
+                                <a href="{% url 'product' p.id %}" class="btn btn-sm btn-outline-primary mt-2">View</a>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <h6 class="card-title">{{ p.name }}</h6>
-                
-                        {% if p.is_sale %}
-                            <p class="card-text mb-1">
-                                <del class="text-muted">Rs. {{ p.price }}</del>
-                                <span class="text-success ms-1">Rs. {{ p.sale_price }}</span> 
-                            </p>
-                            {% widthratio p.price|floatformat:2|add:"0" p.sale_price|floatformat:2|add:"0" 1 as ratio %}
-                            {% widthratio 100 1 ratio as discount %}
-                            <span class="badge bg-danger">20% OFF</span>
-                        {% else %}
-                            <p class="card-text">Rs. {{ p.price }}</p>
-                        {% endif %}
-                        
-                        <a href="{% url 'product' p.id %}" class="btn btn-sm btn-outline-primary mt-2">View</a>
-                    </div>
-                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
-    </div>
     {% endif %}
 </div>
+
+
+
 
 <style>
     /* Main Product Image - Fixed 1:1 Ratio */
@@ -555,211 +376,91 @@
 <!-- JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Image Gallery
-    const mainImage = document.getElementById('mainImage');
-    const thumbContainers = document.querySelectorAll('.thumb-container');
-    
-    thumbContainers.forEach(container => {
-        container.addEventListener('click', () => {
-            const imageUrl = container.getAttribute('data-image-url');
-            if (imageUrl) {
-                mainImage.src = imageUrl;
-            }
-        });
-    });
+document.addEventListener("DOMContentLoaded", function() {
+    const sizeButtons = document.querySelectorAll(".size-btn");
+    const priceSection = document.getElementById("price-section");
+    const stockStatus = document.getElementById("stock-status");
+    const quantitySelect = document.getElementById("quantity");
+    const selectedVariantInput = document.getElementById("selected-variant-id");
+    const wishlistVariantInput = document.getElementById("wishlist-variant-id");
+    const addToCartBtn = document.getElementById("addToCartBtn");
 
-    // Size Variant Selection
-    document.querySelectorAll('.size-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            if (this.classList.contains('disabled')) return;
-            
-            // Remove 'selected' class from all buttons
-            document.querySelectorAll('.size-btn').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-            this.classList.add('selected');
-
-            // Update hidden inputs for both cart and wishlist
-            const variantId = this.dataset.variantId;
-            document.getElementById('selected-variant-id').value = variantId;
-            document.getElementById('wishlist-variant-id').value = variantId;
-
-            // Get prices
-            const price = parseFloat(this.dataset.price);
-            const salePrice = parseFloat(this.dataset.salePrice);
-
-            // Update price section
-            const priceSection = document.getElementById('price-section');
-            if (salePrice && salePrice < price) {
-                const discountPercent = Math.round(((price - salePrice) / price) * 100);
-                priceSection.innerHTML = `
-                    <del class="text-muted">Rs. ${price}</del>
-                    <span class="text-success ms-2">Rs. ${salePrice}</span>
-                    <span class="badge bg-danger ms-2">${discountPercent}% OFF</span>
-                `;
-            } else {
-                priceSection.innerHTML = `<span class="text-dark">Rs. ${price}</span>`;
-            }
-
-            // Update quantity max based on stock
-            const stock = parseInt(this.dataset.stock);
-            const quantitySelect = document.getElementById('quantity');
-            quantitySelect.max = stock;
-            
-            // Disable add to cart if out of stock
-            document.getElementById('addToCartBtn').disabled = (stock <= 0);
-        });
-    });
-
-    // Select first available variant by default
-    const firstAvailableVariant = document.querySelector('.size-btn:not(.disabled)');
-    if (firstAvailableVariant) {
-        firstAvailableVariant.click();
+    // Initialize with first available variant
+    let initialVariant = Array.from(sizeButtons).find(btn => !btn.classList.contains("disabled"));
+    if (initialVariant) {
+        selectVariant(initialVariant);
     }
 
-    // Add to Cart with AJAX
-    document.getElementById("addToCartBtn").addEventListener("click", function (e) {
-        e.preventDefault();
-
-        const form = document.getElementById("addToCartForm");
-        const variantId = document.getElementById("selected-variant-id").value;
-        let qty = parseInt(document.getElementById("quantity").value);
-
-        // Validation
-        if (!variantId) {
-            Swal.fire({
-                icon: "error",
-                title: "Size Required",
-                text: "❌ Please select a size before adding to cart!"
-            });
-            return;
-        }
-
-        if (qty < 1) {
-            Swal.fire({
-                icon: "error",
-                title: "Invalid Quantity",
-                text: "❌ Quantity cannot be zero or negative!"
-            });
-            return;
-        }
-
-        if (qty > 5) {
-            Swal.fire({
-                icon: "error",
-                title: "Limit Exceeded",
-                text: "❌ You can only add a maximum of 5 units!"
-            });
-            return;
-        }
-
-        // Show loading state
-        const originalText = this.innerHTML;
-        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
-        this.disabled = true;
-
-        fetch(form.action, {
-            method: "POST",
-            headers: { 
-                "X-Requested-With": "XMLHttpRequest",
-                "X-CSRFToken": getCookie('csrftoken')
-            },
-            body: new FormData(form)
-        })
-        .then(res => res.json())
-        .then(data => {
-            // Reset button state
-            this.innerHTML = originalText;
-            this.disabled = false;
-
-            Swal.fire({
-                icon: data.success ? "success" : "error",
-                title: data.success ? "Added to Cart 🎉" : "Error",
-                text: data.message,
-                showConfirmButton: false,
-                timer: data.success ? 2000 : 3000
-            });
-
-            if (data.success) {
-                // Update cart count
-                updateCartCount(data.cart_count);
+    // Handle size/variant button clicks
+    sizeButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            if (!btn.classList.contains("disabled")) {
+                selectVariant(btn);
             }
-        })
-        .catch(err => {
-            console.error(err);
-            // Reset button state on error
-            this.innerHTML = originalText;
-            this.disabled = false;
-            
-            Swal.fire({
-                icon: "error",
-                title: "Network Error",
-                text: "❌ Something went wrong. Please try again."
-            });
         });
     });
 
-    // Rating Input
-    const ratingStars = document.querySelectorAll('.rating-input input');
-    ratingStars.forEach((star, index) => {
-        star.addEventListener('change', function() {
-            // Update star display
-            const labels = document.querySelectorAll('.rating-star');
-            labels.forEach((label, labelIndex) => {
-                if (labelIndex <= index) {
-                    label.innerHTML = '<i class="fas fa-star"></i>';
-                } else {
-                    label.innerHTML = '<i class="far fa-star"></i>';
-                }
-            });
+    function selectVariant(btn) {
+        // Remove active class from all buttons
+        sizeButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        const price = parseFloat(btn.dataset.price);
+        const salePrice = parseFloat(btn.dataset.salePrice);
+        const stock = parseInt(btn.dataset.stock);
+
+        // Update hidden inputs
+        selectedVariantInput.value = btn.dataset.variantId;
+        wishlistVariantInput.value = btn.dataset.variantId;
+
+        // Update price section
+        if (salePrice && salePrice < price) {
+            const discountPercent = Math.round(((price - salePrice) / price) * 100);
+            priceSection.innerHTML = `
+                <del>Rs. ${price.toFixed(2)}</del>
+                <span class="text-success ms-2">Rs. ${salePrice.toFixed(2)}</span>
+                <span class="badge bg-danger ms-2">${discountPercent}% OFF</span>
+            `;
+        } else {
+            priceSection.innerHTML = `<span class="text-dark">Rs. ${price.toFixed(2)}</span>`;
+        }
+
+        // Update stock status
+        if (stock > 0) {
+            stockStatus.textContent = "✔ In Stock";
+            stockStatus.classList.remove("text-danger");
+            stockStatus.classList.add("text-success");
+            addToCartBtn.disabled = false;
+        } else {
+            stockStatus.textContent = "❌ Sold Out";
+            stockStatus.classList.remove("text-success");
+            stockStatus.classList.add("text-danger");
+            addToCartBtn.disabled = true;
+        }
+
+        // Update quantity selector
+        quantitySelect.innerHTML = "";
+        const maxQty = Math.min(stock, 5) || 1; // max  items in dropdown
+        for (let i = 1; i <= maxQty; i++) {
+            const option = document.createElement("option");
+            option.value = i;
+            option.textContent = i;
+            quantitySelect.appendChild(option);
+        }
+    }
+
+    // Thumbnail image click handler
+    const mainImage = document.getElementById("mainImage");
+    const thumbnails = document.querySelectorAll(".thumb-container");
+    thumbnails.forEach(thumb => {
+        thumb.addEventListener("click", () => {
+            const newSrc = thumb.dataset.imageUrl;
+            mainImage.src = newSrc;
         });
     });
-
-    // Helper function to get CSRF token
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
-    // Function to update cart count
-    function updateCartCount(count) {
-        const cartCountElements = document.querySelectorAll('.cart-count, .cart-badge');
-        cartCountElements.forEach(element => {
-            element.textContent = count;
-            element.classList.add('pulse-animation');
-            setTimeout(() => {
-                element.classList.remove('pulse-animation');
-            }, 600);
-        });
-    }
 });
-
-// Pulse animation for cart counter
-const style = document.createElement('style');
-style.textContent = `
-    .pulse-animation {
-        animation: pulse 0.6s ease-in-out;
-    }
-    
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.3); }
-        100% { transform: scale(1); }
-    }
-`;
-document.head.appendChild(style);
 </script>
+
 
 {% if messages %}
 <script>

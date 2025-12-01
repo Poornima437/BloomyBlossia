@@ -232,18 +232,20 @@
       padding: 0.75rem;
     }
     
-    .search-form .btn {
+    /* .search-form .btn {
       border-radius: 8px;
       padding: 0.75rem 1.25rem;
       background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent-green) 100%);
       border: none;
-    }
-    
+      text-align: right;
+      width: 20px;
+    } */
+/*     
     .search-form .btn:hover {
       background: linear-gradient(135deg, var(--accent-green) 0%, var(--primary-green) 100%);
       transform: translateY(-1px);
     }
-    
+     */
     /* Auth Buttons Styling */
     .auth-buttons {
       display: flex;
@@ -364,6 +366,59 @@
         margin-right: 5px;
       }
     }
+    /* Ensure search form is the positioning container */
+    .search-form {
+        position: relative !important;
+        width: 100%;
+    }
+
+    /* Proper dropdown styling */
+    #suggestionList {
+        position: absolute;
+        top: 100%;        /* appear below input */
+        left: 0;
+        width: 100%;
+        max-height: 250px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 0 0 8px 8px;
+        background-color: #fff;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+        padding-left: 0;
+        z-index: 99999 !important;  /* stay above bootstrap dropdown */
+    }
+
+    /* Individual suggestion items */
+    #suggestionList li {
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    #suggestionList li:hover {
+        background-color: #f1f1f1;
+    }
+
+    /* Close button */
+    /* #closeSuggestions {
+        border: none;
+        font-weight: bold;
+        font-size: 1rem;
+        padding: 2px 6px;
+        cursor: pointer;
+    } */
+
+    /* MOST IMPORTANT FIX: Prevent clipping */
+    .search-dropdown.dropdown-menu {
+        overflow: visible !important;
+    }
+
+      
+
+
+
+  
+
   </style>
 </head>
 <body>
@@ -399,10 +454,11 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {% if 'contact' in request.path %}active{% endif %}" href="#">
+          <a class="nav-link {% if 'contact' in request.path %}active{% endif %}" href="{% url 'contact' %}">
             <i class="fas fa-envelope me-1 d-lg-none"></i>Contact
           </a>
         </li>
+
       </ul>
 
       <!-- Icon Group -->
@@ -413,12 +469,12 @@
             <i class="fas fa-search"></i>
           </a>
           <div class="dropdown-menu dropdown-menu-end search-dropdown" aria-labelledby="searchDropdown">
-            <form class="search-form d-flex" action="{% url 'search' %}" method="GET">
-              <input class="form-control me-2" type="search" placeholder="What are you looking for?" aria-label="Search" name="q" required>
-              <button class="btn btn-success" type="submit">
-                <i class="fas fa-search"></i>
-              </button>
+            <form class="search-form d-flex position-relative" autocomplete="off">
+                <input class="form-control me-2" type="search" placeholder="What are you looking for?" aria-label="Search" id="searchInput" name="q">
+                <!-- <button type="button" id="closeSuggestions" class="btn btn-sm btn-secondary position-absolute end-0 top-0 m-1" style="display:none;">×</button> -->
+                <ul id="suggestionList" class="list-group position-absolute w-100 mt-1" style="z-index: 1050;"></ul>
             </form>
+
           </div>
         </div>
 
@@ -493,38 +549,83 @@
     });
   });
 
-  // Enhanced search functionality
-  document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.querySelector('input[name="q"]');
-    const searchForm = document.querySelector('.search-form');
-    
-    if (searchInput) {
-      searchInput.addEventListener('focus', function() {
-        this.parentElement.classList.add('focused');
-      });
-      
-      searchInput.addEventListener('blur', function() {
-        this.parentElement.classList.remove('focused');
-      });
-    }
-  });
+//   // SweetAlert for messages
+//   {% if messages %}
+//     {% for message in messages %}
+//       Swal.fire({
+//         title: "{{ message.tags|capfirst }}",
+//         text: "{{ message }}",
+//         icon: "{{ message.tags }}",
+//         timer: 3000,
+//         showConfirmButton: false,
+//         position: 'top-end',
+//         toast: true,
+//         background: '#f8f9fa'
+//       });
+//     {% endfor %}
+//   {% endif %}
+// </script>
 
-  // SweetAlert for messages
-  {% if messages %}
-    {% for message in messages %}
-      Swal.fire({
-        title: "{{ message.tags|capfirst }}",
-        text: "{{ message }}",
-        icon: "{{ message.tags }}",
-        timer: 3000,
-        showConfirmButton: false,
-        position: 'top-end',
-        toast: true,
-        background: '#f8f9fa'
-      });
-    {% endfor %}
-  {% endif %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('searchInput');
+    const suggestionList = document.getElementById('suggestionList'); 
+    const closeBtn = document.getElementById('closeSuggestions');
+
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+
+        if (query.length === 0) {
+            suggestionList.innerHTML = '';
+            suggestionList.style.display = 'none';
+            closeBtn.style.display = 'none';
+            return;
+        }
+
+        fetch(`/search-suggestions/?term=${query}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.length === 0) {
+                    suggestionList.innerHTML = '<li class="list-group-item">No products found</li>';
+                } else {
+                    suggestionList.innerHTML = data.map(item => 
+                        `<li class="list-group-item" data-id="${item.id}">${item.name}</li>`
+                    ).join('');
+                }
+                suggestionList.style.display = 'block';
+                closeBtn.style.display = 'inline-block';
+            })
+            .catch(err => console.error(err));
+    });
+
+    // Click on suggestion
+    suggestionList.addEventListener('click', function(e) {
+        if (e.target.classList.contains('list-group-item')) {
+            const productId = e.target.getAttribute('data-id');
+            window.location.href = `/product/${productId}/`;  // Redirect to product detail page
+        }
+    });
+
+    // Close button
+    closeBtn.addEventListener('click', () => {
+        suggestionList.innerHTML = '';
+        suggestionList.style.display = 'none';
+        closeBtn.style.display = 'none';
+    });
+
+    // Close suggestions on outside click
+    document.addEventListener('click', function(e) {
+        if (!suggestionList.contains(e.target) && e.target !== searchInput) {
+            suggestionList.style.display = 'none';
+            closeBtn.style.display = 'none';
+        }
+    });
+});
+
 </script>
+
+
+
 <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 </body>
 </html>

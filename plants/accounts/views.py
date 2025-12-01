@@ -35,6 +35,8 @@ import logging
 import base64
 from django.views.decorators.csrf import csrf_exempt
 
+from .models import ContactMessage
+
 logger = logging.getLogger(__name__)
 
 
@@ -529,3 +531,9 @@ def cancel_order(request, order_id):
     else:
         messages.error(request, 'Cannot cancel this order!')
     return redirect('accounts:profile')
+
+
+
+
+
+

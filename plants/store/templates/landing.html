@@ -625,6 +625,47 @@
         width: 100%;
       }
     }
+    
+    .suggestion-item {
+        padding: 10px;
+        cursor: pointer;
+        border-bottom: 1px solid #eee;
+        
+    }
+    .suggestion-item:hover {
+        background-color: #f5f5f5;
+    }
+    .landing-search-input {
+    height: 48px;
+    font-size: 17px;
+    padding-left: 15px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+  }
+
+  .landing-search-input:focus {
+      border-color: #3e8e41;
+      box-shadow: 0 0 5px rgba(0, 150, 0, 0.3);
+  }
+
+  #landingSuggestions li {
+      cursor: pointer;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      color: #3e8e41;
+  }
+
+  #landingSuggestions li:hover {
+      background: #f5f5f5;
+  }
+
+  #landingSuggestions li i {
+      margin-right: 10px;
+      color: #4e8e4e;
+  }
+
+
   </style>
 </head>
 <body>
@@ -655,9 +696,34 @@
     <div class="hero-text">
       <h1>Buy Your Dream Plants</h1>
       <p>TOP PLANTS | HOME DECOR | GREEN JOY</p>
-      <form method="GET" action="{% url 'search' %}" class="search-form"> <input type="text" name="q" placeholder="Search your plants..." required>
-        <button type="submit">Search</button>
+      <!-- <form id="searchForm" class="search-form">
+          <input type="text" id="searchInput" name="q" placeholder="Search your plants..." autocomplete="off">
+          <button type="submit">Search</button>
+          <button type="button" id="closeSearch" style="display:none;">✖</button>
+      </form> -->
+      <form id="searchForm" class="search-form">
+        <div class="landing-search-wrapper position-relative mx-auto" style="max-width: 600px;">
+
+          <input 
+              type="text" 
+              id="landingSearchInput" 
+              class="form-control landing-search-input"
+              placeholder="Search for plants..."
+              autocomplete="off">
+          <button type="submit">Search</button>
+          <button type="button" id="closeSearch" style="display:none;">✖</button>
+
+          <!-- Suggestions dropdown -->
+          <ul id="landingSuggestions" 
+              class="list-group position-absolute w-100 mt-1 shadow-sm"
+              style="display:none; z-index: 999; border-radius: 8px;">
+          </ul>
+        </div>
       </form>
+
+
+      <!-- <div id="searchResults" style="position: absolute; background: white; border: 1px solid #ccc; width: 90%; max-width: 500px; z-index: 1000;"></div> -->
+
       <!-- <form id="searchForm">
         <input type="text" id="searchInput" name="q" placeholder="Search your plants..." required>
         <button type="submit">Search</button>
@@ -796,23 +862,59 @@
     });
   </script>
   <script>
-    document.getElementById("searchForm").addEventListener("submit", function(e){
-        e.preventDefault();
+  document.addEventListener("DOMContentLoaded", () => {
+      const input = document.getElementById("landingSearchInput");
+      const suggestions = document.getElementById("landingSuggestions");
 
-        let query = document.getElementById("searchInput").value;
+      input.addEventListener("input", function () {
+          const term = this.value.trim();
 
-        fetch(`/search/?q=${query}`, {
-            headers: {
-                "X-Requested-With": "XMLHttpRequest"
-            }
-        })
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById("searchResults").innerHTML = html;
-        });
-    });
+          if (term.length === 0) {
+              suggestions.style.display = "none";
+              suggestions.innerHTML = "";
+              return;
+          }
 
+          // Fetch search suggestions
+          fetch(`/search-suggestions/?term=${term}`)
+              .then(res => res.json())
+              .then(data => {
+                  if (data.length === 0) {
+                      suggestions.innerHTML = `<li class="list-group-item">No matching products</li>`;
+                  } else {
+                      suggestions.innerHTML = data
+                          .map(item => 
+                              `<li class="list-group-item" data-id="${item.id}">
+                                  <i class="fas fa-search"></i> ${item.name}
+                              </li>`
+                          )
+                          .join("");
+                  }
+                  suggestions.style.display = "block";
+              })
+              .catch(err => console.error(err));
+      });
+
+      // On selecting suggestion → go to product detail page
+      suggestions.addEventListener("click", function (e) {
+          if (e.target.closest("li")) {
+              const id = e.target.closest("li").getAttribute("data-id");
+              window.location.href = `/product/${id}/`;
+          }
+      });
+
+      // Close dropdown if clicking outside
+      document.addEventListener("click", (e) => {
+          if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+              suggestions.style.display = "none";
+          }
+      });
+  });
   </script>
+
+
+
+
 
 </body>
 </html>

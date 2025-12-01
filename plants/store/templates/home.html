@@ -356,21 +356,25 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      text-decoration: none !important;
     }
 
     .wishlist-icon:hover {
       transform: scale(1.1);
       background: #fff5f5;
+      text-decoration: none !important;
     }
 
     .wishlist-icon i {
       font-size: 18px;
       color: var(--dark-gray);
       transition: var(--transition);
+      text-decoration: none !important;
     }
 
     .wishlist-icon.added i {
       color: var(--sale-red);
+      text-decoration: none !important;
     }
     
     .discount-badge {
@@ -497,12 +501,12 @@
 <div class="container">
   <aside class="sidebar">
     <form method="GET" action="{% url 'home' %}" class="search-form" id="filter-form">
-      <div class="search-box">
+      <!-- <div class="search-box">
         <input type="text" name="q" id="search-input" placeholder=" 🔍 Search plants..." value="{{ request.GET.q }}">
         <button type="button" class="clear-search" id="clear-search" title="Clear search">
           <i class="fas fa-times"></i>
         </button>
-      </div>
+      </div> -->
 
       <hr>
 
@@ -655,9 +659,9 @@
     .catch(err => {
       console.error(err);
       Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Something went wrong!'
+        icon: 'warning',
+        title: 'Please Login',
+        text: 'You must log in to add items to wishlist.'
       });
     });
   }

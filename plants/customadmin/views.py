@@ -106,6 +106,7 @@ def customadmin_products(request):
 
     for product in page_obj:
         product.variant_list = product.variants.all()
+        # product.total_stock = product.total_stock
 
     return render(request, 'custom_admin/products.html', {
         'page_obj': page_obj,

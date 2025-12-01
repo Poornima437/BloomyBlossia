@@ -53,6 +53,12 @@ class Product(models.Model):
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft")
 
+    @property
+    def is_out_of_stock(self):
+        if self.variants.exists():
+            return all(v.quantity <= 0 for v in self.variants.all())
+        return self.quantity <= 0
+
     def save(self, *args, **kwargs):
         creating = self.pk is None  
 
@@ -80,17 +86,20 @@ class Product(models.Model):
                             defaults={
                                 "price": price,
                                 "sale_price": sale_price,
-                                "quantity": self.quantity,
+                                
                             },
                         )
                         if not created:
                             variant.price = price
                             variant.sale_price = sale_price
-                            variant.quantity = self.quantity
+                            
                             variant.save()
                 except IntegrityError:
                     pass
-                    
+    
+    @property
+    def total_stock(self):
+        return sum(v.quantity for v in self.variants.all())
 
     def __str__(self):
         return self.name
@@ -127,6 +136,12 @@ class ProductVariant(models.Model):
     quantity = models.PositiveIntegerField(default=0)
     image = CloudinaryField('image',folder="variants", blank=True, null=True)
 
+    STATUS_CHOICES = [
+        ("available", "Available"),
+        ("out_of_stock", "Out of Stock"),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="available")  
+
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["product","size"],name = "unique_product_size")
@@ -141,6 +156,13 @@ class ProductVariant(models.Model):
         if self.price > 0 and self.sale_price > 0 and self.sale_price < self.price:
             return round(((self.price - self.sale_price) / self.price) * 100, 2)
         return 0
+    # @property
+    # def total_stock(self):
+    #     return sum(variant.quantity for variant in self.variants.all())
+    @property
+    def is_out_of_stock(self):
+        return self.quantity <= 0
+    
 class VariantImage(models.Model):
         variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, related_name="variant_images")
         image = CloudinaryField('image',folder = 'variants')

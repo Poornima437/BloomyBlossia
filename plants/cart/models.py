@@ -80,6 +80,10 @@ class CartItem(models.Model):
             price = self.product.sale_price if self.product.sale_price and self.product.sale_price < self.product.price else self.product.price
         return price * self.quantity
     
+    def clean(self):
+        if self.product.variants.exists() and not self.variant:
+            raise ValidationError("Select a size/variant before adding to cart.")
+
 
 
     def __str__(self):

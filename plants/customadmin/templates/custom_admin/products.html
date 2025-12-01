@@ -60,7 +60,9 @@
                         </td>
                         <td><strong>{{ product.name }}</strong></td>
                         <td>{{ product.category.name }}</td>
-                        <td style="width: 80px;"><span class="badge bg-info text-white">{{ product.quantity }}</span></td>
+                        <td style="width: 80px;"><span class="badge bg-info text-white">{{ product.total_stock }}</span></td>
+                        
+                     
                         <td style="width: 100px;">₹{{ product.sale_price }}</td>
                         <td style="width: 120px;">
                             {% if product.status == 'published' %}
